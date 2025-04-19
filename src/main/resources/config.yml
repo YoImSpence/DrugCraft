@@ -1,0 +1,32 @@
+# DrugCraft Configuration
+# This plugin provides fictional drug-themed gameplay for Minecraft.
+# It does not promote or endorse real-world drug use.
+dealers:
+  dealer1:
+    npcId: 1
+    acceptedDrugs:
+      - Cannabis
+      - Blazepowder
+    successChance: 0.75
+    payout:
+      Cannabis: 50.0
+      Blazepowder: 30.0
+drugs:
+  Cannabis:
+    sellPrice: 10.0
+    addictionStrength: 5
+  Blazepowder:
+    sellPrice: 20.0
+    addictionStrength: 10
+  MysticShroom:
+    sellPrice: 15.0
+    addictionStrength: 8
+  PoppyNectar:
+    sellPrice: 25.0
+    addictionStrength: 12
+  LunarEssence:
+    sellPrice: 10.0
+    addictionStrength: 6
+  GlowvineExtract:
+    sellPrice: 18.0
+    addictionStrength: 9
