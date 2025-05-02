@@ -1,0 +1,52 @@
+drugs:
+  blazepowder:
+    name: "Blaze Powder"
+    material: BLAZE_POWDER
+    lore:
+      - "A fiery substance that boosts speed."
+    effects:
+      - "SPEED:2:30"
+    price: 10.0
+    has_seed: false
+  cannabis_sativa:
+    name: "Cannabis Sativa"
+    material: SUGAR
+    lore:
+      - "A strain known for uplifting effects."
+    effects:
+      - "JUMP_BOOST:1:60"
+    price: 20.0
+    has_seed: true
+    seed_material: WHEAT_SEEDS
+    growth_time: 3600
+  cannabis_indica:
+    name: "Cannabis Indica"
+    material: SUGAR
+    lore:
+      - "A strain that promotes relaxation."
+    effects:
+      - "SLOWNESS:1:60"
+    price: 20.0
+    has_seed: true
+    seed_material: WHEAT_SEEDS
+    growth_time: 3600
+  cannabis_hybrid:
+    name: "Cannabis Hybrid"
+    material: SUGAR
+    lore:
+      - "A balanced strain with mixed effects."
+    effects:
+      - "REGENERATION:1:60"
+    price: 20.0
+    has_seed: true
+    seed_material: WHEAT_SEEDS
+    growth_time: 3600
+  glowvine_extract:
+    name: "Glowvine Extract"
+    material: GLOWSTONE_DUST
+    lore:
+      - "Grants night vision."
+    effects:
+      - "NIGHT_VISION:1:120"
+    price: 15.0
+    has_seed: false

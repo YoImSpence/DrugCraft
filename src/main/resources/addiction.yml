@@ -1,0 +1,6 @@
+players:
+# Example format
+# uuid:
+#   drug_id:
+#     uses: 10
+#     last_use: 1643723400

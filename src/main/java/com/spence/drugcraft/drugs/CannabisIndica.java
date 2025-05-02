@@ -15,14 +15,15 @@ import java.util.Arrays;
 import java.util.logging.Level;
 
 /**
- * Represents the generic Cannabis drug.
+ * Represents the Cannabis Indica drug.
  */
-public class Cannabis extends Drug {
+public class CannabisIndica extends Drug {
     private static final NamespacedKey TYPE_KEY = new NamespacedKey("drugcraft", "type");
 
-    public Cannabis() {
-        super("Cannabis", "cannabis", Material.SUGAR, 45.0, 0.25, 4.5, "§7",
-                new PotionEffect(PotionEffectType.SPEED, 400, 1));
+    public CannabisIndica() {
+        super("Cannabis Indica", "cannabis_indica", Material.SUGAR, 60.0, 0.4, 6.0, "§b",
+                new PotionEffect(PotionEffectType.SLOWNESS, 600, 1),
+                new PotionEffect(PotionEffectType.REGENERATION, 600, 1));
     }
 
     @Override
@@ -30,35 +31,35 @@ public class Cannabis extends Drug {
         ItemStack seed = new ItemStack(Material.WHEAT_SEEDS);
         ItemMeta meta = seed.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName("§7Cannabis Seed");
-            meta.setLore(Arrays.asList("§7Plant to grow Cannabis"));
+            meta.setDisplayName("§bIndica Seed");
+            meta.setLore(Arrays.asList("§7Plant to grow Cannabis Indica"));
             seed.setItemMeta(meta);
         }
         try {
             DrugCraft plugin = (DrugCraft) Bukkit.getPluginManager().getPlugin("DrugCraft");
             if (plugin != null) {
-                plugin.getLogger().fine("Attempting to create NBTItem for Cannabis seed");
+                plugin.getLogger().fine("Attempting to create NBTItem for Cannabis Indica seed");
             }
             NBTItem nbtItem = new NBTItem(seed);
-            nbtItem.setString("drugcraft:type", "cannabis");
+            nbtItem.setString("drugcraft:type", "cannabis_indica");
             ItemStack result = nbtItem.getItem();
             if (plugin != null) {
-                plugin.getLogger().fine("Successfully set NBT tag 'drugcraft:type=cannabis' for Cannabis seed");
+                plugin.getLogger().fine("Successfully set NBT tag 'drugcraft:type=cannabis_indica' for Cannabis Indica seed");
             }
             return result;
         } catch (Throwable e) {
             DrugCraft plugin = (DrugCraft) Bukkit.getPluginManager().getPlugin("DrugCraft");
             if (plugin != null) {
-                plugin.getLogger().log(Level.SEVERE, "Failed to set NBT tag for Cannabis seed: " + e.getMessage(), e);
+                plugin.getLogger().log(Level.SEVERE, "Failed to set NBT tag for Cannabis Indica seed: " + e.getMessage(), e);
             } else {
-                Bukkit.getLogger().log(Level.SEVERE, "Failed to set NBT tag for Cannabis seed and plugin is null: " + e.getMessage(), e);
+                Bukkit.getLogger().log(Level.SEVERE, "Failed to set NBT tag for Cannabis Indica seed and plugin is null: " + e.getMessage(), e);
             }
             // Fallback to PersistentDataContainer
             if (meta != null) {
-                meta.getPersistentDataContainer().set(TYPE_KEY, PersistentDataType.STRING, "cannabis");
+                meta.getPersistentDataContainer().set(TYPE_KEY, PersistentDataType.STRING, "cannabis_indica");
                 seed.setItemMeta(meta);
                 if (plugin != null) {
-                    plugin.getLogger().warning("Fell back to PersistentDataContainer for Cannabis seed");
+                    plugin.getLogger().warning("Fell back to PersistentDataContainer for Cannabis Indica seed");
                 }
             }
             return seed;

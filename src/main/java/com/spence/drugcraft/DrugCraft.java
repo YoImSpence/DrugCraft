@@ -1,94 +1,101 @@
 package com.spence.drugcraft;
 
-import com.spence.drugcraft.drugs.Drug;
+import com.spence.drugcraft.addiction.AddictionListener;
+import com.spence.drugcraft.addiction.AddictionManager;
+import com.spence.drugcraft.crops.CropListener;
+import com.spence.drugcraft.crops.CropManager;
+import com.spence.drugcraft.data.DataManager;
 import com.spence.drugcraft.drugs.DrugManager;
-import com.spence.drugcraft.economy.EconomyManager;
-import com.spence.drugcraft.npc.DealerListener;
-import com.spence.drugcraft.npc.DealerManager;
+import com.spence.drugcraft.gui.DrugCommand;
+import com.spence.drugcraft.gui.DrugGUI;
+import com.spence.drugcraft.gui.InventoryClickListener;
+import com.spence.drugcraft.npcs.NPCListener;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class DrugCraft extends JavaPlugin {
     private DrugManager drugManager;
-    private EconomyManager economyManager;
+    private CropManager cropManager;
     private AddictionManager addictionManager;
-    private InputListener inputListener;
     private DrugGUI drugGUI;
-    private DealerManager dealerManager;
-    private DealerListener dealerListener;
+    private DataManager dataManager;
+    private Economy economy;
 
     @Override
     public void onEnable() {
-        // Save default config
         saveDefaultConfig();
+        saveResource("drugs.yml", false);
+        saveResource("crops.yml", false);
 
-        // Initialize Managers
+        // Initialize managers
         drugManager = new DrugManager(this);
-        Economy economy = getEconomy();
-        economyManager = new EconomyManager(this, economy);
-        addictionManager = new AddictionManager(this);
-        inputListener = new InputListener(this);
-        drugGUI = new DrugGUI(this);
-        dealerManager = new DealerManager(this);
-        getServer().getPluginManager().registerEvents(new DealerListener(this, dealerManager), this);
+        dataManager = new DataManager(this);
+        cropManager = new CropManager(this, drugManager, dataManager);
+        addictionManager = new AddictionManager(this, dataManager);
+        drugGUI = new DrugGUI(this, drugManager, economy);
 
+        // Setup Vault economy
+        if (!setupEconomy()) {
+            getLogger().severe("Vault economy not found! Disabling plugin.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
-        // Register Commands
-        getCommand("drug").setExecutor(new DrugCommand(this));
+        // Register commands and listeners
+        getCommand("drug").setExecutor(new DrugCommand(this, drugGUI));
+        getServer().getPluginManager().registerEvents(new InventoryClickListener(this, drugGUI, drugManager, economy), this);
+        getServer().getPluginManager().registerEvents(new CropListener(this, cropManager, drugManager), this);
+        getServer().getPluginManager().registerEvents(new NPCListener(this, drugManager, economy), this);
+        getServer().getPluginManager().registerEvents(new AddictionListener(this, addictionManager), this);
 
-        // Register Listeners
-        getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
-        getServer().getPluginManager().registerEvents(drugGUI, this);
-        getServer().getPluginManager().registerEvents(inputListener, this);
+        // Load persistent data
+        dataManager.loadCrops();
+        dataManager.loadPlayerData();
 
-        // Start Withdrawal Task
-        new WithdrawalTask(addictionManager).runTaskTimer(this, 0L, 1200L); // Every 60 seconds
-
-        getLogger().info("DrugCraft enabled!");
+        getLogger().info("DrugCraft enabled successfully.");
     }
 
     @Override
     public void onDisable() {
-        // Clear listeners to prevent accumulation on reload
-        org.bukkit.event.HandlerList.unregisterAll(this);
-        getLogger().info("DrugCraft disabled!");
+        dataManager.saveCrops();
+        dataManager.savePlayerData();
+        getLogger().info("DrugCraft disabled successfully.");
     }
 
-    public Economy getEconomy() {
+    private boolean setupEconomy() {
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
-            getLogger().warning("Vault not found! Economy features will be disabled.");
-            return null;
+            return false;
         }
         RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
-            getLogger().warning("No economy provider found!");
-            return null;
+            return false;
         }
-        return rsp.getProvider();
+        economy = rsp.getProvider();
+        return economy != null;
     }
 
     public DrugManager getDrugManager() {
         return drugManager;
     }
 
-    public EconomyManager getEconomyManager() {
-        return economyManager;
+    public CropManager getCropManager() {
+        return cropManager;
     }
 
     public AddictionManager getAddictionManager() {
         return addictionManager;
     }
 
-    public InputListener getInputListener() {
-        return inputListener;
-    }
-
     public DrugGUI getDrugGUI() {
         return drugGUI;
     }
 
-    public Drug[] getDrugs() {
-        return new Drug[0];
+    public Economy getEconomy() {
+        return economy;
+    }
+
+    public DataManager getDataManager() {
+        return dataManager;
     }
 }

@@ -1,17 +1,23 @@
 name: DrugCraft
-version: 1.0-SNAPSHOT
+version: 1.0.0
 main: com.spence.drugcraft.DrugCraft
 api-version: 1.21
-depend: [Vault]
+depend: [item-nbt-api, DecentHolograms, Vault, Citizens, PlaceholderAPI]
+softdepend: [LuckPerms, ProtocolLib, EssentialsX]
+description: A plugin to manage drugs and crops with custom effects, NPC selling, and addiction system.
+authors: [YoImSpence]
+website: https://example.com/drugcraft
+
 commands:
   drug:
-    description: Manage drugs in DrugCraft
-    usage: /<command> <gui|give|sell|info|reset>
+    description: Opens the DrugCraft GUI or manages drugs.
+    usage: /<command> [buy|sell|give]
+    permission: drugcraft.use
+
 permissions:
+  drugcraft.use:
+    description: Allows players to use the /drug command.
+    default: true
   drugcraft.admin:
-    description: Allows access to admin features
+    description: Allows admins to give drugs.
     default: op
-  drugcraft.give:
-    description: Allows giving drugs
-    default: op
-description: A fictional drug-themed plugin for Minecraft. Does not promote real-world drug use.

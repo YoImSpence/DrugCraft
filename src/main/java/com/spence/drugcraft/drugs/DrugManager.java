@@ -1,141 +1,133 @@
 package com.spence.drugcraft.drugs;
 
 import com.spence.drugcraft.DrugCraft;
+import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey; // Added import
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.ShapedRecipe;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 public class DrugManager {
     private final DrugCraft plugin;
-    private final List<Drug> drugs;
+    private final Map<String, Drug> drugs = new HashMap<>();
+    private final Logger logger;
 
     public DrugManager(DrugCraft plugin) {
         this.plugin = plugin;
-        this.drugs = new ArrayList<>();
-        registerDrugs();
-        registerRecipes();
+        this.logger = plugin.getLogger();
+        loadDrugs();
     }
 
-    private void registerDrugs() {
-        ConfigurationSection drugConfig = plugin.getConfig().getConfigurationSection("drugs");
-        if (drugConfig == null) {
-            plugin.getLogger().warning("No drugs defined in config.yml!");
+    private void loadDrugs() {
+        File drugsFile = new File(plugin.getDataFolder(), "drugs.yml");
+        if (!drugsFile.exists()) {
+            plugin.saveResource("drugs.yml", false);
+        }
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(drugsFile);
+        ConfigurationSection drugsSection = config.getConfigurationSection("drugs");
+        if (drugsSection != null) {
+            for (String key : drugsSection.getKeys(false)) {
+                String name = drugsSection.getString(key + ".name");
+                Material material = Material.getMaterial(drugsSection.getString(key + ".material"));
+                List<String> lore = drugsSection.getStringList(key + ".lore");
+                List<String> effectStrings = drugsSection.getStringList(key + ".effects");
+                double price = drugsSection.getDouble(key + ".price", 0);
+                boolean hasSeed = drugsSection.getBoolean(key + ".has_seed", false);
+                Material seedMaterial = hasSeed ? Material.getMaterial(drugsSection.getString(key + ".seed_material")) : null;
+                int growthTime = hasSeed ? drugsSection.getInt(key + ".growth_time", 3600) : 0;
+
+                List<PotionEffect> effects = new ArrayList<>();
+                for (String effect : effectStrings) {
+                    String[] parts = effect.split(":");
+                    if (parts.length == 3) {
+                        PotionEffectType type = PotionEffectType.getByName(parts[0].toUpperCase());
+                        if (type != null) {
+                            int level = Integer.parseInt(parts[1]);
+                            int duration = Integer.parseInt(parts[2]) * 20; // Convert seconds to ticks
+                            effects.add(new PotionEffect(type, duration, level - 1));
+                        }
+                    }
+                }
+
+                Drug drug = new Drug(key, name, material, lore, effects, price, hasSeed, seedMaterial, growthTime, logger);
+                drugs.put(key, drug);
+            }
+            logger.info("Registered " + drugs.size() + " drugs successfully.");
+        }
+    }
+
+    public boolean isDrugItem(ItemStack item) {
+        if (item == null || item.getType() == Material.AIR) {
+            return false;
+        }
+        try {
+            NBTItem nbtItem = new NBTItem(item);
+            return nbtItem.hasKey("drug_id") && drugs.containsKey(nbtItem.getString("drug_id"));
+        } catch (Exception e) {
+            logger.severe("Error checking drug item NBT: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean isSeedItem(ItemStack item) {
+        if (item == null || item.getType() == Material.AIR) {
+            logger.warning("isSeedItem: Null item or seedItem");
+            return false;
+        }
+        try {
+            NBTItem nbtItem = new NBTItem(item);
+            return nbtItem.hasKey("seed_id") && drugs.containsKey(nbtItem.getString("seed_id").replace("_seed", ""));
+        } catch (Exception e) {
+            logger.severe("Error checking seed item NBT: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public void useDrug(Player player, ItemStack item) {
+        if (!isDrugItem(item)) {
             return;
         }
-
-        drugs.add(new Cannabis(getSellPrice(drugConfig, "Cannabis"), getAddictionStrength(drugConfig, "Cannabis")));
-        drugs.add(new Blazepowder(getSellPrice(drugConfig, "Blazepowder"), getAddictionStrength(drugConfig, "Blazepowder")));
-        drugs.add(new MysticShroom(getSellPrice(drugConfig, "MysticShroom"), getAddictionStrength(drugConfig, "MysticShroom")));
-        drugs.add(new PoppyNectar(getSellPrice(drugConfig, "PoppyNectar"), getAddictionStrength(drugConfig, "PoppyNectar")));
-        drugs.add(new LunarEssence(getSellPrice(drugConfig, "LunarEssence"), getAddictionStrength(drugConfig, "LunarEssence")));
-        drugs.add(new GlowvineExtract(getSellPrice(drugConfig, "GlowvineExtract"), getAddictionStrength(drugConfig, "GlowvineExtract")));
-
-        plugin.getLogger().info("Registered " + drugs.size() + " drugs.");
+        NBTItem nbtItem = new NBTItem(item);
+        String drugId = nbtItem.getString("drug_id");
+        Drug drug = drugs.get(drugId);
+        if (drug != null) {
+            drug.use(player);
+            item.setAmount(item.getAmount() - 1);
+            logger.info("Player " + player.getName() + " used drug: " + drugId);
+            plugin.getAddictionManager().addDrugUse(player, drugId);
+        }
     }
 
-    private double getSellPrice(ConfigurationSection config, String drugName) {
-        return config.getDouble(drugName + ".sellPrice", 10.0);
+    public Drug getDrug(String id) {
+        return drugs.get(id);
     }
 
-    private int getAddictionStrength(ConfigurationSection config, String drugName) {
-        return config.getInt(drugName + ".addictionStrength", 5);
+    public Map<String, Drug> getDrugs() {
+        return drugs;
     }
 
-    private void registerRecipes() {
-        // Cannabis Recipe
-        ItemStack cannabis = drugs.get(0).getItem();
-        NamespacedKey cannabisKey = new NamespacedKey(plugin, "cannabis");
-        ShapedRecipe cannabisRecipe = new ShapedRecipe(cannabisKey, cannabis);
-        cannabisRecipe.shape(" K ", "KWK", " K ");
-        cannabisRecipe.setIngredient('K', Material.DRIED_KELP);
-        cannabisRecipe.setIngredient('W', Material.WHEAT);
-        plugin.getServer().addRecipe(cannabisRecipe);
-
-        // Blazepowder Recipe
-        ItemStack blazepowder = drugs.get(1).getItem();
-        NamespacedKey blazepowderKey = new NamespacedKey(plugin, "blazepowder");
-        ShapedRecipe blazepowderRecipe = new ShapedRecipe(blazepowderKey, blazepowder);
-        blazepowderRecipe.shape(" B ", "BSB", " B ");
-        blazepowderRecipe.setIngredient('B', Material.BLAZE_POWDER);
-        blazepowderRecipe.setIngredient('S', Material.SUGAR);
-        plugin.getServer().addRecipe(blazepowderRecipe);
-
-        // Mystic Shroom Recipe
-        ItemStack mysticShroom = drugs.get(2).getItem();
-        NamespacedKey mysticShroomKey = new NamespacedKey(plugin, "mystic_shroom");
-        ShapedRecipe mysticShroomRecipe = new ShapedRecipe(mysticShroomKey, mysticShroom);
-        mysticShroomRecipe.shape(" M ", "MSM", " M ");
-        mysticShroomRecipe.setIngredient('M', Material.RED_MUSHROOM);
-        mysticShroomRecipe.setIngredient('S', Material.SUGAR);
-        plugin.getServer().addRecipe(mysticShroomRecipe);
-
-        // Poppy Nectar Recipe
-        ItemStack poppyNectar = drugs.get(3).getItem();
-        NamespacedKey poppyNectarKey = new NamespacedKey(plugin, "poppy_nectar");
-        ShapedRecipe poppyNectarRecipe = new ShapedRecipe(poppyNectarKey, poppyNectar);
-        poppyNectarRecipe.shape(" P ", "BSB", " S ");
-        poppyNectarRecipe.setIngredient('P', Material.POPPY);
-        poppyNectarRecipe.setIngredient('B', Material.GLASS_BOTTLE);
-        poppyNectarRecipe.setIngredient('S', Material.SUGAR);
-        plugin.getServer().addRecipe(poppyNectarRecipe);
-
-        // Lunar Essence Recipe
-        ItemStack lunarEssence = drugs.get(4).getItem();
-        NamespacedKey lunarEssenceKey = new NamespacedKey(plugin, "lunar_essence");
-        ShapedRecipe lunarEssenceRecipe = new ShapedRecipe(lunarEssenceKey, lunarEssence);
-        lunarEssenceRecipe.shape(" G ", "BSB", " S ");
-        lunarEssenceRecipe.setIngredient('G', Material.GLISTERING_MELON_SLICE);
-        lunarEssenceRecipe.setIngredient('B', Material.GLASS_BOTTLE);
-        lunarEssenceRecipe.setIngredient('S', Material.SUGAR);
-        plugin.getServer().addRecipe(lunarEssenceRecipe);
-
-        // Glowvine Extract Recipe
-        ItemStack glowvineExtract = drugs.get(5).getItem();
-        NamespacedKey glowvineExtractKey = new NamespacedKey(plugin, "glowvine_extract");
-        ShapedRecipe glowvineExtractRecipe = new ShapedRecipe(glowvineExtractKey, glowvineExtract);
-        glowvineExtractRecipe.shape(" G ", "GSG", " G ");
-        glowvineExtractRecipe.setIngredient('G', Material.GLOW_BERRIES);
-        glowvineExtractRecipe.setIngredient('S', Material.SUGAR);
-        plugin.getServer().addRecipe(glowvineExtractRecipe);
-    }
-
-    public Drug getDrugByName(String name) {
-        for (Drug drug : drugs) {
-            if (drug.getName().equalsIgnoreCase(name)) {
-                return drug;
-            }
+    public String getDrugIdFromItem(ItemStack item) {
+        if (isDrugItem(item)) {
+            NBTItem nbtItem = new NBTItem(item);
+            return nbtItem.getString("drug_id");
         }
         return null;
     }
 
-    public Drug getDrugByItem(ItemStack item) {
-        if (item == null || !item.hasItemMeta()) {
-            return null;
-        }
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null || !meta.hasDisplayName()) {
-            return null;
-        }
-        String displayName = meta.getDisplayName();
-        for (Drug drug : drugs) {
-            ItemStack drugItem = drug.getItem();
-            ItemMeta drugMeta = drugItem.getItemMeta();
-            if (drugMeta != null && drugMeta.hasDisplayName() &&
-                    drugMeta.getDisplayName().equals(displayName) &&
-                    item.getType() == drugItem.getType()) {
-                return drug;
-            }
+    public String getDrugIdFromSeed(ItemStack item) {
+        if (isSeedItem(item)) {
+            NBTItem nbtItem = new NBTItem(item);
+            return nbtItem.getString("seed_id").replace("_seed", "");
         }
         return null;
-    }
-
-    public List<Drug> getDrugs() {
-        return new ArrayList<>(drugs);
     }
 }
