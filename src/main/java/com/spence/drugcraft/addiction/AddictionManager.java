@@ -37,8 +37,7 @@ public class AddictionManager {
     }
 
     public void loadPlayerData() {
-        playerData.clear();
-        dataManager.loadPlayerData(playerData);
+        dataManager.loadPlayerData();
     }
 
     private void startWithdrawalTask() {

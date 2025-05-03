@@ -1,67 +1,17 @@
 package com.spence.drugcraft.drugs;
 
-import com.spence.drugcraft.DrugCraft;
-import de.tr7zw.changeme.nbtapi.NBTItem;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
 import java.util.Arrays;
-import java.util.logging.Level;
+import java.util.logging.Logger;
 
-/**
- * Represents the generic Cannabis drug.
- */
 public class Cannabis extends Drug {
-    private static final NamespacedKey TYPE_KEY = new NamespacedKey("drugcraft", "type");
-
-    public Cannabis() {
-        super("Cannabis", "cannabis", Material.SUGAR, 45.0, 0.25, 4.5, "§7",
-                new PotionEffect(PotionEffectType.SPEED, 400, 1));
-    }
-
-    @Override
-    protected ItemStack createSeedItem() {
-        ItemStack seed = new ItemStack(Material.WHEAT_SEEDS);
-        ItemMeta meta = seed.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName("§7Cannabis Seed");
-            meta.setLore(Arrays.asList("§7Plant to grow Cannabis"));
-            seed.setItemMeta(meta);
-        }
-        try {
-            DrugCraft plugin = (DrugCraft) Bukkit.getPluginManager().getPlugin("DrugCraft");
-            if (plugin != null) {
-                plugin.getLogger().fine("Attempting to create NBTItem for Cannabis seed");
-            }
-            NBTItem nbtItem = new NBTItem(seed);
-            nbtItem.setString("drugcraft:type", "cannabis");
-            ItemStack result = nbtItem.getItem();
-            if (plugin != null) {
-                plugin.getLogger().fine("Successfully set NBT tag 'drugcraft:type=cannabis' for Cannabis seed");
-            }
-            return result;
-        } catch (Throwable e) {
-            DrugCraft plugin = (DrugCraft) Bukkit.getPluginManager().getPlugin("DrugCraft");
-            if (plugin != null) {
-                plugin.getLogger().log(Level.SEVERE, "Failed to set NBT tag for Cannabis seed: " + e.getMessage(), e);
-            } else {
-                Bukkit.getLogger().log(Level.SEVERE, "Failed to set NBT tag for Cannabis seed and plugin is null: " + e.getMessage(), e);
-            }
-            // Fallback to PersistentDataContainer
-            if (meta != null) {
-                meta.getPersistentDataContainer().set(TYPE_KEY, PersistentDataType.STRING, "cannabis");
-                seed.setItemMeta(meta);
-                if (plugin != null) {
-                    plugin.getLogger().warning("Fell back to PersistentDataContainer for Cannabis seed");
-                }
-            }
-            return seed;
-        }
+    public Cannabis(Logger logger) {
+        super("cannabis", "&aCannabis", Material.SUGAR,
+                Arrays.asList("&7A versatile plant with various effects."),
+                Arrays.asList(new PotionEffect(PotionEffectType.REGENERATION, 60 * 20, 0)),
+                15.0, true, Material.WHEAT_SEEDS, 3600, logger);
     }
 }

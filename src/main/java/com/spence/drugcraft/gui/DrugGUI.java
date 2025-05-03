@@ -127,7 +127,8 @@ public class DrugGUI {
         if (drug != null) {
             economy.depositPlayer(player, drug.getPrice());
             item.setAmount(item.getAmount() - 1);
-            player.sendMessage(ChatColor.GREEN + "Sold " + drug.getName() + " for $" + drug.getPrice());
+            String message = plugin.getConfig().getString("npc.sell_message", "&aSold %drug% for $%price%!");
+            player.sendMessage(ChatColor.translateAlternateColorCodes('&', message.replace("%drug%", drug.getName()).replace("%price%", String.valueOf(drug.getPrice()))));
             logger.info(player.getName() + " sold " + drug.getName());
         }
     }

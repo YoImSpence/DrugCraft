@@ -3,7 +3,7 @@ version: 1.0.0
 main: com.spence.drugcraft.DrugCraft
 api-version: 1.21
 depend: [item-nbt-api, DecentHolograms, Vault, Citizens, PlaceholderAPI]
-softdepend: [LuckPerms, ProtocolLib, EssentialsX]
+softdepend: [LuckPerms, EssentialsX]
 description: A plugin to manage drugs and crops with custom effects, NPC selling, and addiction system.
 authors: [YoImSpence]
 website: https://github.com/YoImSpence/DrugCraft

@@ -53,7 +53,7 @@ public class DataManager {
         }
     }
 
-    public void loadCrops(Map<String, Crop> crops) {
+    public void loadCrops() {
         if (!cropsFile.exists()) return;
         YamlConfiguration config = YamlConfiguration.loadConfiguration(cropsFile);
         for (String key : config.getKeys(false)) {
@@ -67,7 +67,7 @@ public class DataManager {
             Location location = new Location(plugin.getServer().getWorld(world), x, y, z);
             Crop crop = new Crop(location, drugId, plantingTime);
             crop.setHologramId(hologramId);
-            crops.put(key, crop);
+            plugin.getCropManager().addCrop(crop);
         }
     }
 
@@ -87,7 +87,7 @@ public class DataManager {
         }
     }
 
-    public void loadPlayerData(Map<UUID, PlayerAddictionData> playerData) {
+    public void loadPlayerData() {
         if (!addictionFile.exists()) return;
         YamlConfiguration config = YamlConfiguration.loadConfiguration(addictionFile);
         ConfigurationSection players = config.getConfigurationSection("players");
@@ -104,7 +104,8 @@ public class DataManager {
                         data.getLastUseMap().put(drugId, lastUse);
                     }
                 }
-                playerData.put(uuid, data);
+                plugin.getAddictionManager().getPlayerData(uuid).getUsesMap().putAll(data.getUsesMap());
+                plugin.getAddictionManager().getPlayerData(uuid).getLastUseMap().putAll(data.getLastUseMap());
             }
         }
     }

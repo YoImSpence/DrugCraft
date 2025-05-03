@@ -6,6 +6,7 @@ import com.spence.drugcraft.drugs.Drug;
 import com.spence.drugcraft.drugs.DrugManager;
 import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 
 import java.util.HashMap;
@@ -35,7 +36,7 @@ public class CropManager {
         // Create hologram
         String hologramId = "crop_" + key;
         Hologram hologram = DHAPI.createHologram(hologramId, crop.getLocation().add(0.5, 1, 0.5));
-        DHAPI.setHologramLines(hologram, List.of("Growth: 0%"));
+        DHAPI.setHologramLines(hologram, List.of(ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("hologram.format", "&aGrowth: &e%percentage%%").replace("%percentage%", "0.00"))));
         crop.setHologramId(hologramId);
     }
 
@@ -65,12 +66,12 @@ public class CropManager {
 
     private void startUpdateTask() {
         plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
-            String format = plugin.getConfig().getString("hologram.format", "Growth: %percentage%%");
+            String format = plugin.getConfig().getString("hologram.format", "&aGrowth: &e%percentage%%");
             for (Crop crop : crops.values()) {
                 double growth = getGrowthPercentage(crop);
                 Hologram hologram = DHAPI.getHologram(crop.getHologramId());
                 if (hologram != null) {
-                    DHAPI.setHologramLines(hologram, List.of(format.replace("%percentage%", String.format("%.2f", growth))));
+                    DHAPI.setHologramLines(hologram, List.of(ChatColor.translateAlternateColorCodes('&', format.replace("%percentage%", String.format("%.2f", growth)))));
                 }
             }
         }, 0L, 20L * plugin.getConfig().getInt("hologram.update_interval", 5));

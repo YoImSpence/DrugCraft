@@ -1,16 +1,16 @@
 package com.spence.drugcraft;
 
-import com.spence.drugcraft.addiction.AddictionListener;
+import com.spence.drugcraft.listeners.AddictionListener;
 import com.spence.drugcraft.addiction.AddictionManager;
-import com.spence.drugcraft.crops.CropListener;
+import com.spence.drugcraft.listeners.CropListener;
 import com.spence.drugcraft.crops.CropManager;
 import com.spence.drugcraft.data.DataManager;
 import com.spence.drugcraft.drugs.DrugManager;
 import com.spence.drugcraft.gui.DrugCommand;
 import com.spence.drugcraft.gui.DrugGUI;
-import com.spence.drugcraft.gui.InventoryClickListener;
+import com.spence.drugcraft.listeners.InventoryClickListener;
 import com.spence.drugcraft.listeners.PlayerListener;
-import com.spence.drugcraft.npcs.NPCListener;
+import com.spence.drugcraft.listeners.NPCListener;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -35,7 +35,6 @@ public class DrugCraft extends JavaPlugin {
         dataManager = new DataManager(this);
         cropManager = new CropManager(this, drugManager, dataManager);
         addictionManager = new AddictionManager(this, dataManager);
-        drugGUI = new DrugGUI(this, drugManager, economy);
 
         // Setup Vault economy
         if (!setupEconomy()) {
@@ -43,6 +42,9 @@ public class DrugCraft extends JavaPlugin {
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
+
+        // Initialize GUI after economy setup
+        drugGUI = new DrugGUI(this, drugManager, economy);
 
         // Register commands and listeners
         getCommand("drug").setExecutor(new DrugCommand(drugGUI));
@@ -61,8 +63,13 @@ public class DrugCraft extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        dataManager.saveCrops();
-        dataManager.savePlayerData();
+        if (addictionManager != null) {
+            getServer().getOnlinePlayers().forEach(player ->
+                    dataManager.savePlayerData(player.getUniqueId(), addictionManager.getPlayerData(player.getUniqueId())));
+        }
+        if (dataManager != null) {
+            dataManager.saveCrops();
+        }
         getLogger().info("DrugCraft disabled successfully.");
     }
 

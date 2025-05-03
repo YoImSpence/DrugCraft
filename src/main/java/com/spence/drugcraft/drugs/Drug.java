@@ -1,6 +1,7 @@
 package com.spence.drugcraft.drugs;
 
 import de.tr7zw.nbtapi.NBTItem;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-public class Drug {
+public abstract class Drug {
     protected final String id;
     protected final String name;
     protected final Material material;
@@ -28,9 +29,9 @@ public class Drug {
     public Drug(String id, String name, Material material, List<String> lore, List<PotionEffect> effects, double price,
                 boolean hasSeed, Material seedMaterial, int growthTime, Logger logger) {
         this.id = id;
-        this.name = name;
+        this.name = ChatColor.translateAlternateColorCodes('&', name);
         this.material = material;
-        this.lore = lore;
+        this.lore = translateLore(lore);
         this.effects = effects;
         this.price = price;
         this.hasSeed = hasSeed;
@@ -41,6 +42,14 @@ public class Drug {
         if (hasSeed) {
             this.seedItem = createSeedItem();
         }
+    }
+
+    private List<String> translateLore(List<String> lore) {
+        List<String> translated = new ArrayList<>();
+        for (String line : lore) {
+            translated.add(ChatColor.translateAlternateColorCodes('&', line));
+        }
+        return translated;
     }
 
     protected ItemStack createItem() {
@@ -68,7 +77,7 @@ public class Drug {
             if (meta != null) {
                 meta.setDisplayName(name + " Seed");
                 List<String> seedLore = new ArrayList<>(lore);
-                seedLore.add("Plant on farmland to grow.");
+                seedLore.add(ChatColor.GRAY + "Plant on farmland to grow.");
                 meta.setLore(seedLore);
                 seed.setItemMeta(meta);
                 NBTItem nbtItem = new NBTItem(seed);

@@ -59,7 +59,40 @@ public class DrugManager {
                     }
                 }
 
-                Drug drug = new Drug(key, name, material, lore, effects, price, hasSeed, seedMaterial, growthTime, logger);
+                Drug drug;
+                switch (key) {
+                    case "blazepowder":
+                        drug = new Blazepowder(logger);
+                        break;
+                    case "cannabis_sativa":
+                        drug = new CannabisSativa(logger);
+                        break;
+                    case "cannabis_indica":
+                        drug = new CannabisIndica(logger);
+                        break;
+                    case "cannabis_hybrid":
+                        drug = new CannabisHybrid(logger);
+                        break;
+                    case "glowvine_extract":
+                        drug = new GlowvineExtract(logger);
+                        break;
+                    case "lunar_essence":
+                        drug = new LunarEssence(logger);
+                        break;
+                    case "mystic_shroom":
+                        drug = new MysticShroom(logger);
+                        break;
+                    case "poppy_nector":
+                        drug = new PoppyNector(logger);
+                        break;
+                    default:
+                        drug = new Drug(key, name, material, lore, effects, price, hasSeed, seedMaterial, growthTime, logger) {
+                            @Override
+                            public void use(Player player) {
+                                super.use(player);
+                            }
+                        };
+                }
                 drugs.put(key, drug);
             }
             logger.info("Registered " + drugs.size() + " drugs successfully.");
