@@ -4,13 +4,14 @@ import org.bukkit.Material;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-/**
- * Represents the Blazepowder drug.
- */
+import java.util.Arrays;
+import java.util.logging.Logger;
+
 public class Blazepowder extends Drug {
-    public Blazepowder() {
-        super("Blazepowder", "blazepowder", Material.BLAZE_POWDER, 40.0, 0.2, 4.0, "§6",
-                new PotionEffect(PotionEffectType.FIRE_RESISTANCE, 600, 1),
-                new PotionEffect(PotionEffectType.STRENGTH, 600, 1));
+    public Blazepowder(Logger logger) {
+        super("blazepowder", "&6Blaze Powder", Material.BLAZE_POWDER,
+                Arrays.asList("&7A fiery substance that boosts speed."),
+                Arrays.asList(new PotionEffect(PotionEffectType.SPEED, 30 * 20, 1)),
+                10.0, false, null, 0, logger);
     }
 }

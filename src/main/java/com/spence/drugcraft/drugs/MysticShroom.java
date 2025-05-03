@@ -4,13 +4,14 @@ import org.bukkit.Material;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-/**
- * Represents the Mystic Shroom drug.
- */
+import java.util.Arrays;
+import java.util.logging.Logger;
+
 public class MysticShroom extends Drug {
-    public MysticShroom() {
-        super("Mystic Shroom", "mystic_shroom", Material.RED_MUSHROOM, 65.0, 0.45, 6.5, "§d",
-                new PotionEffect(PotionEffectType.NAUSEA, 600, 1),
-                new PotionEffect(PotionEffectType.HEALTH_BOOST, 600, 1));
+    public MysticShroom(Logger logger) {
+        super("mystic_shroom", "&dMystic Shroom", Material.RED_MUSHROOM,
+                Arrays.asList("&7Causes vivid hallucinations."),
+                Arrays.asList(new PotionEffect(PotionEffectType.NAUSEA, 45 * 20, 0)),
+                12.0, false, null, 0, logger);
     }
 }

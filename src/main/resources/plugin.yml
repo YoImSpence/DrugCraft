@@ -6,7 +6,7 @@ depend: [item-nbt-api, DecentHolograms, Vault, Citizens, PlaceholderAPI]
 softdepend: [LuckPerms, ProtocolLib, EssentialsX]
 description: A plugin to manage drugs and crops with custom effects, NPC selling, and addiction system.
 authors: [YoImSpence]
-website: https://example.com/drugcraft
+website: https://github.com/YoImSpence/DrugCraft
 
 commands:
   drug:

@@ -6,9 +6,11 @@ addiction:
     - "SLOWNESS:1:600"
 hologram:
   update_interval: 5
-  format: "Growth: %percentage%%"
+  format: "&aGrowth: &e%percentage%%"
 gui:
-  main_menu_title: "DrugCraft Menu"
-  buy_menu_title: "Buy Drugs"
-  sell_menu_title: "Sell Drugs"
-  give_menu_title: "Give Drugs"
+  main_menu_title: "&5DrugCraft Menu"
+  buy_menu_title: "&2Buy Drugs"
+  sell_menu_title: "&eSell Drugs"
+  give_menu_title: "&cGive Drugs"
+npc:
+  sell_message: "&aSold %drug% for $%price%!"

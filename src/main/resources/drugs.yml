@@ -1,18 +1,18 @@
 drugs:
   blazepowder:
-    name: "Blaze Powder"
+    name: "&6Blaze Powder"
     material: BLAZE_POWDER
     lore:
-      - "A fiery substance that boosts speed."
+      - "&7A fiery substance that boosts speed."
     effects:
       - "SPEED:2:30"
     price: 10.0
     has_seed: false
   cannabis_sativa:
-    name: "Cannabis Sativa"
+    name: "&aCannabis Sativa"
     material: SUGAR
     lore:
-      - "A strain known for uplifting effects."
+      - "&7A strain known for uplifting effects."
     effects:
       - "JUMP_BOOST:1:60"
     price: 20.0
@@ -20,10 +20,10 @@ drugs:
     seed_material: WHEAT_SEEDS
     growth_time: 3600
   cannabis_indica:
-    name: "Cannabis Indica"
+    name: "&aCannabis Indica"
     material: SUGAR
     lore:
-      - "A strain that promotes relaxation."
+      - "&7A strain that promotes relaxation."
     effects:
       - "SLOWNESS:1:60"
     price: 20.0
@@ -31,10 +31,10 @@ drugs:
     seed_material: WHEAT_SEEDS
     growth_time: 3600
   cannabis_hybrid:
-    name: "Cannabis Hybrid"
+    name: "&aCannabis Hybrid"
     material: SUGAR
     lore:
-      - "A balanced strain with mixed effects."
+      - "&7A balanced strain with mixed effects."
     effects:
       - "REGENERATION:1:60"
     price: 20.0
@@ -42,11 +42,39 @@ drugs:
     seed_material: WHEAT_SEEDS
     growth_time: 3600
   glowvine_extract:
-    name: "Glowvine Extract"
+    name: "&eGlowvine Extract"
     material: GLOWSTONE_DUST
     lore:
-      - "Grants night vision."
+      - "&7Grants night vision."
     effects:
       - "NIGHT_VISION:1:120"
     price: 15.0
+    has_seed: false
+  lunar_essence:
+    name: "&bLunar Essence"
+    material: PHANTOM_MEMBRANE
+    lore:
+      - "&7Mystical essence that enhances luck."
+    effects:
+      - "LUCK:2:90"
+    price: 25.0
+    has_seed: false
+  mystic_shroom:
+    name: "&dMystic Shroom"
+    material: RED_MUSHROOM
+    lore:
+      - "&7Causes vivid hallucinations."
+    effects:
+      - "CONFUSION:1:45"
+    price: 12.0
+    has_seed: false
+  poppy_nector:
+    name: "&cPoppy Nector"
+    material: HONEY_BOTTLE
+    lore:
+      - "&7Soothes pain but dulls senses."
+    effects:
+      - "DAMAGE_RESISTANCE:1:60"
+      - "SLOWNESS:1:60"
+    price: 18.0
     has_seed: false

@@ -25,19 +25,29 @@
             <id>jitpack</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <id>decentholograms</id>
+            <url>https://repo.decentholograms.eu/repository/public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.4-R0.1-SNAPSHOT</version>
+            <version>1.21.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.github.tr7zw</groupId>
             <artifactId>item-nbt-api</artifactId>
             <version>2.15.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>eu.decentsoftware.holograms</groupId>
+            <artifactId>api</artifactId>
+            <version>2.9.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -56,6 +66,18 @@
             <groupId>com.github.MilkBowl</groupId>
             <artifactId>PlaceholderAPI</artifactId>
             <version>2.11.6</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.comphenix.protocol</groupId>
+            <artifactId>ProtocolLib</artifactId>
+            <version>5.3.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.earth2me</groupId>
+            <artifactId>essentials-api</artifactId>
+            <version>2.21.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

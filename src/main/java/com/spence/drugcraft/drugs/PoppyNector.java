@@ -4,13 +4,17 @@ import org.bukkit.Material;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-/**
- * Represents the Poppy Nector drug.
- */
+import java.util.Arrays;
+import java.util.logging.Logger;
+
 public class PoppyNector extends Drug {
-    public PoppyNector() {
-        super("Poppy Nector", "poppy_nector", Material.HONEY_BOTTLE, 75.0, 0.55, 7.5, "§c",
-                new PotionEffect(PotionEffectType.RESISTANCE, 600, 1),
-                new PotionEffect(PotionEffectType.WEAKNESS, 600, 1));
+    public PoppyNector(Logger logger) {
+        super("poppy_nector", "&cPoppy Nector", Material.HONEY_BOTTLE,
+                Arrays.asList("&7Soothes pain but dulls senses."),
+                Arrays.asList(
+                        new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 60 * 20, 0),
+                        new PotionEffect(PotionEffectType.SLOWNESS, 60 * 20, 0)
+                ),
+                18.0, false, null, 0, logger);
     }
 }

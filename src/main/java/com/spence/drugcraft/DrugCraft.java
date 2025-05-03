@@ -9,6 +9,7 @@ import com.spence.drugcraft.drugs.DrugManager;
 import com.spence.drugcraft.gui.DrugCommand;
 import com.spence.drugcraft.gui.DrugGUI;
 import com.spence.drugcraft.gui.InventoryClickListener;
+import com.spence.drugcraft.listeners.PlayerListener;
 import com.spence.drugcraft.npcs.NPCListener;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -27,6 +28,7 @@ public class DrugCraft extends JavaPlugin {
         saveDefaultConfig();
         saveResource("drugs.yml", false);
         saveResource("crops.yml", false);
+        saveResource("addiction.yml", false);
 
         // Initialize managers
         drugManager = new DrugManager(this);
@@ -43,11 +45,12 @@ public class DrugCraft extends JavaPlugin {
         }
 
         // Register commands and listeners
-        getCommand("drug").setExecutor(new DrugCommand(this, drugGUI));
+        getCommand("drug").setExecutor(new DrugCommand(drugGUI));
         getServer().getPluginManager().registerEvents(new InventoryClickListener(this, drugGUI, drugManager, economy), this);
         getServer().getPluginManager().registerEvents(new CropListener(this, cropManager, drugManager), this);
         getServer().getPluginManager().registerEvents(new NPCListener(this, drugManager, economy), this);
         getServer().getPluginManager().registerEvents(new AddictionListener(this, addictionManager), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(this, drugManager), this);
 
         // Load persistent data
         dataManager.loadCrops();

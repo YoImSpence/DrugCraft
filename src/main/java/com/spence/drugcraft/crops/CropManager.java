@@ -1,27 +1,29 @@
 package com.spence.drugcraft.crops;
 
 import com.spence.drugcraft.DrugCraft;
+import com.spence.drugcraft.data.DataManager;
 import com.spence.drugcraft.drugs.Drug;
 import com.spence.drugcraft.drugs.DrugManager;
 import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
 import org.bukkit.Location;
-import org.bukkit.configuration.file.YamlConfiguration;
 
-import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 public class CropManager {
     private final DrugCraft plugin;
     private final DrugManager drugManager;
+    private final DataManager dataManager;
     private final Map<String, Crop> crops = new HashMap<>();
     private final Logger logger;
 
-    public CropManager(DrugCraft plugin, DrugManager drugManager) {
+    public CropManager(DrugCraft plugin, DrugManager drugManager, DataManager dataManager) {
         this.plugin = plugin;
         this.drugManager = drugManager;
+        this.dataManager = dataManager;
         this.logger = plugin.getLogger();
         startUpdateTask();
     }
@@ -29,6 +31,12 @@ public class CropManager {
     public void addCrop(Crop crop) {
         String key = getLocationKey(crop.getLocation());
         crops.put(key, crop);
+        dataManager.saveCrop(crop);
+        // Create hologram
+        String hologramId = "crop_" + key;
+        Hologram hologram = DHAPI.createHologram(hologramId, crop.getLocation().add(0.5, 1, 0.5));
+        DHAPI.setHologramLines(hologram, List.of("Growth: 0%"));
+        crop.setHologramId(hologramId);
     }
 
     public Crop getCrop(Location location) {
@@ -38,6 +46,7 @@ public class CropManager {
     public void removeCrop(Crop crop) {
         String key = getLocationKey(crop.getLocation());
         crops.remove(key);
+        dataManager.removeCrop(crop);
         if (crop.getHologramId() != null) {
             Hologram hologram = DHAPI.getHologram(crop.getHologramId());
             if (hologram != null) {
@@ -69,45 +78,5 @@ public class CropManager {
 
     private String getLocationKey(Location location) {
         return location.getWorld().getName() + "_" + location.getBlockX() + "_" + location.getBlockY() + "_" + location.getBlockZ();
-    }
-
-    public void loadCrops() {
-        File cropsFile = new File(plugin.getDataFolder(), "crops.yml");
-        if (!cropsFile.exists()) return;
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(cropsFile);
-        for (String key : config.getKeys(false)) {
-            String world = config.getString(key + ".world");
-            double x = config.getDouble(key + ".x");
-            double y = config.getDouble(key + ".y");
-            double z = config.getDouble(key + ".z");
-            String drugId = config.getString(key + ".drug_id");
-            long plantingTime = config.getLong(key + ".planting_time");
-            String hologramId = config.getString(key + ".hologram_id");
-            Location location = new Location(plugin.getServer().getWorld(world), x, y, z);
-            Crop crop = new Crop(location, drugId, plantingTime);
-            crop.setHologramId(hologramId);
-            crops.put(key, crop);
-        }
-    }
-
-    public void saveCrops() {
-        File cropsFile = new File(plugin.getDataFolder(), "crops.yml");
-        YamlConfiguration config = new YamlConfiguration();
-        for (Map.Entry<String, Crop> entry : crops.entrySet()) {
-            String key = entry.getKey();
-            Crop crop = entry.getValue();
-            config.set(key + ".world", crop.getLocation().getWorld().getName());
-            config.set(key + ".x", crop.getLocation().getX());
-            config.set(key + ".y", crop.getLocation().getY());
-            config.set(key + ".z", crop.getLocation().getZ());
-            config.set(key + ".drug_id", crop.getDrugId());
-            config.set(key + ".planting_time", crop.getPlantingTime());
-            config.set(key + ".hologram_id", crop.getHologramId());
-        }
-        try {
-            config.save(cropsFile);
-        } catch (Exception e) {
-            logger.severe("Failed to save crops: " + e.getMessage());
-        }
     }
 }

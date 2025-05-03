@@ -12,18 +12,18 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class Drug {
-    private final String id;
-    private final String name;
-    private final Material material;
-    private final List<String> lore;
-    private final List<PotionEffect> effects;
-    private final double price;
-    private final boolean hasSeed;
-    private final Material seedMaterial;
-    private final int growthTime;
-    private ItemStack item;
-    private ItemStack seedItem;
-    private final Logger logger;
+    protected final String id;
+    protected final String name;
+    protected final Material material;
+    protected final List<String> lore;
+    protected final List<PotionEffect> effects;
+    protected final double price;
+    protected final boolean hasSeed;
+    protected final Material seedMaterial;
+    protected final int growthTime;
+    protected ItemStack item;
+    protected ItemStack seedItem;
+    protected final Logger logger;
 
     public Drug(String id, String name, Material material, List<String> lore, List<PotionEffect> effects, double price,
                 boolean hasSeed, Material seedMaterial, int growthTime, Logger logger) {
@@ -43,7 +43,7 @@ public class Drug {
         }
     }
 
-    private ItemStack createItem() {
+    protected ItemStack createItem() {
         try {
             ItemStack item = new ItemStack(material);
             ItemMeta meta = item.getItemMeta();
@@ -61,7 +61,7 @@ public class Drug {
         return new ItemStack(material);
     }
 
-    private ItemStack createSeedItem() {
+    protected ItemStack createSeedItem() {
         try {
             ItemStack seed = new ItemStack(seedMaterial);
             ItemMeta meta = seed.getItemMeta();
