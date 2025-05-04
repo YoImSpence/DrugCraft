@@ -4,13 +4,11 @@ import com.spence.drugcraft.DrugCraft;
 import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,12 +27,7 @@ public class DrugManager {
     }
 
     private void loadDrugs() {
-        File drugsFile = new File(plugin.getDataFolder(), "drugs.yml");
-        if (!drugsFile.exists()) {
-            plugin.saveResource("drugs.yml", false);
-        }
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(drugsFile);
-        ConfigurationSection drugsSection = config.getConfigurationSection("drugs");
+        ConfigurationSection drugsSection = plugin.getConfigManager().getDrugsConfig().getConfigurationSection("drugs");
         if (drugsSection != null) {
             for (String key : drugsSection.getKeys(false)) {
                 String name = drugsSection.getString(key + ".name");
@@ -59,40 +52,7 @@ public class DrugManager {
                     }
                 }
 
-                Drug drug;
-                switch (key) {
-                    case "blazepowder":
-                        drug = new Blazepowder(logger);
-                        break;
-                    case "cannabis_sativa":
-                        drug = new CannabisSativa(logger);
-                        break;
-                    case "cannabis_indica":
-                        drug = new CannabisIndica(logger);
-                        break;
-                    case "cannabis_hybrid":
-                        drug = new CannabisHybrid(logger);
-                        break;
-                    case "glowvine_extract":
-                        drug = new GlowvineExtract(logger);
-                        break;
-                    case "lunar_essence":
-                        drug = new LunarEssence(logger);
-                        break;
-                    case "mystic_shroom":
-                        drug = new MysticShroom(logger);
-                        break;
-                    case "poppy_nector":
-                        drug = new PoppyNector(logger);
-                        break;
-                    default:
-                        drug = new Drug(key, name, material, lore, effects, price, hasSeed, seedMaterial, growthTime, logger) {
-                            @Override
-                            public void use(Player player) {
-                                super.use(player);
-                            }
-                        };
-                }
+                Drug drug = new Drug(key, name, material, lore, effects, price, hasSeed, seedMaterial, growthTime, logger);
                 drugs.put(key, drug);
             }
             logger.info("Registered " + drugs.size() + " drugs successfully.");

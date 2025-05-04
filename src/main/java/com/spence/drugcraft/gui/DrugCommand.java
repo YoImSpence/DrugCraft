@@ -1,6 +1,6 @@
 package com.spence.drugcraft.gui;
 
-import org.bukkit.ChatColor;
+import com.spence.drugcraft.utils.MessageUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -16,12 +16,12 @@ public class DrugCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(ChatColor.RED + "This command can only be used by players.");
+            MessageUtils.sendMessage(sender, "&cThis command can only be used by players.");
             return true;
         }
 
         if (!player.hasPermission("drugcraft.use")) {
-            player.sendMessage(ChatColor.RED + "You don't have permission to use this command.");
+            MessageUtils.sendMessage(player, "&cYou don't have permission to use this command.");
             return true;
         }
 
@@ -39,7 +39,7 @@ public class DrugCommand implements CommandExecutor {
                     drugGUI.openGiveMenu(player);
                     break;
                 default:
-                    player.sendMessage(ChatColor.RED + "Usage: /drug [buy|sell|give]");
+                    MessageUtils.sendMessage(player, "&cUsage: /drug [buy|sell|give]");
             }
         }
         return true;

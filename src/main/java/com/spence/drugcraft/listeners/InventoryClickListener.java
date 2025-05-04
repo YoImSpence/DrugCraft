@@ -28,10 +28,10 @@ public class InventoryClickListener implements Listener {
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
         if (!(event.getWhoClicked() instanceof Player player)) return;
-        String mainTitle = plugin.getConfig().getString("gui.main_menu_title", "DrugCraft Menu");
-        String buyTitle = plugin.getConfig().getString("gui.buy_menu_title", "Buy Drugs");
-        String sellTitle = plugin.getConfig().getString("gui.sell_menu_title", "Sell Drugs");
-        String giveTitle = plugin.getConfig().getString("gui.give_menu_title", "Give Drugs");
+        String mainTitle = plugin.getConfigManager().getConfig().getString("gui.main_menu_title", "&5DrugCraft Menu");
+        String buyTitle = plugin.getConfigManager().getConfig().getString("gui.buy_menu_title", "&2Buy Drugs");
+        String sellTitle = plugin.getConfigManager().getConfig().getString("gui.sell_menu_title", "&eSell Drugs");
+        String giveTitle = plugin.getConfigManager().getConfig().getString("gui.give_menu_title", "&cGive Drugs");
         String title = event.getView().getTitle();
 
         if (!title.equals(ChatColor.translateAlternateColorCodes('&', mainTitle)) &&
@@ -50,7 +50,7 @@ public class InventoryClickListener implements Listener {
                 drugGUI.openBuyMenu(player);
             } else if (clickedItem.getType() == Material.DIAMOND) {
                 drugGUI.openSellMenu(player);
-            } else if (clickedItem.getType() == Material.COMMAND_BLOCK && player.hasPermission("drugcraft.admin")) {
+            } else if (clickedItem.getType() == Material.COMMAND_BLOCK && plugin.getPermissionManager().hasPermission(player, "drugcraft.admin")) {
                 drugGUI.openGiveMenu(player);
             }
         } else if (title.equals(ChatColor.translateAlternateColorCodes('&', buyTitle))) {

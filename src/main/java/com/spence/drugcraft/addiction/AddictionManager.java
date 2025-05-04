@@ -2,7 +2,7 @@ package com.spence.drugcraft.addiction;
 
 import com.spence.drugcraft.DrugCraft;
 import com.spence.drugcraft.data.DataManager;
-import org.bukkit.ChatColor;
+import com.spence.drugcraft.utils.MessageUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
@@ -50,9 +50,9 @@ public class AddictionManager {
 
     private void checkWithdrawal(Player player) {
         PlayerAddictionData data = getPlayerData(player.getUniqueId());
-        int threshold = plugin.getConfig().getInt("addiction.use_threshold", 5);
-        long withdrawalTime = plugin.getConfig().getLong("addiction.withdrawal_time", 3600) * 1000;
-        List<String> effectStrings = plugin.getConfig().getStringList("addiction.withdrawal_effects");
+        int threshold = plugin.getConfigManager().getConfig().getInt("addiction.use_threshold", 5);
+        long withdrawalTime = plugin.getConfigManager().getConfig().getLong("addiction.withdrawal_time", 3600) * 1000;
+        List<String> effectStrings = plugin.getConfigManager().getConfig().getStringList("addiction.withdrawal_effects");
 
         for (String drugId : data.getUsesMap().keySet()) {
             int uses = data.getUses(drugId);
@@ -69,7 +69,7 @@ public class AddictionManager {
                         }
                     }
                 }
-                player.sendMessage(ChatColor.RED + "You are experiencing withdrawal symptoms from " + drugId + ".");
+                MessageUtils.sendMessage(player, "&cYou are experiencing withdrawal symptoms from " + drugId + ".");
             }
         }
     }

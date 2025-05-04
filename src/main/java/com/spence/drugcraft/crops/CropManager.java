@@ -33,10 +33,9 @@ public class CropManager {
         String key = getLocationKey(crop.getLocation());
         crops.put(key, crop);
         dataManager.saveCrop(crop);
-        // Create hologram
         String hologramId = "crop_" + key;
         Hologram hologram = DHAPI.createHologram(hologramId, crop.getLocation().add(0.5, 1, 0.5));
-        DHAPI.setHologramLines(hologram, List.of(ChatColor.translateAlternateColorCodes('&', plugin.getConfig().getString("hologram.format", "&aGrowth: &e%percentage%%").replace("%percentage%", "0.00"))));
+        DHAPI.setHologramLines(hologram, List.of(ChatColor.translateAlternateColorCodes('&', plugin.getConfigManager().getConfig().getString("hologram.format", "&aGrowth: &e%percentage%%").replace("%percentage%", "0.00"))));
         crop.setHologramId(hologramId);
     }
 
@@ -66,7 +65,7 @@ public class CropManager {
 
     private void startUpdateTask() {
         plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
-            String format = plugin.getConfig().getString("hologram.format", "&aGrowth: &e%percentage%%");
+            String format = plugin.getConfigManager().getConfig().getString("hologram.format", "&aGrowth: &e%percentage%%");
             for (Crop crop : crops.values()) {
                 double growth = getGrowthPercentage(crop);
                 Hologram hologram = DHAPI.getHologram(crop.getHologramId());
@@ -74,7 +73,7 @@ public class CropManager {
                     DHAPI.setHologramLines(hologram, List.of(ChatColor.translateAlternateColorCodes('&', format.replace("%percentage%", String.format("%.2f", growth)))));
                 }
             }
-        }, 0L, 20L * plugin.getConfig().getInt("hologram.update_interval", 5));
+        }, 0L, 20L * plugin.getConfigManager().getConfig().getInt("hologram.update_interval", 5));
     }
 
     private String getLocationKey(Location location) {

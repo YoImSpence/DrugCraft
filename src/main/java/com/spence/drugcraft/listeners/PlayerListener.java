@@ -22,7 +22,6 @@ public class PlayerListener implements Listener {
         ItemStack item = event.getItem();
         if (item == null) return;
 
-        // Handle drug usage
         if (drugManager.isDrugItem(item)) {
             drugManager.useDrug(event.getPlayer(), item);
             event.setCancelled(true);
