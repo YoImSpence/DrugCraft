@@ -6,11 +6,35 @@ addiction:
     - "SLOWNESS:1:600"
 hologram:
   update_interval: 5
-  format: "&aGrowth: &e%percentage%%"
-gui:
-  main_menu_title: "&5DrugCraft Menu"
-  buy_menu_title: "&2Buy Drugs"
-  sell_menu_title: "&eSell Drugs"
-  give_menu_title: "&cGive Drugs"
+  format:
+    - "{#00FFFF}%drug%"
+    - "{#55FF55}Growth: {#FFFFFF}%percentage%%"
+    - "%status%" # {#AA00AA}Mature or {#FF55FF}Growing
 npc:
   sell_message: "&aSold %drug% for $%price%!"
+crops:
+  growth_multiplier: 4.0 # Scales crop growth speed (0.1-10.0). Higher = faster (e.g., 2.0 = 2x faster), lower = slower (e.g., 0.5 = 2x slower)
+  wet_farmland_multiplier: 0.2 # Reduces growth time for crops on wet farmland (0.1-1.0). 0.75 = 25% faster
+npcs:
+  1:
+    action: buy
+    drugs:
+      - blazepowder
+      - cannabis_sativa
+      - cannabis_indica
+      - cannabis_hybrid
+      - glowvine_extract
+      - lunar_essence
+      - mystic_shroom
+      - poppy_nector
+  2:
+    action: sell
+    drugs:
+      - blazepowder
+      - cannabis_sativa
+      - cannabis_indica
+      - cannabis_hybrid
+      - glowvine_extract
+      - lunar_essence
+      - mystic_shroom
+      - poppy_nector

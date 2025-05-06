@@ -4,10 +4,18 @@ import com.spence.drugcraft.DrugCraft;
 import com.spence.drugcraft.addiction.PlayerAddictionData;
 import com.spence.drugcraft.crops.Crop;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.Bukkit;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -15,102 +23,195 @@ import java.util.logging.Logger;
 public class DataManager {
     private final DrugCraft plugin;
     private final Logger logger;
-    private final File cropsFile;
-    private final File addictionFile;
+    private File cropsFile;
+    private FileConfiguration cropsConfig;
 
     public DataManager(DrugCraft plugin) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
-        this.cropsFile = new File(plugin.getDataFolder(), "crops.yml");
-        this.addictionFile = new File(plugin.getDataFolder(), "addiction.yml");
+        setupCropsFile();
+    }
+
+    private void setupCropsFile() {
+        cropsFile = new File(plugin.getDataFolder(), "crops.yml");
+        if (!cropsFile.exists()) {
+            plugin.saveResource("crops.yml", false);
+        }
+        cropsConfig = YamlConfiguration.loadConfiguration(cropsFile);
+    }
+
+    public void saveCrops() {
+        try {
+            cropsConfig.set("crops", null); // Clear existing crops
+            ConfigurationSection cropsSection = cropsConfig.createSection("crops");
+            for (Crop crop : plugin.getCropManager().getCrops().values()) {
+                String key = plugin.getCropManager().getLocationKey(crop.getLocation());
+                ConfigurationSection cropSection = cropsSection.createSection(key);
+                cropSection.set("world", crop.getLocation().getWorld().getName());
+                cropSection.set("x", crop.getLocation().getBlockX());
+                cropSection.set("y", crop.getLocation().getBlockY());
+                cropSection.set("z", crop.getLocation().getBlockZ());
+                cropSection.set("drug_id", crop.getDrugId());
+                cropSection.set("planting_time", crop.getPlantingTime());
+                cropSection.set("hologram_id", crop.getHologramId());
+                cropSection.set("age", crop.getAge());
+            }
+            cropsConfig.save(cropsFile);
+            logger.info("Saved " + plugin.getCropManager().getCrops().size() + " crops to crops.yml");
+        } catch (IOException e) {
+            logger.severe("Failed to save crops: " + e.getMessage());
+        }
+    }
+
+    public void loadCrops() {
+        try {
+            cropsConfig = YamlConfiguration.loadConfiguration(cropsFile);
+            ConfigurationSection cropsSection = cropsConfig.getConfigurationSection("crops");
+            if (cropsSection == null) {
+                logger.info("No crops found in crops.yml");
+                return;
+            }
+            for (String key : cropsSection.getKeys(false)) {
+                ConfigurationSection cropSection = cropsSection.getConfigurationSection(key);
+                if (cropSection != null) {
+                    String worldName = cropSection.getString("world");
+                    World world = plugin.getServer().getWorld(worldName);
+                    if (world == null) {
+                        logger.warning("Invalid world for crop '" + key + "': " + worldName + ", removing entry");
+                        cropsSection.set(key, null);
+                        continue;
+                    }
+                    int x = cropSection.getInt("x");
+                    int y = cropSection.getInt("y");
+                    int z = cropSection.getInt("z");
+                    String drugId = cropSection.getString("drug_id");
+                    long plantingTime = cropSection.getLong("planting_time");
+                    String hologramId = cropSection.getString("hologram_id");
+                    int age = cropSection.getInt("age", 0);
+                    Location location = new Location(world, x, y, z);
+                    location.setPitch(0);
+                    location.setYaw(0);
+                    Block block = location.getBlock();
+                    // Validate farmland below
+                    Block blockBelow = block.getRelative(0, -1, 0);
+                    if (blockBelow.getType() != Material.FARMLAND) {
+                        logger.warning("Block below crop at " + key + " is not farmland, removing entry");
+                        cropsSection.set(key, null);
+                        block.setType(Material.AIR); // Clear orphaned block
+                        continue;
+                    }
+                    // Clear 5x5 area around crop (Y+1 and Y+2) to prevent duplicates
+                    for (int dx = -2; dx <= 2; dx++) {
+                        for (int dz = -2; dz <= 2; dz++) {
+                            if (dx != 0 || dz != 0) { // Skip target crop position
+                                Block relative = block.getRelative(dx, 1, dz);
+                                if (relative.getType() == Material.WHEAT) {
+                                    logger.fine("Clearing duplicate wheat block at " + relative.getLocation());
+                                    relative.setType(Material.AIR);
+                                }
+                                relative = block.getRelative(dx, 0, dz);
+                                if (relative.getType() == Material.WHEAT && plugin.getCropManager().getCrop(relative.getLocation()) == null) {
+                                    logger.fine("Clearing adjacent wheat block at " + relative.getLocation());
+                                    relative.setType(Material.AIR);
+                                }
+                            }
+                        }
+                    }
+                    // Initialize wheat block
+                    Crop crop = new Crop(location, drugId, plantingTime);
+                    crop.setHologramId(hologramId);
+                    crop.setAge(age);
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            block.setType(Material.AIR); // Clear first to ensure clean state
+                            block.setType(Material.WHEAT);
+                            try {
+                                block.setBlockData(Bukkit.createBlockData(Material.WHEAT), true);
+                                Ageable ageable = (Ageable) block.getBlockData();
+                                ageable.setAge(age);
+                                block.setBlockData(ageable);
+                                block.getState().update(true, true); // Force client update
+                                logger.info("Restored crop block at " + key + " to wheat with age " + age);
+                            } catch (ClassCastException e) {
+                                logger.severe("Failed to set age for crop at " + key + ": " + e.getMessage());
+                                block.setType(Material.AIR);
+                                block.setType(Material.WHEAT);
+                                block.setBlockData(Bukkit.createBlockData(Material.WHEAT), true);
+                                block.getState().update(true, true);
+                            }
+                            plugin.getCropManager().addCrop(crop);
+                        }
+                    }.runTaskLater(plugin, 1L); // Delay to ensure block sync
+                    logger.info("Loaded crop: " + key + " (drug: " + drugId + ", age: " + age + ")");
+                }
+            }
+            try {
+                cropsConfig.save(cropsFile); // Save after removing invalid entries
+            } catch (IOException e) {
+                logger.severe("Failed to save crops.yml after cleanup: " + e.getMessage());
+            }
+            logger.info("Loaded " + plugin.getCropManager().getCrops().size() + " crops from crops.yml");
+        } catch (Exception e) {
+            logger.severe("Failed to load crops: " + e.getMessage());
+        }
     }
 
     public void saveCrop(Crop crop) {
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(cropsFile);
-        String key = getLocationKey(crop.getLocation());
-        config.set(key + ".world", crop.getLocation().getWorld().getName());
-        config.set(key + ".x", crop.getLocation().getX());
-        config.set(key + ".y", crop.getLocation().getY());
-        config.set(key + ".z", crop.getLocation().getZ());
-        config.set(key + ".drug_id", crop.getDrugId());
-        config.set(key + ".planting_time", crop.getPlantingTime());
-        config.set(key + ".hologram_id", crop.getHologramId());
         try {
-            config.save(cropsFile);
-        } catch (Exception e) {
+            ConfigurationSection cropsSection = cropsConfig.getConfigurationSection("crops");
+            if (cropsSection == null) {
+                cropsSection = cropsConfig.createSection("crops");
+            }
+            String key = plugin.getCropManager().getLocationKey(crop.getLocation());
+            ConfigurationSection cropSection = cropsSection.createSection(key);
+            cropSection.set("world", crop.getLocation().getWorld().getName());
+            cropSection.set("x", crop.getLocation().getBlockX());
+            cropSection.set("y", crop.getLocation().getBlockY());
+            cropSection.set("z", crop.getLocation().getBlockZ());
+            cropSection.set("drug_id", crop.getDrugId());
+            cropSection.set("planting_time", crop.getPlantingTime());
+            cropSection.set("hologram_id", crop.getHologramId());
+            cropSection.set("age", crop.getAge());
+            cropsConfig.save(cropsFile);
+            logger.info("Saved crop: " + crop.getDrugId() + " at " + key);
+        } catch (IOException e) {
             logger.severe("Failed to save crop: " + e.getMessage());
         }
     }
 
     public void removeCrop(Crop crop) {
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(cropsFile);
-        String key = getLocationKey(crop.getLocation());
-        config.set(key, null);
         try {
-            config.save(cropsFile);
-        } catch (Exception e) {
-            logger.severe("Failed to remove crop: " + e.getMessage());
+            ConfigurationSection cropsSection = cropsConfig.getConfigurationSection("crops");
+            if (cropsSection != null) {
+                String key = plugin.getCropManager().getLocationKey(crop.getLocation());
+                cropsSection.set(key, null);
+                cropsConfig.save(cropsFile);
+                logger.info("Removed crop: " + crop.getDrugId() + " from " + key);
+            }
+        } catch (IOException e) {
+            logger.severe("Failed to save crops after removal: " + e.getMessage());
         }
     }
 
-    public void loadCrops() {
-        if (!cropsFile.exists()) return;
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(cropsFile);
-        for (String key : config.getKeys(false)) {
-            String world = config.getString(key + ".world");
-            double x = config.getDouble(key + ".x");
-            double y = config.getDouble(key + ".y");
-            double z = config.getDouble(key + ".z");
-            String drugId = config.getString(key + ".drug_id");
-            long plantingTime = config.getLong(key + ".planting_time");
-            String hologramId = config.getString(key + ".hologram_id");
-            Location location = new Location(plugin.getServer().getWorld(world), x, y, z);
-            Crop crop = new Crop(location, drugId, plantingTime);
-            crop.setHologramId(hologramId);
-            plugin.getCropManager().addCrop(crop);
-        }
-    }
-
-    public void savePlayerData(UUID uuid, PlayerAddictionData data) {
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(addictionFile);
-        String path = "players." + uuid.toString();
+    public void savePlayerData(UUID playerId, PlayerAddictionData data) {
+        FileConfiguration addictionConfig = plugin.getConfigManager().getConfig();
+        ConfigurationSection playerSection = addictionConfig.createSection("addiction." + playerId.toString());
         for (Map.Entry<String, Integer> entry : data.getUsesMap().entrySet()) {
-            config.set(path + "." + entry.getKey() + ".uses", entry.getValue());
+            playerSection.set(entry.getKey(), entry.getValue());
         }
-        for (Map.Entry<String, Long> entry : data.getLastUseMap().entrySet()) {
-            config.set(path + "." + entry.getKey() + ".last_use", entry.getValue());
-        }
-        try {
-            config.save(addictionFile);
-        } catch (Exception e) {
-            logger.severe("Failed to save player data: " + e.getMessage());
-        }
+        plugin.getConfigManager().saveConfig();
     }
 
-    public void loadPlayerData() {
-        if (!addictionFile.exists()) return;
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(addictionFile);
-        ConfigurationSection players = config.getConfigurationSection("players");
-        if (players != null) {
-            for (String uuidStr : players.getKeys(false)) {
-                UUID uuid = UUID.fromString(uuidStr);
-                PlayerAddictionData data = new PlayerAddictionData();
-                ConfigurationSection drugs = players.getConfigurationSection(uuidStr);
-                if (drugs != null) {
-                    for (String drugId : drugs.getKeys(false)) {
-                        int uses = drugs.getInt(drugId + ".uses");
-                        long lastUse = drugs.getLong(drugId + ".last_use");
-                        data.getUsesMap().put(drugId, uses);
-                        data.getLastUseMap().put(drugId, lastUse);
-                    }
-                }
-                plugin.getAddictionManager().getPlayerData(uuid).getUsesMap().putAll(data.getUsesMap());
-                plugin.getAddictionManager().getPlayerData(uuid).getLastUseMap().putAll(data.getLastUseMap());
+    public PlayerAddictionData loadPlayerData(UUID playerId) {
+        FileConfiguration addictionConfig = plugin.getConfigManager().getConfig();
+        ConfigurationSection playerSection = addictionConfig.getConfigurationSection("addiction." + playerId.toString());
+        PlayerAddictionData data = new PlayerAddictionData();
+        if (playerSection != null) {
+            for (String drugId : playerSection.getKeys(false)) {
+                data.setUses(drugId, playerSection.getInt(drugId));
             }
         }
-    }
-
-    private String getLocationKey(Location location) {
-        return location.getWorld().getName() + "_" + location.getBlockX() + "_" + location.getBlockY() + "_" + location.getBlockZ();
+        return data;
     }
 }

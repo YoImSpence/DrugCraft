@@ -28,16 +28,41 @@ public class DrugManager {
 
     private void loadDrugs() {
         ConfigurationSection drugsSection = plugin.getConfigManager().getDrugsConfig().getConfigurationSection("drugs");
-        if (drugsSection != null) {
-            for (String key : drugsSection.getKeys(false)) {
+        if (drugsSection == null) {
+            logger.severe("No 'drugs' section found in drugs.yml or drugs.yml failed to load");
+            return;
+        }
+
+        logger.info("Loading drugs from drugs.yml...");
+        int drugCount = 0;
+        for (String key : drugsSection.getKeys(false)) {
+            try {
                 String name = drugsSection.getString(key + ".name");
-                Material material = Material.getMaterial(drugsSection.getString(key + ".material"));
+                String materialName = drugsSection.getString(key + ".material");
+                Material material = materialName != null ? Material.getMaterial(materialName) : null;
                 List<String> lore = drugsSection.getStringList(key + ".lore");
                 List<String> effectStrings = drugsSection.getStringList(key + ".effects");
+                String particleName = drugsSection.getString(key + ".particle");
+                String soundName = drugsSection.getString(key + ".sound");
+                String specialEffect = drugsSection.getString(key + ".special_effect");
                 double price = drugsSection.getDouble(key + ".price", 0);
                 boolean hasSeed = drugsSection.getBoolean(key + ".has_seed", false);
-                Material seedMaterial = hasSeed ? Material.getMaterial(drugsSection.getString(key + ".seed_material")) : null;
+                String seedMaterialName = drugsSection.getString(key + ".seed_material");
+                Material seedMaterial = hasSeed && seedMaterialName != null ? Material.getMaterial(seedMaterialName) : null;
                 int growthTime = hasSeed ? drugsSection.getInt(key + ".growth_time", 3600) : 0;
+
+                if (name == null || name.isEmpty()) {
+                    logger.warning("Skipping drug '" + key + "': Missing or empty name");
+                    continue;
+                }
+                if (material == null) {
+                    logger.warning("Skipping drug '" + key + "': Invalid material '" + materialName + "'");
+                    continue;
+                }
+                if (hasSeed && seedMaterial == null) {
+                    logger.warning("Skipping seed for drug '" + key + "': Invalid seed material '" + seedMaterialName + "'");
+                    hasSeed = false;
+                }
 
                 List<PotionEffect> effects = new ArrayList<>();
                 for (String effect : effectStrings) {
@@ -48,24 +73,41 @@ public class DrugManager {
                             int level = Integer.parseInt(parts[1]);
                             int duration = Integer.parseInt(parts[2]) * 20; // Convert seconds to ticks
                             effects.add(new PotionEffect(type, duration, level - 1));
+                        } else {
+                            logger.warning("Invalid potion effect type for drug '" + key + "': " + parts[0]);
                         }
+                    } else {
+                        logger.warning("Invalid effect format for drug '" + key + "': " + effect);
                     }
                 }
 
-                Drug drug = new Drug(key, name, material, lore, effects, price, hasSeed, seedMaterial, growthTime, logger);
+                Drug drug = new Drug(key, name, material, lore, effects, particleName, soundName, specialEffect,
+                        price, hasSeed, seedMaterial, growthTime, plugin, logger);
                 drugs.put(key, drug);
+                drugCount++;
+                logger.info("Loaded drug: " + key + (hasSeed ? " with growth time " + drug.getGrowthTime() + " seconds (base: " + growthTime + ")" : ""));
+            } catch (Exception e) {
+                logger.severe("Failed to load drug '" + key + "': " + e.getMessage());
             }
-            logger.info("Registered " + drugs.size() + " drugs successfully.");
         }
+        logger.info("Registered " + drugCount + " drugs successfully.");
     }
 
     public boolean isDrugItem(ItemStack item) {
         if (item == null || item.getType() == Material.AIR) {
+            logger.fine("isDrugItem: Null or air item");
             return false;
         }
         try {
             NBTItem nbtItem = new NBTItem(item);
-            return nbtItem.hasKey("drug_id") && drugs.containsKey(nbtItem.getString("drug_id"));
+            String drugId = nbtItem.getString("drug_id");
+            boolean isDrug = nbtItem.hasKey("drug_id") && drugs.containsKey(drugId);
+            if (!isDrug && nbtItem.hasKey("drug_id")) {
+                logger.warning("Item has drug_id '" + drugId + "' but no matching drug found");
+            } else if (isDrug) {
+                logger.fine("Item is drug with ID: " + drugId);
+            }
+            return isDrug;
         } catch (Exception e) {
             logger.severe("Error checking drug item NBT: " + e.getMessage());
             return false;
@@ -74,12 +116,19 @@ public class DrugManager {
 
     public boolean isSeedItem(ItemStack item) {
         if (item == null || item.getType() == Material.AIR) {
-            logger.warning("isSeedItem: Null item or seedItem");
+            logger.fine("isSeedItem: Null or air item");
             return false;
         }
         try {
             NBTItem nbtItem = new NBTItem(item);
-            return nbtItem.hasKey("seed_id") && drugs.containsKey(nbtItem.getString("seed_id").replace("_seed", ""));
+            String seedId = nbtItem.getString("seed_id");
+            boolean isSeed = nbtItem.hasKey("seed_id") && drugs.containsKey(seedId != null ? seedId.replace("_seed", "") : "");
+            if (!isSeed && nbtItem.hasKey("seed_id")) {
+                logger.warning("Item has seed_id '" + seedId + "' but no matching drug found");
+            } else if (isSeed) {
+                logger.fine("Item is seed with ID: " + seedId);
+            }
+            return isSeed;
         } catch (Exception e) {
             logger.severe("Error checking seed item NBT: " + e.getMessage());
             return false;
@@ -88,6 +137,7 @@ public class DrugManager {
 
     public void useDrug(Player player, ItemStack item) {
         if (!isDrugItem(item)) {
+            logger.fine("useDrug: Item is not a drug item for player " + player.getName());
             return;
         }
         NBTItem nbtItem = new NBTItem(item);
@@ -98,11 +148,19 @@ public class DrugManager {
             item.setAmount(item.getAmount() - 1);
             logger.info("Player " + player.getName() + " used drug: " + drugId);
             plugin.getAddictionManager().addDrugUse(player, drugId);
+        } else {
+            logger.warning("Drug not found for ID: " + drugId + " during use by " + player.getName());
         }
     }
 
     public Drug getDrug(String id) {
-        return drugs.get(id);
+        Drug drug = drugs.get(id);
+        if (drug == null) {
+            logger.warning("Drug not found for ID: " + id);
+        } else {
+            logger.fine("Retrieved drug: " + id);
+        }
+        return drug;
     }
 
     public Map<String, Drug> getDrugs() {
@@ -112,16 +170,23 @@ public class DrugManager {
     public String getDrugIdFromItem(ItemStack item) {
         if (isDrugItem(item)) {
             NBTItem nbtItem = new NBTItem(item);
-            return nbtItem.getString("drug_id");
+            String drugId = nbtItem.getString("drug_id");
+            logger.fine("Retrieved drug ID from item: " + drugId);
+            return drugId;
         }
+        logger.fine("No drug ID found for item");
         return null;
     }
 
     public String getDrugIdFromSeed(ItemStack item) {
         if (isSeedItem(item)) {
             NBTItem nbtItem = new NBTItem(item);
-            return nbtItem.getString("seed_id").replace("_seed", "");
+            String seedId = nbtItem.getString("seed_id");
+            String drugId = seedId != null ? seedId.replace("_seed", "") : null;
+            logger.fine("Retrieved drug ID from seed: " + drugId);
+            return drugId;
         }
+        logger.fine("No seed ID found for item");
         return null;
     }
 }

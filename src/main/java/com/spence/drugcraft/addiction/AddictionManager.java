@@ -2,13 +2,9 @@ package com.spence.drugcraft.addiction;
 
 import com.spence.drugcraft.DrugCraft;
 import com.spence.drugcraft.data.DataManager;
-import com.spence.drugcraft.utils.MessageUtils;
 import org.bukkit.entity.Player;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
@@ -23,54 +19,17 @@ public class AddictionManager {
         this.plugin = plugin;
         this.dataManager = dataManager;
         this.logger = plugin.getLogger();
-        startWithdrawalTask();
     }
 
     public void addDrugUse(Player player, String drugId) {
-        PlayerAddictionData data = getPlayerData(player.getUniqueId());
+        UUID playerId = player.getUniqueId();
+        PlayerAddictionData data = playerData.computeIfAbsent(playerId, k -> dataManager.loadPlayerData(playerId));
         data.addUse(drugId);
-        dataManager.savePlayerData(player.getUniqueId(), data);
+        dataManager.savePlayerData(playerId, data);
+        logger.info("Added drug use for player " + player.getName() + ": " + drugId);
     }
 
-    public PlayerAddictionData getPlayerData(UUID uuid) {
-        return playerData.computeIfAbsent(uuid, k -> new PlayerAddictionData());
-    }
-
-    public void loadPlayerData() {
-        dataManager.loadPlayerData();
-    }
-
-    private void startWithdrawalTask() {
-        plugin.getServer().getScheduler().runTaskTimer(plugin, () -> {
-            for (Player player : plugin.getServer().getOnlinePlayers()) {
-                checkWithdrawal(player);
-            }
-        }, 0L, 20L * 60); // Check every minute
-    }
-
-    private void checkWithdrawal(Player player) {
-        PlayerAddictionData data = getPlayerData(player.getUniqueId());
-        int threshold = plugin.getConfigManager().getConfig().getInt("addiction.use_threshold", 5);
-        long withdrawalTime = plugin.getConfigManager().getConfig().getLong("addiction.withdrawal_time", 3600) * 1000;
-        List<String> effectStrings = plugin.getConfigManager().getConfig().getStringList("addiction.withdrawal_effects");
-
-        for (String drugId : data.getUsesMap().keySet()) {
-            int uses = data.getUses(drugId);
-            long lastUse = data.getLastUse(drugId);
-            if (uses >= threshold && (System.currentTimeMillis() - lastUse) > withdrawalTime) {
-                for (String effect : effectStrings) {
-                    String[] parts = effect.split(":");
-                    if (parts.length == 3) {
-                        PotionEffectType type = PotionEffectType.getByName(parts[0].toUpperCase());
-                        if (type != null) {
-                            int level = Integer.parseInt(parts[1]);
-                            int duration = Integer.parseInt(parts[2]) * 20;
-                            player.addPotionEffect(new PotionEffect(type, duration, level - 1));
-                        }
-                    }
-                }
-                MessageUtils.sendMessage(player, "&cYou are experiencing withdrawal symptoms from " + drugId + ".");
-            }
-        }
+    public PlayerAddictionData getPlayerData(UUID playerId) {
+        return playerData.computeIfAbsent(playerId, k -> dataManager.loadPlayerData(playerId));
     }
 }
