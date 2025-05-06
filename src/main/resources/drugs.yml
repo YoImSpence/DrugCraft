@@ -1,104 +1,148 @@
 drugs:
-  blazepowder:
-    name: "&6Blaze Powder"
-    material: BLAZE_POWDER
+  cocaine:
+    type: SUGAR
+    name: "&f&lCocaine"
+    custom_model_data: 1001
     lore:
-      - "&7A fiery substance that boosts speed."
+      - "&7A potent stimulant with a sharp rush"
+      - "&7Effects: Speed, Haste, Particles"
     effects:
-      - "SPEED:2:30"
-    particle: FLAME
-    sound: ENTITY_BLAZE_SHOOT
-    special_effect: NONE
-    price: 10.0
-    has_seed: false
-  cannabis_sativa:
-    name: "&aCannabis Sativa"
-    material: SUGAR
-    lore:
-      - "&7A strain known for uplifting effects."
-    effects:
-      - "JUMP_BOOST:1:60"
-    particle: SMOKE_NORMAL
-    sound: BLOCK_GRASS_BREAK
-    special_effect: NONE
-    price: 20.0
-    has_seed: true
-    seed_material: WHEAT_SEEDS
-    growth_time: 2700 # Reduced from 3600 (45 minutes)
-  cannabis_indica:
-    name: "&aCannabis Indica"
-    material: SUGAR
-    lore:
-      - "&7A strain that promotes relaxation."
-    effects:
-      - "SLOWNESS:1:60"
-    particle: SMOKE_NORMAL
-    sound: BLOCK_GRASS_BREAK
-    special_effect: NONE
-    price: 20.0
-    has_seed: true
-    seed_material: WHEAT_SEEDS
-    growth_time: 2700 # Reduced from 3600 (45 minutes)
-  cannabis_hybrid:
-    name: "&aCannabis Hybrid"
-    material: SUGAR
-    lore:
-      - "&7A balanced strain with mixed effects."
-    effects:
-      - "REGENERATION:1:60"
-    particle: SMOKE_NORMAL
-    sound: BLOCK_GRASS_BREAK
-    special_effect: NONE
-    price: 20.0
-    has_seed: true
-    seed_material: WHEAT_SEEDS
-    growth_time: 2700 # Reduced from 3600 (45 minutes)
-  glowvine_extract:
-    name: "&eGlowvine Extract"
-    material: GLOWSTONE_DUST
-    lore:
-      - "&7Grants night vision."
-    effects:
-      - "NIGHT_VISION:1:120"
-    particle: GLOW
-    sound: BLOCK_BEACON_ACTIVATE
-    special_effect: NONE
-    price: 15.0
-    has_seed: false
-  lunar_essence:
-    name: "&bLunar Essence"
-    material: PHANTOM_MEMBRANE
-    lore:
-      - "&7Mystical essence that enhances luck."
-    effects:
-      - "LUCK:2:90"
-    particle: END_ROD
-    sound: ENTITY_ILLUSIONER_CAST_SPELL
-    special_effect: NONE
-    price: 25.0
-    has_seed: false
+      - SPEED:3:30
+      - FAST_DIGGING:2:30
+      - PARTICLE:SMOKE_NORMAL:0.5:0.5:0.5:0.1:20
+    buy_price: 100.0
+    sell_price: 50.0
+    quality: Legendary
   mystic_shroom:
-    name: "&dMystic Shroom"
-    material: RED_MUSHROOM
+    type: RED_MUSHROOM
+    name: "&5&lMystic Shroom"
+    custom_model_data: 1002
     lore:
-      - "&7Causes vivid hallucinations."
+      - "&7A psychedelic mushroom with vivid visuals"
+      - "&7Effects: Night Vision, Confusion, Sound"
     effects:
-      - "CONFUSION:1:45"
-    particle: PORTAL
-    sound: ENTITY_ENDERMAN_TELEPORT
-    special_effect: RANDOM_TELEPORT
-    price: 12.0
-    has_seed: false
-  poppy_nector:
-    name: "&cPoppy Nector"
-    material: HONEY_BOTTLE
+      - NIGHT_VISION:1:60
+      - CONFUSION:1:20
+      - SOUND:entity_ghast_scream
+    buy_price: 80.0
+    sell_price: 40.0
+    quality: Prime
+  lsd:
+    type: PAPER
+    name: "&d&lLSD"
+    custom_model_data: 1003
     lore:
-      - "&7Soothes pain but dulls senses."
+      - "&7A mind-altering psychedelic"
+      - "&7Effects: Jump Boost, Confusion, Particles"
     effects:
-      - "DAMAGE_RESISTANCE:1:60"
-      - "SLOWNESS:1:60"
-    particle: HEART
-    sound: ITEM_HONEY_BOTTLE_DRINK
-    special_effect: NONE
-    price: 18.0
-    has_seed: false
+      - JUMP:2:45
+      - CONFUSION:1:30
+      - PARTICLE:PORTAL:0.5:0.5:0.5:0.1:30
+    buy_price: 90.0
+    sell_price: 45.0
+    quality: Prime
+  cannabis_dosidos:
+    type: GREEN_DYE
+    name: "&2&lDosidos"
+    custom_model_data: 2001
+    lore:
+      - "&7A deeply relaxing strain with earthy tones"
+      - "&7Effects: Regeneration, Slowness, Particles"
+    effects:
+      - REGENERATION:2:20
+      - SLOW:1:15
+      - PARTICLE:VILLAGER_HAPPY:0.5:0.5:0.5:0.1:15
+    seed:
+      type: WHEAT_SEEDS
+      name: "&2&lDosidos Seed"
+      custom_model_data: 2001
+      lore:
+        - "&7Plant to grow Dosidos"
+    growth_time: 90
+    buy_price: 60.0
+    sell_price: 30.0
+    quality: Basic
+  cannabis_granddaddy_purp:
+    type: PURPLE_DYE
+    name: "&5&lGrand Daddy Purp"
+    custom_model_data: 2002
+    lore:
+      - "&7A soothing strain with grape-like aroma"
+      - "&7Effects: Health Boost, Hunger, Sound"
+    effects:
+      - HEALTH_BOOST:2:30
+      - HUNGER:1:10
+      - SOUND:entity_cat_purr
+    seed:
+      type: WHEAT_SEEDS
+      name: "&5&lGrand Daddy Purp Seed"
+      custom_model_data: 2002
+      lore:
+        - "&7Plant to grow Grand Daddy Purp"
+    growth_time: 90
+    buy_price: 60.0
+    sell_price: 30.0
+    quality: Basic
+  cannabis_blue_dream:
+    type: CYAN_DYE
+    name: "&3&lBlue Dream"
+    custom_model_data: 2003
+    lore:
+      - "&7An uplifting strain with berry notes"
+      - "&7Effects: Speed, Night Vision, Particles"
+    effects:
+      - SPEED:1:25
+      - NIGHT_VISION:1:20
+      - PARTICLE:WATER_SPLASH:0.5:0.5:0.5:0.1:20
+    seed:
+      type: WHEAT_SEEDS
+      name: "&3&lBlue Dream Seed"
+      custom_model_data: 2003
+      lore:
+        - "&7Plant to grow Blue Dream"
+    growth_time: 90
+    buy_price: 60.0
+    sell_price: 30.0
+    quality: Basic
+  cannabis_og_kush:
+    type: LIME_DYE
+    name: "&a&lOG Kush"
+    custom_model_data: 2004
+    lore:
+      - "&7A balanced strain with a piney scent"
+      - "&7Effects: Strength, Slowness, Sound"
+    effects:
+      - INCREASE_DAMAGE:1:15
+      - SLOW:1:10
+      - SOUND:entity_wolf_howl
+    seed:
+      type: WHEAT_SEEDS
+      name: "&a&lOG Kush Seed"
+      custom_model_data: 2004
+      lore:
+        - "&7Plant to grow OG Kush"
+    growth_time: 90
+    buy_price: 60.0
+    sell_price: 30.0
+    quality: Basic
+  cannabis_sour_diesel:
+    type: YELLOW_DYE
+    name: "&e&lSour Diesel"
+    custom_model_data: 2005
+    lore:
+      - "&7An energizing strain with a diesel kick"
+      - "&7Effects: Haste, Hunger, Particles"
+    effects:
+      - FAST_DIGGING:2:20
+      - HUNGER:1:15
+      - PARTICLE:SMOKE_LARGE:0.5:0.5:0.5:0.1:15
+    seed:
+      type: WHEAT_SEEDS
+      name: "&e&lSour Diesel Seed"
+      custom_model_data: 2005
+      lore:
+        - "&7Plant to grow Sour Diesel"
+    growth_time: 90
+    buy_price: 60.0
+    sell_price: 30.0
+    quality: Basic

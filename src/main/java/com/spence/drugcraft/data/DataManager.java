@@ -3,6 +3,7 @@ package com.spence.drugcraft.data;
 import com.spence.drugcraft.DrugCraft;
 import com.spence.drugcraft.addiction.PlayerAddictionData;
 import com.spence.drugcraft.crops.Crop;
+import com.spence.drugcraft.utils.CartelManager;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -16,33 +17,59 @@ import org.bukkit.Bukkit;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public class DataManager {
     private final DrugCraft plugin;
     private final Logger logger;
     private File cropsFile;
     private FileConfiguration cropsConfig;
+    private File cartelsFile;
+    private FileConfiguration cartelsConfig;
 
     public DataManager(DrugCraft plugin) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
         setupCropsFile();
+        setupCartelsFile();
     }
 
     private void setupCropsFile() {
         cropsFile = new File(plugin.getDataFolder(), "crops.yml");
         if (!cropsFile.exists()) {
-            plugin.saveResource("crops.yml", false);
+            try {
+                cropsFile.getParentFile().mkdirs();
+                plugin.saveResource("crops.yml", false);
+                logger.info("Created new crops.yml file");
+            } catch (Exception e) {
+                logger.severe("Failed to create crops.yml: " + e.getMessage());
+            }
         }
         cropsConfig = YamlConfiguration.loadConfiguration(cropsFile);
     }
 
+    private void setupCartelsFile() {
+        cartelsFile = new File(plugin.getDataFolder(), "cartels.yml");
+        if (!cartelsFile.exists()) {
+            try {
+                cartelsFile.getParentFile().mkdirs();
+                plugin.saveResource("cartels.yml", false);
+                logger.info("Created new cartels.yml file");
+            } catch (Exception e) {
+                logger.severe("Failed to create cartels.yml: " + e.getMessage());
+            }
+        }
+        cartelsConfig = YamlConfiguration.loadConfiguration(cartelsFile);
+    }
+
     public void saveCrops() {
         try {
-            cropsConfig.set("crops", null); // Clear existing crops
+            cropsConfig.set("crops", null);
             ConfigurationSection cropsSection = cropsConfig.createSection("crops");
             for (Crop crop : plugin.getCropManager().getCrops().values()) {
                 String key = plugin.getCropManager().getLocationKey(crop.getLocation());
@@ -53,12 +80,27 @@ public class DataManager {
                 cropSection.set("z", crop.getLocation().getBlockZ());
                 cropSection.set("drug_id", crop.getDrugId());
                 cropSection.set("planting_time", crop.getPlantingTime());
-                cropSection.set("hologram_id", crop.getHologramId());
+                cropSection.set("hologram_id", null);
                 cropSection.set("age", crop.getAge());
+                logger.fine("Saving crop: " + crop.getDrugId() + " at " + key);
             }
-            cropsConfig.save(cropsFile);
-            logger.info("Saved " + plugin.getCropManager().getCrops().size() + " crops to crops.yml");
-        } catch (IOException e) {
+            int retries = 3;
+            while (retries > 0) {
+                try {
+                    cropsConfig.save(cropsFile);
+                    logger.info("Saved " + plugin.getCropManager().getCrops().size() + " crops to crops.yml");
+                    break;
+                } catch (IOException e) {
+                    retries--;
+                    if (retries == 0) {
+                        logger.severe("Failed to save crops after retries: " + e.getMessage());
+                    } else {
+                        logger.warning("Retrying saveCrops due to: " + e.getMessage());
+                        Thread.sleep(100);
+                    }
+                }
+            }
+        } catch (Exception e) {
             logger.severe("Failed to save crops: " + e.getMessage());
         }
     }
@@ -86,24 +128,21 @@ public class DataManager {
                     int z = cropSection.getInt("z");
                     String drugId = cropSection.getString("drug_id");
                     long plantingTime = cropSection.getLong("planting_time");
-                    String hologramId = cropSection.getString("hologram_id");
                     int age = cropSection.getInt("age", 0);
                     Location location = new Location(world, x, y, z);
                     location.setPitch(0);
                     location.setYaw(0);
                     Block block = location.getBlock();
-                    // Validate farmland below
                     Block blockBelow = block.getRelative(0, -1, 0);
                     if (blockBelow.getType() != Material.FARMLAND) {
                         logger.warning("Block below crop at " + key + " is not farmland, removing entry");
                         cropsSection.set(key, null);
-                        block.setType(Material.AIR); // Clear orphaned block
+                        block.setType(Material.AIR);
                         continue;
                     }
-                    // Clear 5x5 area around crop (Y+1 and Y+2) to prevent duplicates
                     for (int dx = -2; dx <= 2; dx++) {
                         for (int dz = -2; dz <= 2; dz++) {
-                            if (dx != 0 || dz != 0) { // Skip target crop position
+                            if (dx != 0 || dz != 0) {
                                 Block relative = block.getRelative(dx, 1, dz);
                                 if (relative.getType() == Material.WHEAT) {
                                     logger.fine("Clearing duplicate wheat block at " + relative.getLocation());
@@ -117,21 +156,19 @@ public class DataManager {
                             }
                         }
                     }
-                    // Initialize wheat block
                     Crop crop = new Crop(location, drugId, plantingTime);
-                    crop.setHologramId(hologramId);
                     crop.setAge(age);
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            block.setType(Material.AIR); // Clear first to ensure clean state
+                            block.setType(Material.AIR);
                             block.setType(Material.WHEAT);
                             try {
                                 block.setBlockData(Bukkit.createBlockData(Material.WHEAT), true);
                                 Ageable ageable = (Ageable) block.getBlockData();
                                 ageable.setAge(age);
                                 block.setBlockData(ageable);
-                                block.getState().update(true, true); // Force client update
+                                block.getState().update(true, true);
                                 logger.info("Restored crop block at " + key + " to wheat with age " + age);
                             } catch (ClassCastException e) {
                                 logger.severe("Failed to set age for crop at " + key + ": " + e.getMessage());
@@ -141,13 +178,14 @@ public class DataManager {
                                 block.getState().update(true, true);
                             }
                             plugin.getCropManager().addCrop(crop);
+                            logger.info("Loaded crop: " + key + " (drug: " + drugId + ", age: " + age + ")");
                         }
-                    }.runTaskLater(plugin, 1L); // Delay to ensure block sync
-                    logger.info("Loaded crop: " + key + " (drug: " + drugId + ", age: " + age + ")");
+                    }.runTaskLater(plugin, 1L);
                 }
             }
             try {
-                cropsConfig.save(cropsFile); // Save after removing invalid entries
+                cropsConfig.save(cropsFile);
+                logger.info("Updated crops.yml after cleanup");
             } catch (IOException e) {
                 logger.severe("Failed to save crops.yml after cleanup: " + e.getMessage());
             }
@@ -171,11 +209,25 @@ public class DataManager {
             cropSection.set("z", crop.getLocation().getBlockZ());
             cropSection.set("drug_id", crop.getDrugId());
             cropSection.set("planting_time", crop.getPlantingTime());
-            cropSection.set("hologram_id", crop.getHologramId());
+            cropSection.set("hologram_id", null);
             cropSection.set("age", crop.getAge());
-            cropsConfig.save(cropsFile);
-            logger.info("Saved crop: " + crop.getDrugId() + " at " + key);
-        } catch (IOException e) {
+            int retries = 3;
+            while (retries > 0) {
+                try {
+                    cropsConfig.save(cropsFile);
+                    logger.info("Saved crop: " + crop.getDrugId() + " at " + key);
+                    break;
+                } catch (IOException e) {
+                    retries--;
+                    if (retries == 0) {
+                        logger.severe("Failed to save crop after retries: " + e.getMessage());
+                    } else {
+                        logger.warning("Retrying saveCrop due to: " + e.getMessage());
+                        Thread.sleep(100);
+                    }
+                }
+            }
+        } catch (Exception e) {
             logger.severe("Failed to save crop: " + e.getMessage());
         }
     }
@@ -186,12 +238,68 @@ public class DataManager {
             if (cropsSection != null) {
                 String key = plugin.getCropManager().getLocationKey(crop.getLocation());
                 cropsSection.set(key, null);
-                cropsConfig.save(cropsFile);
-                logger.info("Removed crop: " + crop.getDrugId() + " from " + key);
+                int retries = 3;
+                while (retries > 0) {
+                    try {
+                        cropsConfig.save(cropsFile);
+                        logger.info("Removed crop: " + crop.getDrugId() + " from " + key);
+                        break;
+                    } catch (IOException e) {
+                        retries--;
+                        if (retries == 0) {
+                            logger.severe("Failed to save crops after removal: " + e.getMessage());
+                        } else {
+                            logger.warning("Retrying removeCrop due to: " + e.getMessage());
+                            Thread.sleep(100);
+                        }
+                    }
+                }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.severe("Failed to save crops after removal: " + e.getMessage());
         }
+    }
+
+    public void saveCartels() {
+        try {
+            cartelsConfig.set("cartels", null);
+            ConfigurationSection cartelsSection = cartelsConfig.createSection("cartels");
+            for (CartelManager.Cartel cartel : plugin.getCartelManager().getCartels().values()) {
+                ConfigurationSection cartelSection = cartelsSection.createSection(cartel.getName());
+                cartelSection.set("leader", cartel.getLeader().toString());
+                List<String> memberUUIDs = cartel.getMembers().stream()
+                        .map(UUID::toString)
+                        .collect(Collectors.toList());
+                cartelSection.set("members", memberUUIDs);
+                cartelSection.set("level", cartel.getLevel());
+                cartelSection.set("stashed_money", cartel.getStashedMoney());
+                cartelSection.set("permissions", cartel.getPermissions());
+                cartelSection.set("upgrades", cartel.getUpgrades());
+                logger.fine("Saving cartel: " + cartel.getName());
+            }
+            int retries = 3;
+            while (retries > 0) {
+                try {
+                    cartelsConfig.save(cartelsFile);
+                    logger.info("Saved " + plugin.getCartelManager().getCartels().size() + " cartels to cartels.yml");
+                    break;
+                } catch (IOException e) {
+                    retries--;
+                    if (retries == 0) {
+                        logger.severe("Failed to save cartels after retries: " + e.getMessage());
+                    } else {
+                        logger.warning("Retrying saveCartels due to: " + e.getMessage());
+                        Thread.sleep(100);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.severe("Failed to save cartels: " + e.getMessage());
+        }
+    }
+
+    public FileConfiguration getCartelsConfig() {
+        return cartelsConfig;
     }
 
     public void savePlayerData(UUID playerId, PlayerAddictionData data) {

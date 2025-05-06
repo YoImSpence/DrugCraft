@@ -1,210 +1,130 @@
 package com.spence.drugcraft.drugs;
 
-import com.spence.drugcraft.DrugCraft;
-import de.tr7zw.nbtapi.NBTItem;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
-import org.bukkit.Sound;
-import org.bukkit.entity.Player;
+import com.spence.drugcraft.utils.MessageUtils;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.potion.PotionEffect;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.logging.Logger;
 
 public class Drug {
     private final String id;
-    private final String name;
-    private final Material material;
-    private final List<String> lore;
-    private final List<PotionEffect> effects;
-    private final Particle particle;
-    private final Sound sound;
-    private final String specialEffect;
-    private final double price;
-    private final boolean hasSeed;
-    private final Material seedMaterial;
-    private final int baseGrowthTime; // In seconds
-    private final DrugCraft plugin;
-    private final Logger logger;
+    private final ItemStack item;
+    private final List<String> effects;
+    private final ItemStack seed;
+    private final long growthTime;
+    private final double buyPrice;
+    private final double sellPrice;
+    private final String quality;
 
-    // Static map for sound names to Sound enums
-    private static final Map<String, Sound> SOUND_MAP = new HashMap<>();
-    static {
-        SOUND_MAP.put("ENTITY_BLAZE_SHOOT", Sound.ENTITY_BLAZE_SHOOT);
-        SOUND_MAP.put("BLOCK_GRASS_BREAK", Sound.BLOCK_GRASS_BREAK);
-        SOUND_MAP.put("BLOCK_BEACON_ACTIVATE", Sound.BLOCK_BEACON_ACTIVATE);
-        SOUND_MAP.put("ENTITY_ILLUSIONER_CAST_SPELL", Sound.ENTITY_ILLUSIONER_CAST_SPELL);
-        SOUND_MAP.put("ENTITY_ENDERMAN_TELEPORT", Sound.ENTITY_ENDERMAN_TELEPORT);
-        SOUND_MAP.put("ITEM_HONEY_BOTTLE_DRINK", Sound.ITEM_HONEY_BOTTLE_DRINK);
-    }
-
-    public Drug(String id, String name, Material material, List<String> lore, List<PotionEffect> effects,
-                String particleName, String soundName, String specialEffect, double price,
-                boolean hasSeed, Material seedMaterial, int growthTime, Logger logger) {
+    public Drug(String id, ItemStack item, List<String> effects, ItemStack seed, long growthTime, double buyPrice, double sellPrice, String quality) {
         this.id = id;
-        this.name = ChatColor.translateAlternateColorCodes('&', name);
-        this.material = material;
-        this.lore = new ArrayList<>();
-        for (String line : lore) {
-            this.lore.add(ChatColor.translateAlternateColorCodes('&', line));
-        }
+        this.item = item;
         this.effects = effects;
-        this.particle = parseParticle(particleName);
-        this.sound = parseSound(soundName);
-        this.specialEffect = specialEffect != null ? specialEffect : "NONE";
-        this.price = price;
-        this.hasSeed = hasSeed;
-        this.seedMaterial = seedMaterial;
-        this.baseGrowthTime = growthTime;
-        this.plugin = null;
-        this.logger = logger;
-    }
-
-    public Drug(String id, String name, Material material, List<String> lore, List<PotionEffect> effects,
-                String particleName, String soundName, String specialEffect, double price,
-                boolean hasSeed, Material seedMaterial, int growthTime, DrugCraft plugin, Logger logger) {
-        this.id = id;
-        this.name = ChatColor.translateAlternateColorCodes('&', name);
-        this.material = material;
-        this.lore = new ArrayList<>();
-        for (String line : lore) {
-            this.lore.add(ChatColor.translateAlternateColorCodes('&', line));
-        }
-        this.effects = effects;
-        this.particle = parseParticle(particleName);
-        this.sound = parseSound(soundName);
-        this.specialEffect = specialEffect != null ? specialEffect : "NONE";
-        this.price = price;
-        this.hasSeed = hasSeed;
-        this.seedMaterial = seedMaterial;
-        this.baseGrowthTime = growthTime;
-        this.plugin = plugin;
-        this.logger = logger;
-    }
-
-    private Particle parseParticle(String particleName) {
-        if (particleName == null) return null;
-        try {
-            return Particle.valueOf(particleName);
-        } catch (IllegalArgumentException e) {
-            logger.warning("Invalid particle name for drug '" + id + "': " + particleName);
-            return null;
-        }
-    }
-
-    private Sound parseSound(String soundName) {
-        if (soundName == null) return null;
-        Sound sound = SOUND_MAP.get(soundName);
-        if (sound == null) {
-            logger.warning("Invalid sound name for drug '" + id + "': " + soundName);
-        }
-        return sound;
-    }
-
-    public ItemStack getItem() {
-        ItemStack item = new ItemStack(material);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName(name);
-            meta.setLore(lore);
-            item.setItemMeta(meta);
-        }
-        try {
-            NBTItem nbtItem = new NBTItem(item);
-            nbtItem.setString("drug_id", id);
-            ItemStack result = nbtItem.getItem();
-            logger.fine("Created drug item for ID: " + id + " with NBT drug_id");
-            return result;
-        } catch (Exception e) {
-            logger.severe("Failed to apply NBT to drug item '" + id + "': " + e.getMessage());
-            return item;
-        }
-    }
-
-    public ItemStack getSeedItem() {
-        if (!hasSeed) return null;
-        ItemStack item = new ItemStack(seedMaterial);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName(ChatColor.GREEN + name + " Seed");
-            List<String> seedLore = new ArrayList<>();
-            seedLore.add(ChatColor.GRAY + "Plant on farmland to grow " + name);
-            meta.setLore(seedLore);
-            item.setItemMeta(meta);
-        }
-        try {
-            NBTItem nbtItem = new NBTItem(item);
-            nbtItem.setString("seed_id", id + "_seed");
-            ItemStack result = nbtItem.getItem();
-            logger.fine("Created seed item for ID: " + id + " with NBT seed_id");
-            return result;
-        } catch (Exception e) {
-            logger.severe("Failed to apply NBT to seed item '" + id + "_seed': " + e.getMessage());
-            return item;
-        }
-    }
-
-    public void use(Player player) {
-        for (PotionEffect effect : effects) {
-            player.addPotionEffect(effect);
-        }
-        // Play particles
-        if (particle != null) {
-            Location loc = player.getLocation().add(0, 1, 0);
-            player.getWorld().spawnParticle(particle, loc, 20, 0.5, 0.5, 0.5, 0.05);
-        }
-        // Play sound
-        if (sound != null) {
-            player.getWorld().playSound(player.getLocation(), sound, 1.0f, 1.0f);
-        }
-        // Apply special effect
-        if (specialEffect.equals("RANDOM_TELEPORT")) {
-            Random rand = new Random();
-            Location loc = player.getLocation();
-            double x = loc.getX() + (rand.nextDouble() * 10 - 5);
-            double z = loc.getZ() + (rand.nextDouble() * 10 - 5);
-            double y = loc.getWorld().getHighestBlockYAt((int) x, (int) z) + 1;
-            Location newLoc = new Location(loc.getWorld(), x, y, z);
-            player.teleport(newLoc);
-        }
-        logger.info("Player " + player.getName() + " used drug " + id + " with effects");
+        this.seed = seed;
+        this.growthTime = growthTime;
+        this.buyPrice = buyPrice;
+        this.sellPrice = sellPrice;
+        this.quality = quality;
     }
 
     public String getId() {
         return id;
     }
 
-    public String getName() {
-        return name;
+    public ItemStack getItem(String quality) {
+        ItemStack result = item.clone();
+        if (quality != null) {
+            ItemMeta meta = result.getItemMeta();
+            List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+            String color = switch (quality) {
+                case "Legendary" -> "{#FF00FF}";
+                case "Prime" -> "{#1E90FF}";
+                case "Exotic" -> "{#FFA500}";
+                case "Standard" -> "{#00FF00}";
+                default -> "{#AAAAAA}"; // Basic
+            };
+            lore.add(MessageUtils.color(color + "Quality: " + quality));
+            meta.setLore(lore);
+            result.setItemMeta(meta);
+        }
+        return result;
     }
 
-    public double getPrice() {
-        return price;
+    public List<String> getEffects(String quality) {
+        List<String> modifiedEffects = new ArrayList<>();
+        double multiplier = switch (quality == null ? "Basic" : quality) {
+            case "Legendary" -> 2.0;
+            case "Prime" -> 1.5;
+            case "Exotic" -> 1.2;
+            case "Standard" -> 1.0;
+            default -> 0.5; // Basic
+        };
+        for (String effect : effects) {
+            String[] parts = effect.split(":");
+            if (parts.length >= 3) {
+                try {
+                    int duration = (int) (Integer.parseInt(parts[2]) * multiplier);
+                    modifiedEffects.add(parts[0] + ":" + parts[1] + ":" + duration);
+                } catch (NumberFormatException e) {
+                    modifiedEffects.add(effect);
+                }
+            } else if (parts.length == 2 && parts[0].startsWith("PARTICLE")) {
+                try {
+                    float count = (float) (Float.parseFloat(parts[1].split(";")[4]) * multiplier);
+                    String[] particleParts = parts[1].split(";");
+                    modifiedEffects.add(parts[0] + ":" + particleParts[0] + ";" + particleParts[1] + ";" + particleParts[2] + ";" + particleParts[3] + ";" + count);
+                } catch (NumberFormatException e) {
+                    modifiedEffects.add(effect);
+                }
+            } else {
+                modifiedEffects.add(effect);
+            }
+        }
+        return modifiedEffects;
+    }
+
+    public ItemStack getSeedItem(String quality) {
+        if (seed == null) return null;
+        ItemStack result = seed.clone();
+        if (quality != null) {
+            ItemMeta meta = result.getItemMeta();
+            List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+            String color = switch (quality) {
+                case "Legendary" -> "{#FF00FF}";
+                case "Prime" -> "{#1E90FF}";
+                case "Exotic" -> "{#FFA500}";
+                case "Standard" -> "{#00FF00}";
+                default -> "{#AAAAAA}"; // Basic
+            };
+            lore.add(MessageUtils.color(color + "Quality: " + quality));
+            meta.setLore(lore);
+            result.setItemMeta(meta);
+        }
+        return result;
     }
 
     public boolean hasSeed() {
-        return hasSeed;
+        return seed != null;
     }
 
-    public int getBaseGrowthTime() {
-        return baseGrowthTime;
+    public long getGrowthTime() {
+        return growthTime;
     }
 
-    public int getGrowthTime() {
-        if (plugin == null) {
-            logger.warning("DrugCraft instance is null for drug '" + id + "'. Using base growth time: " + baseGrowthTime);
-            return baseGrowthTime;
-        }
-        double multiplier = plugin.getConfigManager().getGrowthMultiplier();
-        int adjustedTime = (int) (baseGrowthTime / multiplier); // Higher multiplier = faster growth
-        return Math.max(1, adjustedTime); // Ensure at least 1 second
+    public String getName() {
+        return item.hasItemMeta() && item.getItemMeta().hasDisplayName() ? item.getItemMeta().getDisplayName() : id;
+    }
+
+    public double getBuyPrice() {
+        return buyPrice;
+    }
+
+    public double getSellPrice() {
+        return sellPrice;
+    }
+
+    public String getQuality() {
+        return quality;
     }
 }

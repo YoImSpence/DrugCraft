@@ -2,22 +2,26 @@ name: DrugCraft
 version: 1.0.0
 main: com.spence.drugcraft.DrugCraft
 api-version: 1.21
-depend: [NBTAPI, DecentHolograms, Vault, Citizens]
-softdepend: [LuckPerms, EssentialsX]
-description: A plugin to manage drugs and crops with custom effects, NPC buying/selling, and addiction system.
-authors: [YoImSpence]
-website: https://github.com/YoImSpence/DrugCraft
-
+depend: [Citizens, DecentHolograms, Essentials, NBTAPI, LuckPerms, Vault]
 commands:
   drugadmin:
-    description: Admin command to give drugs or view stats.
-    usage: /<command> [stats]
+    description: Admin commands for DrugCraft
+    usage: /<command> [clearcrops]
     permission: drugcraft.admin
-
+  cartel:
+    description: Manage drug cartels
+    usage: /<command> <create|invite|join|leave|info> [args]
+    permission: drugcraft.cartel
 permissions:
-  drugcraft.use:
-    description: Allows players to interact with NPCs for buying/selling drugs.
-    default: true
   drugcraft.admin:
-    description: Allows admins to give drugs and view stats.
+    description: Allows access to DrugCraft admin commands
+    default: op
+  drugcraft.use:
+    description: Allows interaction with DrugCraft NPCs
+    default: true
+  drugcraft.cartel:
+    description: Allows use of cartel commands
+    default: true
+  drugcraft.bypass.police:
+    description: Bypasses police detection
     default: op

@@ -7,282 +7,281 @@ import com.spence.drugcraft.utils.MessageUtils;
 import net.citizensnpcs.api.event.NPCRightClickEvent;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 public class NPCListener implements Listener {
     private final DrugCraft plugin;
     private final DrugManager drugManager;
     private final Economy economy;
-    private final Logger logger;
-    private final Map<UUID, ItemStack> selectedItems = new HashMap<>();
-    private final Map<UUID, String> selectedAction = new HashMap<>();
-    private final Map<UUID, Boolean> selectedIsSeed = new HashMap<>();
-    private final Map<UUID, Boolean> awaitingQuantity = new HashMap<>();
+    private final Map<UUID, String> activeGUIs = new HashMap<>();
 
     public NPCListener(DrugCraft plugin, DrugManager drugManager, Economy economy) {
         this.plugin = plugin;
         this.drugManager = drugManager;
         this.economy = economy;
-        this.logger = plugin.getLogger();
     }
 
     @EventHandler
     public void onNPCRightClick(NPCRightClickEvent event) {
+        if (!event.getNPC().getName().equals("Dealer")) {
+            return;
+        }
         Player player = event.getClicker();
-        int npcId = event.getNPC().getId();
-        ConfigurationSection npcConfig = plugin.getConfigManager().getConfig().getConfigurationSection("npcs." + npcId);
-        if (npcConfig == null) {
-            MessageUtils.sendMessage(player, "&cThis NPC is not configured for drug trading.");
+        if (!plugin.getPermissionManager().hasPermission(player, "drugcraft.use")) {
+            player.sendMessage(MessageUtils.color("{#FF5555}You do not have permission to interact with this NPC."));
             return;
         }
-
-        String action = npcConfig.getString("action");
-        if (action == null || (!action.equalsIgnoreCase("buy") && !action.equalsIgnoreCase("sell"))) {
-            MessageUtils.sendMessage(player, "&cNPC configuration missing or invalid action.");
-            return;
-        }
-
-        List<String> drugIds = npcConfig.getStringList("drugs");
-        if (drugIds.isEmpty()) {
-            MessageUtils.sendMessage(player, "&cNo drugs configured for this NPC.");
-            return;
-        }
-
-        if (!player.hasPermission("drugcraft.use")) {
-            MessageUtils.sendMessage(player, "&cYou don't have permission to trade with NPCs.");
-            return;
-        }
-
-        openNPCMenu(player, action, drugIds);
+        openMainMenu(player);
     }
 
-    private void openNPCMenu(Player player, String action, List<String> drugIds) {
-        String title = action.equalsIgnoreCase("buy") ? "&2Buy Drugs" : "&eSell Drugs";
-        Inventory inventory = Bukkit.createInventory(null, 54, ChatColor.translateAlternateColorCodes('&', title));
-
-        // Add border with colored glass panes
-        ItemStack border = new ItemStack(action.equalsIgnoreCase("buy") ? Material.LIME_STAINED_GLASS_PANE : Material.YELLOW_STAINED_GLASS_PANE);
+    private void openMainMenu(Player player) {
+        Inventory gui = Bukkit.createInventory(player, 9, MessageUtils.color("{#FFD700}Drug Trade Hub"));
+        ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta borderMeta = border.getItemMeta();
-        if (borderMeta != null) {
-            borderMeta.setDisplayName(ChatColor.RESET + "");
-            border.setItemMeta(borderMeta);
+        borderMeta.setDisplayName(MessageUtils.color("&7"));
+        border.setItemMeta(borderMeta);
+        ItemStack filler = new ItemStack(Material.BLACK_STAINED_GLASS_PANE);
+        ItemMeta fillerMeta = filler.getItemMeta();
+        fillerMeta.setDisplayName(MessageUtils.color("&7"));
+        filler.setItemMeta(fillerMeta);
+        for (int i = 0; i < 9; i++) {
+            gui.setItem(i, i == 0 || i == 8 ? border : filler);
         }
-        for (int i = 0; i < 54; i++) {
-            if (i < 9 || i >= 45 || i % 9 == 0 || i % 9 == 8) {
-                inventory.setItem(i, border);
+        ItemStack buySeeds = new ItemStack(Material.WHEAT_SEEDS);
+        ItemMeta seedsMeta = buySeeds.getItemMeta();
+        seedsMeta.setDisplayName(MessageUtils.color("{#00FF00}Buy Crop Seeds"));
+        seedsMeta.setLore(Arrays.asList(MessageUtils.color("{#AAAAAA}Purchase seeds for planting")));
+        buySeeds.setItemMeta(seedsMeta);
+        gui.setItem(2, buySeeds);
+
+        ItemStack buyDrugs = new ItemStack(Material.BLAZE_POWDER);
+        ItemMeta drugsMeta = buyDrugs.getItemMeta();
+        drugsMeta.setDisplayName(MessageUtils.color("{#FF5555}Buy Drug Items"));
+        drugsMeta.setLore(Arrays.asList(MessageUtils.color("{#AAAAAA}Purchase ready-to-use drugs")));
+        buyDrugs.setItemMeta(drugsMeta);
+        gui.setItem(4, buyDrugs);
+
+        ItemStack sellDrugs = new ItemStack(Material.GOLD_INGOT);
+        ItemMeta sellMeta = sellDrugs.getItemMeta();
+        sellMeta.setDisplayName(MessageUtils.color("{#FFFF00}Sell Drug Items"));
+        sellMeta.setLore(Arrays.asList(MessageUtils.color("{#AAAAAA}Sell drugs for profit")));
+        sellDrugs.setItemMeta(sellMeta);
+        gui.setItem(6, sellDrugs);
+
+        player.openInventory(gui);
+        activeGUIs.put(player.getUniqueId(), "main");
+    }
+
+    private void openBuySeedsGUI(Player player) {
+        Inventory gui = Bukkit.createInventory(player, 27, MessageUtils.color("{#00FF00}Seed Market"));
+        ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta borderMeta = border.getItemMeta();
+        borderMeta.setDisplayName(MessageUtils.color("&7"));
+        border.setItemMeta(borderMeta);
+        ItemStack filler = new ItemStack(Material.GREEN_STAINED_GLASS_PANE);
+        ItemMeta fillerMeta = filler.getItemMeta();
+        fillerMeta.setDisplayName(MessageUtils.color("&7"));
+        filler.setItemMeta(fillerMeta);
+        for (int i = 0; i < 27; i++) {
+            gui.setItem(i, (i < 9 || i >= 18 || i % 9 == 0 || i % 9 == 8) ? border : filler);
+        }
+        List<Drug> drugs = drugManager.getSortedDrugs();
+        int[] slots = {10, 11, 12, 13, 14, 15, 16};
+        int index = 0;
+        for (Drug drug : drugs) {
+            if (drug.hasSeed() && index < slots.length) {
+                ItemStack seedItem = drug.getSeedItem(drug.getQuality());
+                ItemMeta meta = seedItem.getItemMeta();
+                List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+                lore.add(MessageUtils.color("{#FFD700}Click to Buy: {#00FF00}$" + drug.getBuyPrice()));
+                meta.setLore(lore);
+                seedItem.setItemMeta(meta);
+                gui.setItem(slots[index], seedItem);
+                index++;
             }
         }
+        player.openInventory(gui);
+        activeGUIs.put(player.getUniqueId(), "buy_seeds");
+    }
 
-        // Add items (slots 10-16, 19-25, 28-34, 37-43)
-        int slot = 10;
-        for (String drugId : drugIds) {
-            Drug drug = drugManager.getDrug(drugId);
-            if (drug != null) {
-                // Add drug item
-                ItemStack item = drug.getItem();
-                ItemMeta meta = item.getItemMeta();
-                List<String> lore = new ArrayList<>(meta != null && meta.getLore() != null ? meta.getLore() : new ArrayList<>());
-                lore.add(ChatColor.GOLD + (action.equalsIgnoreCase("buy") ? "Buy Price: $" : "Sell Price: $") + drug.getPrice());
-                lore.add(ChatColor.GRAY + "Click to select quantity");
-                if (meta != null) {
-                    meta.setLore(lore);
-                    item.setItemMeta(meta);
-                }
-                inventory.setItem(slot, item);
-                logger.info("Added drug to " + action + " GUI: " + drugId);
-                slot++;
-                if (slot == 17) slot = 19;
-                else if (slot == 26) slot = 28;
-                else if (slot == 35) slot = 37;
-                else if (slot == 44) break;
-
-                // Add seed item for Buy GUI only
-                if (action.equalsIgnoreCase("buy") && drug.hasSeed()) {
-                    ItemStack seed = drug.getSeedItem();
-                    meta = seed.getItemMeta();
-                    lore = new ArrayList<>(meta != null && meta.getLore() != null ? meta.getLore() : new ArrayList<>());
-                    lore.add(ChatColor.GOLD + "Buy Price: $" + drug.getPrice());
-                    lore.add(ChatColor.GRAY + "Click to select quantity");
-                    if (meta != null) {
-                        meta.setLore(lore);
-                        seed.setItemMeta(meta);
-                    }
-                    inventory.setItem(slot, seed);
-                    logger.info("Added seed to Buy GUI: " + drugId);
-                    slot++;
-                    if (slot == 17) slot = 19;
-                    else if (slot == 26) slot = 28;
-                    else if (slot == 35) slot = 37;
-                    else if (slot == 44) break;
-                }
-            } else {
-                logger.warning("Invalid drug ID in NPC config: " + drugId);
-            }
+    private void openBuyDrugsGUI(Player player) {
+        Inventory gui = Bukkit.createInventory(player, 27, MessageUtils.color("{#FF5555}Drug Bazaar"));
+        ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta borderMeta = border.getItemMeta();
+        borderMeta.setDisplayName(MessageUtils.color("&7"));
+        border.setItemMeta(borderMeta);
+        ItemStack filler = new ItemStack(Material.RED_STAINED_GLASS_PANE);
+        ItemMeta fillerMeta = filler.getItemMeta();
+        fillerMeta.setDisplayName(MessageUtils.color("&7"));
+        filler.setItemMeta(fillerMeta);
+        for (int i = 0; i < 27; i++) {
+            gui.setItem(i, (i < 9 || i >= 18 || i % 9 == 0 || i % 9 == 8) ? border : filler);
         }
+        List<Drug> drugs = drugManager.getSortedDrugs();
+        int[] slots = {10, 11, 12, 13, 14, 15, 16};
+        for (int i = 0; i < drugs.size() && i < slots.length; i++) {
+            Drug drug = drugs.get(i);
+            ItemStack drugItem = drug.getItem(drug.getQuality());
+            ItemMeta meta = drugItem.getItemMeta();
+            List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+            lore.add(MessageUtils.color("{#FFD700}Click to Buy: {#00FF00}$" + drug.getBuyPrice()));
+            meta.setLore(lore);
+            drugItem.setItemMeta(meta);
+            gui.setItem(slots[i], drugItem);
+        }
+        player.openInventory(gui);
+        activeGUIs.put(player.getUniqueId(), "buy_drugs");
+    }
 
-        player.openInventory(inventory);
+    private void openSellDrugsGUI(Player player) {
+        Inventory gui = Bukkit.createInventory(player, 27, MessageUtils.color("{#FFFF00}Drug Exchange"));
+        ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
+        ItemMeta borderMeta = border.getItemMeta();
+        borderMeta.setDisplayName(MessageUtils.color("&7"));
+        border.setItemMeta(borderMeta);
+        ItemStack filler = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
+        ItemMeta fillerMeta = filler.getItemMeta();
+        fillerMeta.setDisplayName(MessageUtils.color("&7"));
+        filler.setItemMeta(fillerMeta);
+        for (int i = 0; i < 27; i++) {
+            gui.setItem(i, (i < 9 || i >= 18 || i % 9 == 0 || i % 9 == 8) ? border : filler);
+        }
+        List<Drug> drugs = drugManager.getSortedDrugs();
+        int[] slots = {10, 11, 12, 13, 14, 15, 16};
+        for (int i = 0; i < drugs.size() && i < slots.length; i++) {
+            Drug drug = drugs.get(i);
+            ItemStack drugItem = drug.getItem(null);
+            ItemMeta meta = drugItem.getItemMeta();
+            List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+            lore.add(MessageUtils.color("{#FFD700}Click to Sell: {#00FF00}$" + drug.getSellPrice()));
+            meta.setLore(lore);
+            drugItem.setItemMeta(meta);
+            gui.setItem(slots[i], drugItem);
+        }
+        player.openInventory(gui);
+        activeGUIs.put(player.getUniqueId(), "sell_drugs");
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player player)) return;
-        String title = event.getView().getTitle();
-        if (!title.equals(ChatColor.translateAlternateColorCodes('&', "&2Buy Drugs")) &&
-                !title.equals(ChatColor.translateAlternateColorCodes('&', "&eSell Drugs"))) {
+        if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }
-
+        Player player = (Player) event.getWhoClicked();
+        String guiType = activeGUIs.get(player.getUniqueId());
+        if (guiType == null) {
+            return;
+        }
         event.setCancelled(true);
         ItemStack clickedItem = event.getCurrentItem();
-        if (clickedItem == null) return;
-
-        String action = title.contains("Buy") ? "buy" : "sell";
-        String drugId = drugManager.isSeedItem(clickedItem) ? drugManager.getDrugIdFromSeed(clickedItem) : drugManager.getDrugIdFromItem(clickedItem);
-        if (drugId == null) {
-            logger.warning("No drug ID found for clicked item in " + action + " GUI");
-            return;
-        }
-        Drug drug = drugManager.getDrug(drugId);
-        if (drug == null) {
-            logger.warning("Drug not found for ID: " + drugId + " in " + action + " GUI");
+        if (clickedItem == null ||
+                clickedItem.getType() == Material.GRAY_STAINED_GLASS_PANE ||
+                clickedItem.getType() == Material.BLACK_STAINED_GLASS_PANE ||
+                clickedItem.getType() == Material.GREEN_STAINED_GLASS_PANE ||
+                clickedItem.getType() == Material.RED_STAINED_GLASS_PANE ||
+                clickedItem.getType() == Material.YELLOW_STAINED_GLASS_PANE) {
             return;
         }
 
-        selectedItems.put(player.getUniqueId(), clickedItem.clone());
-        selectedAction.put(player.getUniqueId(), action);
-        selectedIsSeed.put(player.getUniqueId(), drugManager.isSeedItem(clickedItem));
-        MessageUtils.sendMessage(player, "&ePlease enter a quantity (1-64) in chat.");
-        player.closeInventory();
-        awaitingQuantity.put(player.getUniqueId(), true);
-        logger.info("Player " + player.getName() + " selected " + action + " for " + (drugManager.isSeedItem(clickedItem) ? "seed" : "drug") + ": " + drugId);
+        if (guiType.equals("main")) {
+            if (clickedItem.getType() == Material.WHEAT_SEEDS) {
+                openBuySeedsGUI(player);
+            } else if (clickedItem.getType() == Material.BLAZE_POWDER) {
+                openBuyDrugsGUI(player);
+            } else if (clickedItem.getType() == Material.GOLD_INGOT) {
+                openSellDrugsGUI(player);
+            }
+        } else if (guiType.equals("buy_seeds")) {
+            List<Drug> drugs = drugManager.getSortedDrugs();
+            for (Drug drug : drugs) {
+                if (drug.hasSeed() && clickedItem.getType() == drug.getSeedItem(null).getType() &&
+                        clickedItem.getItemMeta().getDisplayName().equals(drug.getSeedItem(null).getItemMeta().getDisplayName())) {
+                    buyItem(player, drug.getSeedItem(drug.getQuality()), drug.getBuyPrice(), drug.getName() + " Seed");
+                    return;
+                }
+            }
+        } else if (guiType.equals("buy_drugs")) {
+            List<Drug> drugs = drugManager.getSortedDrugs();
+            for (Drug drug : drugs) {
+                if (clickedItem.getType() == drug.getItem(null).getType() &&
+                        clickedItem.getItemMeta().getDisplayName().equals(drug.getItem(null).getItemMeta().getDisplayName())) {
+                    buyItem(player, drug.getItem(drug.getQuality()), drug.getBuyPrice(), drug.getName());
+                    return;
+                }
+            }
+        } else if (guiType.equals("sell_drugs")) {
+            List<Drug> drugs = drugManager.getSortedDrugs();
+            for (Drug drug : drugs) {
+                if (clickedItem.getType() == drug.getItem(null).getType() &&
+                        clickedItem.getItemMeta().getDisplayName().equals(drug.getItem(null).getItemMeta().getDisplayName())) {
+                    sellItem(player, drug, drug.getSellPrice(), drug.getName());
+                    return;
+                }
+            }
+        }
+    }
+
+    private void buyItem(Player player, ItemStack item, double price, String itemName) {
+        if (!plugin.getEconomyManager().isEconomyAvailable()) {
+            player.sendMessage(MessageUtils.color("{#FF5555}Economy system is not available!"));
+            return;
+        }
+        if (economy.has(player, price)) {
+            economy.withdrawPlayer(player, price);
+            player.getInventory().addItem(item);
+            player.sendMessage(MessageUtils.color("{#00FF00}Purchased " + itemName + " for $" + price));
+        } else {
+            player.sendMessage(MessageUtils.color("{#FF5555}You do not have enough money to buy " + itemName + "!"));
+        }
+    }
+
+    private void sellItem(Player player, Drug drug, double price, String itemName) {
+        if (!plugin.getEconomyManager().isEconomyAvailable()) {
+            player.sendMessage(MessageUtils.color("{#FF5555}Economy system is not available!"));
+            return;
+        }
+        ItemStack drugItem = drug.getItem(null);
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (item != null && item.getType() == drugItem.getType() &&
+                    item.getItemMeta().getDisplayName().equals(drugItem.getItemMeta().getDisplayName())) {
+                if (item.getAmount() > 1) {
+                    item.setAmount(item.getAmount() - 1);
+                } else {
+                    player.getInventory().remove(item);
+                }
+                economy.depositPlayer(player, price);
+                player.sendMessage(MessageUtils.color("{#00FF00}Sold " + itemName + " for $" + price));
+                return;
+            }
+        }
+        player.sendMessage(MessageUtils.color("{#FF5555}You do not have " + itemName + " to sell!"));
     }
 
     @EventHandler
-    public void onPlayerChat(AsyncPlayerChatEvent event) {
-        Player player = event.getPlayer();
-        UUID playerId = player.getUniqueId();
-        if (!awaitingQuantity.getOrDefault(playerId, false)) return;
-
-        event.setCancelled(true);
-        awaitingQuantity.remove(playerId);
-        String message = event.getMessage().trim();
-
-        try {
-            int quantity = Integer.parseInt(message);
-            if (quantity < 1 || quantity > 64) {
-                plugin.getServer().getScheduler().runTask(plugin, () ->
-                        player.sendMessage(ChatColor.RED + "Quantity must be between 1 and 64."));
-                return;
-            }
-
-            ItemStack item = selectedItems.remove(playerId);
-            String action = selectedAction.remove(playerId);
-            boolean isSeed = selectedIsSeed.remove(playerId);
-            if (item == null || action == null) {
-                plugin.getServer().getScheduler().runTask(plugin, () ->
-                        player.sendMessage(ChatColor.RED + "No item selected for transaction."));
-                logger.warning("No item or action selected for player " + player.getName());
-                return;
-            }
-
-            String drugId = isSeed ? drugManager.getDrugIdFromSeed(item) : drugManager.getDrugIdFromItem(item);
-            if (drugId == null) {
-                plugin.getServer().getScheduler().runTask(plugin, () ->
-                        player.sendMessage(ChatColor.RED + "Invalid drug selected."));
-                logger.warning("Invalid drug ID for player " + player.getName() + " in " + action + " transaction");
-                return;
-            }
-            Drug drug = drugManager.getDrug(drugId);
-            if (drug == null) {
-                plugin.getServer().getScheduler().runTask(plugin, () ->
-                        player.sendMessage(ChatColor.RED + "Invalid drug selected."));
-                logger.warning("Drug not found for ID: " + drugId + " in " + action + " transaction");
-                return;
-            }
-
-            if (action.equalsIgnoreCase("buy")) {
-                double totalPrice = drug.getPrice() * quantity;
-                if (economy.has(player, totalPrice)) {
-                    economy.withdrawPlayer(player, totalPrice);
-                    ItemStack giveItem = isSeed ? drug.getSeedItem() : drug.getItem();
-                    giveItem.setAmount(quantity);
-                    player.getInventory().addItem(giveItem);
-                    plugin.getServer().getScheduler().runTask(plugin, () ->
-                            player.sendMessage(ChatColor.GREEN + "Purchased " + quantity + "x " + (isSeed ? drug.getName() + " Seed" : drug.getName()) + " for $" + totalPrice));
-                    logger.info(player.getName() + " bought " + quantity + "x " + (isSeed ? drug.getName() + " Seed" : drug.getName()) + " for $" + totalPrice);
-                } else {
-                    plugin.getServer().getScheduler().runTask(plugin, () ->
-                            player.sendMessage(ChatColor.RED + "You don't have enough money! Need $" + totalPrice));
-                    logger.info(player.getName() + " failed to buy " + quantity + "x " + (isSeed ? drug.getName() + " Seed" : drug.getName()) + ": Insufficient funds");
-                }
-            } else {
-                // Check player's inventory for the drug (not seeds)
-                boolean hasEnough = false;
-                int totalAmount = 0;
-                for (ItemStack invItem : player.getInventory().getContents()) {
-                    if (invItem != null && drugManager.isDrugItem(invItem)) {
-                        String invDrugId = drugManager.getDrugIdFromItem(invItem);
-                        logger.fine("Checking inventory item with drug ID: " + invDrugId + " against target ID: " + drugId);
-                        if (invDrugId != null && invDrugId.equals(drugId)) {
-                            totalAmount += invItem.getAmount();
-                            logger.fine("Found " + invItem.getAmount() + " items of drug ID: " + invDrugId);
-                            if (totalAmount >= quantity) {
-                                hasEnough = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (hasEnough) {
-                    // Remove items from inventory
-                    int remaining = quantity;
-                    for (ItemStack invItem : player.getInventory().getContents()) {
-                        if (remaining <= 0) break;
-                        if (invItem != null && drugManager.isDrugItem(invItem)) {
-                            String invDrugId = drugManager.getDrugIdFromItem(invItem);
-                            if (invDrugId != null && invDrugId.equals(drugId)) {
-                                int amount = Math.min(invItem.getAmount(), remaining);
-                                invItem.setAmount(invItem.getAmount() - amount);
-                                remaining -= amount;
-                                logger.fine("Removed " + amount + " items of drug ID: " + invDrugId);
-                            }
-                        }
-                    }
-                    double totalPrice = drug.getPrice() * quantity;
-                    economy.depositPlayer(player, totalPrice);
-                    String sellMessage = plugin.getConfigManager().getConfig().getString("npc.sell_message", "&aSold %drug% for $%price%!");
-                    plugin.getServer().getScheduler().runTask(plugin, () ->
-                            player.sendMessage(ChatColor.translateAlternateColorCodes('&', sellMessage)
-                                    .replace("%drug%", drug.getName() + " (" + quantity + "x)")
-                                    .replace("%price%", String.valueOf(totalPrice))));
-                    logger.info(player.getName() + " sold " + quantity + "x " + drug.getName() + " for $" + totalPrice);
-                } else {
-                    plugin.getServer().getScheduler().runTask(plugin, () ->
-                            player.sendMessage(ChatColor.RED + "You don't have " + quantity + "x " + drug.getName() + " to sell."));
-                    logger.info(player.getName() + " failed to sell " + quantity + "x " + drug.getName() + ": Insufficient items");
-                }
-            }
-        } catch (NumberFormatException e) {
-            plugin.getServer().getScheduler().runTask(plugin, () ->
-                    player.sendMessage(ChatColor.RED + "Invalid quantity. Please enter a number between 1 and 64."));
-            logger.warning("Invalid quantity input by " + player.getName() + ": " + message);
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getPlayer() instanceof Player)) {
+            return;
+        }
+        Player player = (Player) event.getPlayer();
+        String guiType = activeGUIs.get(player.getUniqueId());
+        if (guiType != null && (guiType.equals("main") || guiType.equals("buy_seeds") ||
+                guiType.equals("buy_drugs") || guiType.equals("sell_drugs"))) {
+            activeGUIs.remove(player.getUniqueId());
         }
     }
 }
