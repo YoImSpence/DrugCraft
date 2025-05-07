@@ -12,8 +12,8 @@ import java.util.logging.Logger;
 public class AddictionManager {
     private final DrugCraft plugin;
     private final DataManager dataManager;
-    private final Map<UUID, PlayerAddictionData> playerData = new HashMap<>();
     private final Logger logger;
+    private final Map<UUID, PlayerAddictionData> playerData = new HashMap<>();
 
     public AddictionManager(DrugCraft plugin, DataManager dataManager) {
         this.plugin = plugin;
@@ -21,15 +21,37 @@ public class AddictionManager {
         this.logger = plugin.getLogger();
     }
 
-    public void addDrugUse(Player player, String drugId) {
+    public void loadPlayerData(Player player) {
         UUID playerId = player.getUniqueId();
-        PlayerAddictionData data = playerData.computeIfAbsent(playerId, k -> dataManager.loadPlayerData(playerId));
-        data.addUse(drugId);
-        dataManager.savePlayerData(playerId, data);
-        logger.info("Added drug use for player " + player.getName() + ": " + drugId);
+        PlayerAddictionData data = dataManager.loadPlayerData(playerId);
+        playerData.put(playerId, data);
+        logger.fine("Loaded addiction data for player: " + player.getName());
     }
 
-    public PlayerAddictionData getPlayerData(UUID playerId) {
-        return playerData.computeIfAbsent(playerId, k -> dataManager.loadPlayerData(playerId));
+    public void savePlayerData(Player player) {
+        UUID playerId = player.getUniqueId();
+        PlayerAddictionData data = playerData.get(playerId);
+        if (data != null) {
+            dataManager.savePlayerData(playerId, data);
+            logger.fine("Saved addiction data for player: " + player.getName());
+        }
+    }
+
+    public void incrementDrugUse(Player player, String drugId) {
+        UUID playerId = player.getUniqueId();
+        PlayerAddictionData data = playerData.computeIfAbsent(playerId, k -> new PlayerAddictionData());
+        data.incrementUses(drugId);
+        dataManager.savePlayerData(playerId, data);
+        logger.info("Incremented drug use for player " + player.getName() + ": " + drugId);
+    }
+
+    public PlayerAddictionData getPlayerData(Player player) {
+        return playerData.getOrDefault(player.getUniqueId(), new PlayerAddictionData());
+    }
+
+    public void clearPlayerData(Player player) {
+        UUID playerId = player.getUniqueId();
+        playerData.remove(playerId);
+        logger.fine("Cleared addiction data for player: " + player.getName());
     }
 }

@@ -1,7 +1,7 @@
 drugs:
   cocaine:
     type: SUGAR
-    name: "&f&lCocaine"
+    name: "&eCocaine"
     custom_model_data: 1001
     lore:
       - "&7A potent stimulant with a sharp rush"
@@ -15,7 +15,7 @@ drugs:
     quality: Legendary
   mystic_shroom:
     type: RED_MUSHROOM
-    name: "&5&lMystic Shroom"
+    name: "&dMystic Shroom"
     custom_model_data: 1002
     lore:
       - "&7A psychedelic mushroom with vivid visuals"
@@ -29,7 +29,7 @@ drugs:
     quality: Prime
   lsd:
     type: PAPER
-    name: "&d&lLSD"
+    name: "&9LSD"
     custom_model_data: 1003
     lore:
       - "&7A mind-altering psychedelic"
@@ -43,7 +43,7 @@ drugs:
     quality: Prime
   cannabis_dosidos:
     type: GREEN_DYE
-    name: "&2&lDosidos"
+    name: "&aDosidos"
     custom_model_data: 2001
     lore:
       - "&7A deeply relaxing strain with earthy tones"
@@ -54,17 +54,17 @@ drugs:
       - PARTICLE:VILLAGER_HAPPY:0.5:0.5:0.5:0.1:15
     seed:
       type: WHEAT_SEEDS
-      name: "&2&lDosidos Seed"
+      name: "&aDosidos Seed"
       custom_model_data: 2001
       lore:
         - "&7Plant to grow Dosidos"
-    growth_time: 90
+    growth_time: 300
     buy_price: 60.0
     sell_price: 30.0
     quality: Basic
   cannabis_granddaddy_purp:
     type: PURPLE_DYE
-    name: "&5&lGrand Daddy Purp"
+    name: "&dGrand Daddy Purp"
     custom_model_data: 2002
     lore:
       - "&7A soothing strain with grape-like aroma"
@@ -75,17 +75,17 @@ drugs:
       - SOUND:entity_cat_purr
     seed:
       type: WHEAT_SEEDS
-      name: "&5&lGrand Daddy Purp Seed"
+      name: "&dGrand Daddy Purp Seed"
       custom_model_data: 2002
       lore:
         - "&7Plant to grow Grand Daddy Purp"
-    growth_time: 90
+    growth_time: 300
     buy_price: 60.0
     sell_price: 30.0
     quality: Basic
   cannabis_blue_dream:
     type: CYAN_DYE
-    name: "&3&lBlue Dream"
+    name: "&bBlue Dream"
     custom_model_data: 2003
     lore:
       - "&7An uplifting strain with berry notes"
@@ -96,17 +96,17 @@ drugs:
       - PARTICLE:WATER_SPLASH:0.5:0.5:0.5:0.1:20
     seed:
       type: WHEAT_SEEDS
-      name: "&3&lBlue Dream Seed"
+      name: "&bBlue Dream Seed"
       custom_model_data: 2003
       lore:
         - "&7Plant to grow Blue Dream"
-    growth_time: 90
+    growth_time: 300
     buy_price: 60.0
     sell_price: 30.0
     quality: Basic
   cannabis_og_kush:
     type: LIME_DYE
-    name: "&a&lOG Kush"
+    name: "&aOG Kush"
     custom_model_data: 2004
     lore:
       - "&7A balanced strain with a piney scent"
@@ -117,17 +117,17 @@ drugs:
       - SOUND:entity_wolf_howl
     seed:
       type: WHEAT_SEEDS
-      name: "&a&lOG Kush Seed"
+      name: "&aOG Kush Seed"
       custom_model_data: 2004
       lore:
         - "&7Plant to grow OG Kush"
-    growth_time: 90
+    growth_time: 300
     buy_price: 60.0
     sell_price: 30.0
     quality: Basic
   cannabis_sour_diesel:
     type: YELLOW_DYE
-    name: "&e&lSour Diesel"
+    name: "&eSour Diesel"
     custom_model_data: 2005
     lore:
       - "&7An energizing strain with a diesel kick"
@@ -138,11 +138,11 @@ drugs:
       - PARTICLE:SMOKE_LARGE:0.5:0.5:0.5:0.1:15
     seed:
       type: WHEAT_SEEDS
-      name: "&e&lSour Diesel Seed"
+      name: "&eSour Diesel Seed"
       custom_model_data: 2005
       lore:
         - "&7Plant to grow Sour Diesel"
-    growth_time: 90
+    growth_time: 300
     buy_price: 60.0
     sell_price: 30.0
     quality: Basic

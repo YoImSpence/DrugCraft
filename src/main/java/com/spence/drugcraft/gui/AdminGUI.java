@@ -24,7 +24,7 @@ public class AdminGUI {
     public AdminGUI(DrugCraft plugin, DrugManager drugManager) {
         this.plugin = plugin;
         this.drugManager = drugManager;
-        this.mainGUI = Bukkit.createInventory(null, 9, MessageUtils.color("{#FFA500}Admin Drug Control"));
+        this.mainGUI = Bukkit.createInventory(null, 9, MessageUtils.color("&eAdmin Drug Control"));
         initializeMainGUI();
     }
 
@@ -33,7 +33,7 @@ public class AdminGUI {
         ItemMeta borderMeta = border.getItemMeta();
         borderMeta.setDisplayName(MessageUtils.color("&7"));
         border.setItemMeta(borderMeta);
-        ItemStack filler = new ItemStack(Material.ORANGE_STAINED_GLASS_PANE);
+        ItemStack filler = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
         ItemMeta fillerMeta = filler.getItemMeta();
         fillerMeta.setDisplayName(MessageUtils.color("&7"));
         filler.setItemMeta(fillerMeta);
@@ -42,22 +42,22 @@ public class AdminGUI {
         }
         ItemStack give = new ItemStack(Material.EMERALD);
         ItemMeta giveMeta = give.getItemMeta();
-        giveMeta.setDisplayName(MessageUtils.color("{#00FF00}Give Items"));
-        giveMeta.setLore(Arrays.asList(MessageUtils.color("{#AAAAAA}Distribute drugs, seeds, trimmers, or grow lights")));
+        giveMeta.setDisplayName(MessageUtils.color("&aGive Items"));
+        giveMeta.setLore(Arrays.asList(MessageUtils.color("&7Distribute drugs, seeds, trimmers, or grow lights")));
         give.setItemMeta(giveMeta);
         mainGUI.setItem(4, give);
     }
 
     public void openGUI(Player player) {
         if (!plugin.getPermissionManager().hasPermission(player, "drugcraft.admin")) {
-            player.sendMessage(MessageUtils.color("{#FF5555}You do not have permission to open this GUI."));
+            player.sendMessage(MessageUtils.color("&cYou do not have permission to open this GUI."));
             return;
         }
         player.openInventory(mainGUI);
     }
 
     public Inventory createItemGUI() {
-        Inventory itemGUI = Bukkit.createInventory(null, 54, MessageUtils.color("{#FFA500}Select Item"));
+        Inventory itemGUI = Bukkit.createInventory(null, 54, MessageUtils.color("&eSelect Item"));
         ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta borderMeta = border.getItemMeta();
         borderMeta.setDisplayName(MessageUtils.color("&7"));
@@ -70,13 +70,7 @@ public class AdminGUI {
             itemGUI.setItem(i, (i < 9 || i >= 45 || i % 9 == 0 || i % 9 == 8) ? border : filler);
         }
 
-        // Drugs Section (Slots 10-16)
-        ItemStack drugHeader = new ItemStack(Material.BLAZE_POWDER);
-        ItemMeta drugHeaderMeta = drugHeader.getItemMeta();
-        drugHeaderMeta.setDisplayName(MessageUtils.color("{#FF5555}Drugs"));
-        drugHeader.setItemMeta(drugHeaderMeta);
-        itemGUI.setItem(1, drugHeader);
-
+        // Drugs Section (Row 1, Slots 10-16)
         List<Drug> drugs = drugManager.getSortedDrugs();
         int[] drugSlots = {10, 11, 12, 13, 14, 15, 16};
         for (int i = 0; i < drugs.size() && i < drugSlots.length; i++) {
@@ -85,20 +79,14 @@ public class AdminGUI {
             ItemMeta meta = drugItem.getItemMeta();
             List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
             lore.removeIf(line -> line.contains("Quality: "));
-            lore.add(MessageUtils.color("{#FFD700}Click to configure"));
+            lore.add(MessageUtils.color("&eClick to configure"));
             meta.setLore(lore);
             drugItem.setItemMeta(meta);
             itemGUI.setItem(drugSlots[i], drugItem);
         }
 
-        // Seeds Section (Slots 28-33)
-        ItemStack seedHeader = new ItemStack(Material.WHEAT_SEEDS);
-        ItemMeta seedHeaderMeta = seedHeader.getItemMeta();
-        seedHeaderMeta.setDisplayName(MessageUtils.color("{#00FF00}Seeds"));
-        seedHeader.setItemMeta(seedHeaderMeta);
-        itemGUI.setItem(19, seedHeader);
-
-        int[] seedSlots = {28, 29, 30, 31, 32, 33};
+        // Seeds Section (Row 2, Slots 19-24)
+        int[] seedSlots = {19, 20, 21, 22, 23, 24};
         int seedIndex = 0;
         for (Drug drug : drugs) {
             if (drug.hasSeed() && seedIndex < seedSlots.length) {
@@ -106,7 +94,7 @@ public class AdminGUI {
                 ItemMeta meta = seedItem.getItemMeta();
                 List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
                 lore.removeIf(line -> line.contains("Quality: "));
-                lore.add(MessageUtils.color("{#FFD700}Click to configure"));
+                lore.add(MessageUtils.color("&eClick to configure"));
                 meta.setLore(lore);
                 seedItem.setItemMeta(meta);
                 itemGUI.setItem(seedSlots[seedIndex], seedItem);
@@ -114,41 +102,30 @@ public class AdminGUI {
             }
         }
 
-        // Trimmers Section (Slots 37-39)
-        ItemStack trimmerHeader = new ItemStack(Material.SHEARS);
-        ItemMeta trimmerHeaderMeta = trimmerHeader.getItemMeta();
-        trimmerHeaderMeta.setDisplayName(MessageUtils.color("{#1E90FF}Trimmers"));
-        trimmerHeader.setItemMeta(trimmerHeaderMeta);
-        itemGUI.setItem(36, trimmerHeader);
-
+        // Trimmers Section (Row 3, Slots 28-30)
         String[] trimmerQualities = {"Basic", "Standard", "Exotic"};
-        int[] trimmerSlots = {37, 38, 39};
+        int[] trimmerSlots = {28, 29, 30};
         for (int i = 0; i < trimmerQualities.length; i++) {
             ItemStack trimmer = new ItemStack(Material.SHEARS);
             ItemMeta meta = trimmer.getItemMeta();
-            meta.setDisplayName(MessageUtils.color("{#FFD700}" + trimmerQualities[i] + " Trimmer"));
+            meta.setDisplayName(MessageUtils.color("&e" + trimmerQualities[i] + " Trimmer"));
             meta.setLore(Arrays.asList(
                     MessageUtils.color(getQualityColor(trimmerQualities[i]) + "Quality: " + trimmerQualities[i]),
-                    MessageUtils.color("{#FFD700}Click to configure")
+                    MessageUtils.color("&eClick to configure")
             ));
+            meta.setUnbreakable(true);
             trimmer.setItemMeta(meta);
             itemGUI.setItem(trimmerSlots[i], trimmer);
         }
 
-        // Grow Lights Section (Slots 41-43)
-        ItemStack growLightHeader = new ItemStack(Material.REDSTONE_LAMP);
-        ItemMeta growLightHeaderMeta = growLightHeader.getItemMeta();
-        growLightHeaderMeta.setDisplayName(MessageUtils.color("{#FF00FF}Grow Lights"));
-        growLightHeader.setItemMeta(growLightHeaderMeta);
-        itemGUI.setItem(40, growLightHeader);
-
+        // Grow Lights Section (Row 4, Slots 37-39)
         String[] growLightQualities = {"Basic", "Standard", "Exotic"};
-        int[] growLightSlots = {41, 42, 43};
+        int[] growLightSlots = {37, 38, 39};
         for (int i = 0; i < growLightQualities.length; i++) {
             ItemStack growLight = GrowLight.createGrowLight(growLightQualities[i]);
             ItemMeta meta = growLight.getItemMeta();
             List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
-            lore.add(MessageUtils.color("{#FFD700}Click to configure"));
+            lore.add(MessageUtils.color("&eClick to configure"));
             meta.setLore(lore);
             growLight.setItemMeta(meta);
             itemGUI.setItem(growLightSlots[i], growLight);
@@ -158,12 +135,12 @@ public class AdminGUI {
     }
 
     public Inventory createGiveGUI(ItemStack item, String itemName, boolean isSeed, boolean isGrowLight, String itemType, String quality, int quantity, String targetPlayer) {
-        Inventory giveGUI = Bukkit.createInventory(null, 27, MessageUtils.color("{#FFA500}Configure " + itemName));
+        Inventory giveGUI = Bukkit.createInventory(null, 27, MessageUtils.color("&eConfigure " + itemName));
         ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta borderMeta = border.getItemMeta();
         borderMeta.setDisplayName(MessageUtils.color("&7"));
         border.setItemMeta(borderMeta);
-        ItemStack filler = new ItemStack(Material.ORANGE_STAINED_GLASS_PANE);
+        ItemStack filler = new ItemStack(Material.YELLOW_STAINED_GLASS_PANE);
         ItemMeta fillerMeta = filler.getItemMeta();
         fillerMeta.setDisplayName(MessageUtils.color("&7"));
         filler.setItemMeta(fillerMeta);
@@ -172,32 +149,32 @@ public class AdminGUI {
         }
         ItemStack qualityItem = new ItemStack(Material.DIAMOND);
         ItemMeta qualityMeta = qualityItem.getItemMeta();
-        qualityMeta.setDisplayName(MessageUtils.color("{#FFD700}Select Quality"));
-        qualityMeta.setLore(Arrays.asList(MessageUtils.color("{#AAAAAA}Current: " + quality)));
+        qualityMeta.setDisplayName(MessageUtils.color("&eSelect Quality"));
+        qualityMeta.setLore(Arrays.asList(MessageUtils.color("&7Current: " + quality)));
         qualityItem.setItemMeta(qualityMeta);
         giveGUI.setItem(10, qualityItem);
 
         ItemStack quantityItem = new ItemStack(Material.PAPER);
         ItemMeta quantityMeta = quantityItem.getItemMeta();
-        quantityMeta.setDisplayName(MessageUtils.color("{#FFD700}Select Quantity"));
-        quantityMeta.setLore(Arrays.asList(MessageUtils.color("{#AAAAAA}Current: " + quantity)));
+        quantityMeta.setDisplayName(MessageUtils.color("&eSelect Quantity"));
+        quantityMeta.setLore(Arrays.asList(MessageUtils.color("&7Current: " + quantity)));
         quantityItem.setItemMeta(quantityMeta);
         giveGUI.setItem(12, quantityItem);
 
         ItemStack playerSelect = new ItemStack(Material.PLAYER_HEAD);
         ItemMeta playerMeta = playerSelect.getItemMeta();
-        playerMeta.setDisplayName(MessageUtils.color("{#FFD700}Select Player"));
-        playerMeta.setLore(Arrays.asList(MessageUtils.color("{#AAAAAA}Current: " + targetPlayer)));
+        playerMeta.setDisplayName(MessageUtils.color("&eSelect Player"));
+        playerMeta.setLore(Arrays.asList(MessageUtils.color("&7Current: " + targetPlayer)));
         playerSelect.setItemMeta(playerMeta);
         giveGUI.setItem(14, playerSelect);
 
         ItemStack confirm = new ItemStack(Material.EMERALD);
         ItemMeta confirmMeta = confirm.getItemMeta();
-        confirmMeta.setDisplayName(MessageUtils.color("{#00FF00}Confirm"));
+        confirmMeta.setDisplayName(MessageUtils.color("&aConfirm"));
         confirmMeta.setLore(Arrays.asList(
-                MessageUtils.color("{#FFD700}Give: " + quantity + " " + quality + " " + itemName),
-                MessageUtils.color("{#FFD700}To: " + targetPlayer),
-                MessageUtils.color("{#FFD700}Type: " + itemType)
+                MessageUtils.color("&eGive: " + quantity + " " + quality + " " + itemName),
+                MessageUtils.color("&eTo: " + targetPlayer),
+                MessageUtils.color("&eType: " + itemType)
         ));
         confirm.setItemMeta(confirmMeta);
         giveGUI.setItem(16, confirm);
@@ -207,11 +184,11 @@ public class AdminGUI {
 
     private String getQualityColor(String quality) {
         return switch (quality) {
-            case "Legendary" -> "{#FF00FF}";
-            case "Prime" -> "{#1E90FF}";
-            case "Exotic" -> "{#FFA500}";
-            case "Standard" -> "{#00FF00}";
-            default -> "{#AAAAAA}"; // Basic
+            case "Legendary" -> "&d"; // Magenta
+            case "Prime" -> "&9"; // Blue
+            case "Exotic" -> "&e"; // Yellow
+            case "Standard" -> "&a"; // Green
+            default -> "&b"; // Cyan (Basic)
         };
     }
 }

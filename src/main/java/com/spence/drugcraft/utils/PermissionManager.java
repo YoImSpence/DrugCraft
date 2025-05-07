@@ -5,6 +5,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class PermissionManager {
     private final JavaPlugin plugin;
@@ -22,14 +23,15 @@ public class PermissionManager {
         String cartelName = cartelManager.getPlayerCartel(player.getUniqueId());
         if (cartelName != null) {
             CartelManager.Cartel cartel = cartelManager.getCartel(cartelName);
-            Map<String, Boolean> permissions = cartel.getPermissions().getOrDefault(player.getUniqueId(), new HashMap<>());
+            Map<UUID, Map<String, Boolean>> permissions = cartel.getPermissions();
+            Map<String, Boolean> memberPermissions = permissions.getOrDefault(player.getUniqueId(), new HashMap<>());
             switch (permission) {
                 case "drugcraft.cartel.harvest":
-                    return permissions.getOrDefault("Harvest Crops", false);
+                    return memberPermissions.getOrDefault("Harvest Crops", false);
                 case "drugcraft.cartel.plant":
-                    return permissions.getOrDefault("Plant Crops", false);
+                    return memberPermissions.getOrDefault("Plant Crops", false);
                 case "drugcraft.cartel.stash":
-                    return permissions.getOrDefault("Access Stash", false);
+                    return memberPermissions.getOrDefault("Access Stash", false);
             }
         }
         return false;

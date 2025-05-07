@@ -9,6 +9,7 @@ import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Ageable;
 import org.bukkit.block.data.type.Farmland;
@@ -18,7 +19,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class CropManager {
     private final DrugCraft plugin;
@@ -57,7 +56,12 @@ public class CropManager {
     private void createHologram(Crop crop) {
         String key = getLocationKey(crop.getLocation());
         String hologramId = "crop_" + key;
-        Location hologramLoc = crop.getLocation().clone().add(0.5, 2.0, 0.5);
+        // Adjust hologram height based on grow light presence
+        Location hologramLoc = crop.getLocation().clone().add(0.5, 2.5, 0.5); // Default height
+        Block above = crop.getLocation().getBlock().getRelative(0, 1, 0);
+        if (above.getType() == Material.OCHRE_FROGLIGHT && (above.isBlockPowered() || above.isBlockIndirectlyPowered())) {
+            hologramLoc = crop.getLocation().clone().add(0.5, 3.0, 0.5); // Raise if grow light is one block above
+        }
         hologramLoc.setPitch(0);
         hologramLoc.setYaw(0);
 
@@ -90,10 +94,10 @@ public class CropManager {
             logger.warning("Drug not found for crop ID: " + crop.getDrugId() + " at " + key);
         }
         double growth = getGrowthPercentage(crop);
-        String status = growth >= 100 ? "{#FF00FF}Harvestable" : "{#00FF00}Growing: {#FFFFFF}" + String.format("%.2f", growth) + "%";
+        String status = growth >= 100 ? "&dHarvestable" : "&aGrowing: &f" + String.format("%.2f", growth) + "%";
         List<String> hologramLines = Arrays.asList(
                 "",
-                MessageUtils.color("{#FFD700}" + drugName),
+                MessageUtils.color("&e" + drugName),
                 MessageUtils.color(status)
         );
         logger.fine("Creating hologram for crop " + crop.getDrugId() + " at " + hologramLoc + " with lines: " + hologramLines);
@@ -139,10 +143,10 @@ public class CropManager {
         Drug drug = drugManager.getDrug(crop.getDrugId());
         String drugName = drug != null ? drug.getName() : crop.getDrugId();
         double growth = getGrowthPercentage(crop);
-        String status = growth >= 100 ? "{#FF00FF}Harvestable" : "{#00FF00}Growing: {#FFFFFF}" + String.format("%.2f", growth) + "%";
+        String status = growth >= 100 ? "&dHarvestable" : "&aGrowing: &f" + String.format("%.2f", growth) + "%";
         List<String> hologramLines = Arrays.asList(
                 "",
-                MessageUtils.color("{#FFD700}" + drugName),
+                MessageUtils.color("&e" + drugName),
                 MessageUtils.color(status)
         );
         DHAPI.setHologramLines(hologram, hologramLines);
@@ -209,7 +213,7 @@ public class CropManager {
                     cleared++;
                 }
                 dataManager.saveCrops();
-                player.sendMessage(MessageUtils.color("{#00FF00}Cleared " + cleared + " drug crops and their data."));
+                player.sendMessage(MessageUtils.color("&aCleared " + cleared + " drug crops and their data."));
                 logger.info("Player " + player.getName() + " cleared " + cleared + " drug crops");
             }
         }.runTask(plugin);
@@ -229,19 +233,35 @@ public class CropManager {
             if (farmland.getMoisture() == farmland.getMaximumMoisture()) {
                 double wetMultiplier = plugin.getConfigManager().getWetFarmlandMultiplier();
                 growthTime *= wetMultiplier;
+                logger.fine("Applied wet farmland multiplier " + wetMultiplier + " for crop " + crop.getDrugId());
             }
         }
         // Check for grow lights above (up to 3 blocks)
         int growLightCount = 0;
         for (int y = 1; y <= 3; y++) {
             Block above = block.getRelative(0, y + 1, 0);
-            if (above.getType() == Material.REDSTONE_LAMP && above.isBlockPowered()) {
-                growLightCount++;
-                logger.fine("Applied grow light boost at " + above.getLocation() + " for crop " + crop.getDrugId());
+            if (above.getType() == Material.OCHRE_FROGLIGHT && (above.isBlockPowered() || above.isBlockIndirectlyPowered())) {
+                ItemStack lightItem = new ItemStack(Material.OCHRE_FROGLIGHT);
+                if (GrowLight.isGrowLight(lightItem)) {
+                    String quality = GrowLight.getQualityFromGrowLight(lightItem);
+                    double multiplier = switch (quality) {
+                        case "Legendary" -> 0.5;
+                        case "Prime" -> 0.6;
+                        case "Exotic" -> 0.7;
+                        case "Standard" -> 0.8;
+                        default -> 0.9; // Basic
+                    };
+                    growthTime *= multiplier;
+                    growLightCount++;
+                    // Spawn particles to indicate boost
+                    Location particleLoc = crop.getLocation().clone().add(0.5, 0.5, 0.5);
+                    crop.getLocation().getWorld().spawnParticle(Particle.HAPPY_VILLAGER, particleLoc, 5, 0.3, 0.3, 0.3, 0.1);
+                    logger.fine("Applied grow light boost (quality: " + quality + ", multiplier: " + multiplier + ") at " + above.getLocation() + " for crop " + crop.getDrugId());
+                }
             }
         }
         if (growLightCount > 0) {
-            growthTime *= Math.pow(0.7, growLightCount); // 0.7x per grow light, stackable
+            logger.info("Total grow lights affecting crop " + crop.getDrugId() + ": " + growLightCount);
         }
         double cartelBonus = plugin.getCartelManager().getGrowthBonus(crop.getLocation());
         growthTime *= (1 - cartelBonus);

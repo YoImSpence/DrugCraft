@@ -1,28 +1,29 @@
 package com.spence.drugcraft.utils;
 
 import org.bukkit.ChatColor;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.bukkit.entity.Player;
 
 public class MessageUtils {
-    private static final Pattern HEX_PATTERN = Pattern.compile("\\{#([A-Fa-f0-9]{6})\\}");
-
     public static String color(String message) {
         if (message == null) {
             return null;
         }
-        Matcher matcher = HEX_PATTERN.matcher(message);
-        StringBuilder buffer = new StringBuilder();
-        while (matcher.find()) {
-            String hex = matcher.group(1);
-            String replacement = "";
-            for (char c : hex.toCharArray()) {
-                replacement += ChatColor.COLOR_CHAR + "" + Character.toLowerCase(c);
-            }
-            matcher.appendReplacement(buffer, replacement);
+        // Map hex colors to legacy codes
+        String formatted = message
+                .replaceAll("\\{#FF5555\\}", "&c") // Red
+                .replaceAll("\\{#55FF55\\}", "&a") // Green
+                .replaceAll("\\{#FFFF55\\}", "&e") // Yellow
+                .replaceAll("\\{#55FFFF\\}", "&b") // Cyan
+                .replaceAll("\\{#FF55FF\\}", "&d") // Magenta
+                .replaceAll("\\{#5555FF\\}", "&9") // Blue
+                .replaceAll("\\{#AAAAAA\\}", "&7") // Gray
+                .replaceAll("\\{#FFFFFF\\}", "&f"); // White
+        return ChatColor.translateAlternateColorCodes('&', formatted);
+    }
+
+    public static void sendMessage(Player player, String message) {
+        if (player != null && message != null) {
+            player.sendMessage(color(message));
         }
-        matcher.appendTail(buffer);
-        return ChatColor.translateAlternateColorCodes('&', buffer.toString());
     }
 }

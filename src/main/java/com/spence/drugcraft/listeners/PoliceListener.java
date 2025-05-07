@@ -24,13 +24,14 @@ public class PoliceListener implements Listener {
     private final PoliceManager policeManager;
     private final Logger logger;
 
-    public PoliceListener(DrugCraft plugin, DrugManager drugManager, EconomyManager economyManager, PermissionManager permissionManager, CartelManager cartelManager) {
+    public PoliceListener(DrugCraft plugin, DrugManager drugManager, EconomyManager economyManager,
+                          PermissionManager permissionManager, CartelManager cartelManager) {
         this.plugin = plugin;
         this.drugManager = drugManager;
         this.economyManager = economyManager;
         this.permissionManager = permissionManager;
         this.cartelManager = cartelManager;
-        this.policeManager = new PoliceManager(plugin, drugManager, economyManager, permissionManager, cartelManager);
+        this.policeManager = plugin.getPoliceManager();
         this.logger = plugin.getLogger();
     }
 
@@ -55,7 +56,7 @@ public class PoliceListener implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.hasItem() && event.getAction().isRightClick() && drugManager.isDrugItem(event.getItem())) {
             logger.info("Detected drug use by " + event.getPlayer().getName() + " at " + event.getPlayer().getLocation());
-            policeManager.detectIllegalActivity(event.getPlayer(), event.getPlayer().getLocation(), false);
+            policeManager.detectIllegalActivity(event.getPlayer(), event.getPlayer().getLocation(), true);
         }
     }
 }

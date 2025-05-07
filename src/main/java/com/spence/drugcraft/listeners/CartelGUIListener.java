@@ -36,11 +36,11 @@ public class CartelGUIListener implements Listener {
         }
         Player player = (Player) event.getWhoClicked();
         String title = event.getView().getTitle();
-        if (!title.startsWith(MessageUtils.color("{#00FFFF}Cartel Management")) &&
-                !title.startsWith(MessageUtils.color("{#00FFFF}Cartel Info")) &&
-                !title.startsWith(MessageUtils.color("{#00FFFF}Members")) &&
-                !title.startsWith(MessageUtils.color("{#00FFFF}Permissions")) &&
-                !title.startsWith(MessageUtils.color("{#00FFFF}Upgrades"))) {
+        if (!title.startsWith(MessageUtils.color("&bCartel Management")) &&
+                !title.startsWith(MessageUtils.color("&bCartel Info")) &&
+                !title.startsWith(MessageUtils.color("&bMembers")) &&
+                !title.startsWith(MessageUtils.color("&bPermissions")) &&
+                !title.startsWith(MessageUtils.color("&bUpgrades"))) {
             return;
         }
         event.setCancelled(true);
@@ -53,18 +53,18 @@ public class CartelGUIListener implements Listener {
 
         String cartelName = cartelManager.getPlayerCartel(player.getUniqueId());
         if (cartelName == null) {
-            player.sendMessage(MessageUtils.color("{#FF5555}You are not in a cartel."));
+            player.sendMessage(MessageUtils.color("&cYou are not in a cartel."));
             player.closeInventory();
             return;
         }
         CartelManager.Cartel cartel = cartelManager.getCartel(cartelName);
         if (cartel == null) {
-            player.sendMessage(MessageUtils.color("{#FF5555}Cartel not found."));
+            player.sendMessage(MessageUtils.color("&cCartel not found."));
             player.closeInventory();
             return;
         }
 
-        if (title.equals(MessageUtils.color("{#00FFFF}Cartel Management"))) {
+        if (title.equals(MessageUtils.color("&bCartel Management"))) {
             if (clickedItem.getType() == Material.BOOK) {
                 player.openInventory(new CartelGUI(plugin, cartelManager).createInfoGUI(cartel));
                 activeGUIs.put(player.getUniqueId(), "info");
@@ -75,24 +75,24 @@ public class CartelGUIListener implements Listener {
                 player.openInventory(new CartelGUI(plugin, cartelManager).createUpgradesGUI(cartel));
                 activeGUIs.put(player.getUniqueId(), "upgrades");
             }
-        } else if (title.startsWith(MessageUtils.color("{#00FFFF}Members"))) {
+        } else if (title.startsWith(MessageUtils.color("&bMembers"))) {
             if (clickedItem.getType() == Material.PLAYER_HEAD) {
-                String playerName = clickedItem.getItemMeta().getDisplayName().replace(MessageUtils.color("{#FFD700}"), "");
+                String playerName = clickedItem.getItemMeta().getDisplayName().replace(MessageUtils.color("&e"), "");
                 Player target = Bukkit.getPlayer(playerName);
                 if (target == null) {
-                    player.sendMessage(MessageUtils.color("{#FF5555}Player is offline."));
+                    player.sendMessage(MessageUtils.color("&cPlayer is offline."));
                     return;
                 }
                 selectedMembers.put(player.getUniqueId(), target.getUniqueId());
                 player.openInventory(new CartelGUI(plugin, cartelManager).createPermissionsGUI(cartel, target.getUniqueId()));
                 activeGUIs.put(player.getUniqueId(), "permissions");
             }
-        } else if (title.startsWith(MessageUtils.color("{#00FFFF}Permissions"))) {
+        } else if (title.startsWith(MessageUtils.color("&bPermissions"))) {
             if (clickedItem.getType() == Material.LIME_DYE || clickedItem.getType() == Material.RED_DYE) {
-                String permission = clickedItem.getItemMeta().getDisplayName().replace(MessageUtils.color("{#FFD700}"), "");
+                String permission = clickedItem.getItemMeta().getDisplayName().replace(MessageUtils.color("&e"), "");
                 UUID memberId = selectedMembers.get(player.getUniqueId());
                 if (memberId == null) {
-                    player.sendMessage(MessageUtils.color("{#FF5555}No member selected."));
+                    player.sendMessage(MessageUtils.color("&cNo member selected."));
                     player.closeInventory();
                     return;
                 }
@@ -101,19 +101,19 @@ public class CartelGUIListener implements Listener {
                 memberPermissions.put(permission, !current);
                 cartelManager.updatePermissions(cartelName, memberId, memberPermissions);
                 player.openInventory(new CartelGUI(plugin, cartelManager).createPermissionsGUI(cartel, memberId));
-                player.sendMessage(MessageUtils.color("{#00FF00}Toggled " + permission + " for member to " + (!current ? "enabled" : "disabled")));
+                player.sendMessage(MessageUtils.color("&aToggled " + permission + " for member to " + (!current ? "enabled" : "disabled")));
             }
-        } else if (title.startsWith(MessageUtils.color("{#00FFFF}Upgrades"))) {
+        } else if (title.startsWith(MessageUtils.color("&bUpgrades"))) {
             if (clickedItem.getType() == Material.EMERALD) {
-                String upgrade = clickedItem.getItemMeta().getDisplayName().replace(MessageUtils.color("{#FFD700}"), "");
+                String upgrade = clickedItem.getItemMeta().getDisplayName().replace(MessageUtils.color("&e"), "");
                 int level = cartel.getUpgrades().getOrDefault(upgrade, 0);
                 double cost = (level + 1) * 1000;
                 if (cartel.getStashedMoney() >= cost) {
                     cartelManager.upgradeCartel(cartelName, upgrade, level + 1, cost);
                     player.openInventory(new CartelGUI(plugin, cartelManager).createUpgradesGUI(cartel));
-                    player.sendMessage(MessageUtils.color("{#00FF00}Upgraded " + upgrade + " to level " + (level + 1)));
+                    player.sendMessage(MessageUtils.color("&aUpgraded " + upgrade + " to level " + (level + 1)));
                 } else {
-                    player.sendMessage(MessageUtils.color("{#FF5555}Insufficient stashed money for upgrade."));
+                    player.sendMessage(MessageUtils.color("&cInsufficient stashed money for upgrade."));
                 }
             }
         }

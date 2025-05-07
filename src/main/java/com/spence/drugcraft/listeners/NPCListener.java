@@ -23,34 +23,37 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 public class NPCListener implements Listener {
     private final DrugCraft plugin;
     private final DrugManager drugManager;
     private final Economy economy;
     private final Map<UUID, String> activeGUIs = new HashMap<>();
+    private final Logger logger;
 
     public NPCListener(DrugCraft plugin, DrugManager drugManager, Economy economy) {
         this.plugin = plugin;
         this.drugManager = drugManager;
         this.economy = economy;
+        this.logger = plugin.getLogger();
     }
 
     @EventHandler
     public void onNPCRightClick(NPCRightClickEvent event) {
-        if (!event.getNPC().getName().equals("Dealer")) {
+        if (!event.getNPC().getName().equalsIgnoreCase("Dealer")) {
             return;
         }
         Player player = event.getClicker();
         if (!plugin.getPermissionManager().hasPermission(player, "drugcraft.use")) {
-            player.sendMessage(MessageUtils.color("{#FF5555}You do not have permission to interact with this NPC."));
+            player.sendMessage(MessageUtils.color("&cYou do not have permission to interact with this NPC."));
             return;
         }
         openMainMenu(player);
     }
 
     private void openMainMenu(Player player) {
-        Inventory gui = Bukkit.createInventory(player, 9, MessageUtils.color("{#FFD700}Drug Trade Hub"));
+        Inventory gui = Bukkit.createInventory(player, 9, MessageUtils.color("&eDrug Trade Hub"));
         ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta borderMeta = border.getItemMeta();
         borderMeta.setDisplayName(MessageUtils.color("&7"));
@@ -64,22 +67,22 @@ public class NPCListener implements Listener {
         }
         ItemStack buySeeds = new ItemStack(Material.WHEAT_SEEDS);
         ItemMeta seedsMeta = buySeeds.getItemMeta();
-        seedsMeta.setDisplayName(MessageUtils.color("{#00FF00}Buy Crop Seeds"));
-        seedsMeta.setLore(Arrays.asList(MessageUtils.color("{#AAAAAA}Purchase seeds for planting")));
+        seedsMeta.setDisplayName(MessageUtils.color("&aBuy Crop Seeds"));
+        seedsMeta.setLore(Arrays.asList(MessageUtils.color("&7Purchase seeds for planting")));
         buySeeds.setItemMeta(seedsMeta);
         gui.setItem(2, buySeeds);
 
         ItemStack buyDrugs = new ItemStack(Material.BLAZE_POWDER);
         ItemMeta drugsMeta = buyDrugs.getItemMeta();
-        drugsMeta.setDisplayName(MessageUtils.color("{#FF5555}Buy Drug Items"));
-        drugsMeta.setLore(Arrays.asList(MessageUtils.color("{#AAAAAA}Purchase ready-to-use drugs")));
+        drugsMeta.setDisplayName(MessageUtils.color("&cBuy Drug Items"));
+        drugsMeta.setLore(Arrays.asList(MessageUtils.color("&7Purchase ready-to-use drugs")));
         buyDrugs.setItemMeta(drugsMeta);
         gui.setItem(4, buyDrugs);
 
         ItemStack sellDrugs = new ItemStack(Material.GOLD_INGOT);
         ItemMeta sellMeta = sellDrugs.getItemMeta();
-        sellMeta.setDisplayName(MessageUtils.color("{#FFFF00}Sell Drug Items"));
-        sellMeta.setLore(Arrays.asList(MessageUtils.color("{#AAAAAA}Sell drugs for profit")));
+        sellMeta.setDisplayName(MessageUtils.color("&eSell Drug Items"));
+        sellMeta.setLore(Arrays.asList(MessageUtils.color("&7Sell drugs for profit")));
         sellDrugs.setItemMeta(sellMeta);
         gui.setItem(6, sellDrugs);
 
@@ -88,7 +91,7 @@ public class NPCListener implements Listener {
     }
 
     private void openBuySeedsGUI(Player player) {
-        Inventory gui = Bukkit.createInventory(player, 27, MessageUtils.color("{#00FF00}Seed Market"));
+        Inventory gui = Bukkit.createInventory(player, 27, MessageUtils.color("&aSeed Market"));
         ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta borderMeta = border.getItemMeta();
         borderMeta.setDisplayName(MessageUtils.color("&7"));
@@ -108,19 +111,20 @@ public class NPCListener implements Listener {
                 ItemStack seedItem = drug.getSeedItem(drug.getQuality());
                 ItemMeta meta = seedItem.getItemMeta();
                 List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
-                lore.add(MessageUtils.color("{#FFD700}Click to Buy: {#00FF00}$" + drug.getBuyPrice()));
+                lore.add(MessageUtils.color("&eClick to Buy: &a$" + drug.getBuyPrice()));
                 meta.setLore(lore);
                 seedItem.setItemMeta(meta);
                 gui.setItem(slots[index], seedItem);
                 index++;
             }
         }
+        logger.fine("Opened Buy Seeds GUI for " + player.getName() + " with " + index + " seeds");
         player.openInventory(gui);
         activeGUIs.put(player.getUniqueId(), "buy_seeds");
     }
 
     private void openBuyDrugsGUI(Player player) {
-        Inventory gui = Bukkit.createInventory(player, 27, MessageUtils.color("{#FF5555}Drug Bazaar"));
+        Inventory gui = Bukkit.createInventory(player, 27, MessageUtils.color("&cDrug Bazaar"));
         ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta borderMeta = border.getItemMeta();
         borderMeta.setDisplayName(MessageUtils.color("&7"));
@@ -134,22 +138,26 @@ public class NPCListener implements Listener {
         }
         List<Drug> drugs = drugManager.getSortedDrugs();
         int[] slots = {10, 11, 12, 13, 14, 15, 16};
-        for (int i = 0; i < drugs.size() && i < slots.length; i++) {
-            Drug drug = drugs.get(i);
-            ItemStack drugItem = drug.getItem(drug.getQuality());
-            ItemMeta meta = drugItem.getItemMeta();
-            List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
-            lore.add(MessageUtils.color("{#FFD700}Click to Buy: {#00FF00}$" + drug.getBuyPrice()));
-            meta.setLore(lore);
-            drugItem.setItemMeta(meta);
-            gui.setItem(slots[i], drugItem);
+        int index = 0;
+        for (Drug drug : drugs) {
+            if (index < slots.length) {
+                ItemStack drugItem = drug.getItem(drug.getQuality());
+                ItemMeta meta = drugItem.getItemMeta();
+                List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+                lore.add(MessageUtils.color("&eClick to Buy: &a$" + drug.getBuyPrice()));
+                meta.setLore(lore);
+                drugItem.setItemMeta(meta);
+                gui.setItem(slots[index], drugItem);
+                index++;
+            }
         }
+        logger.fine("Opened Buy Drugs GUI for " + player.getName() + " with " + index + " drugs");
         player.openInventory(gui);
         activeGUIs.put(player.getUniqueId(), "buy_drugs");
     }
 
     private void openSellDrugsGUI(Player player) {
-        Inventory gui = Bukkit.createInventory(player, 27, MessageUtils.color("{#FFFF00}Drug Exchange"));
+        Inventory gui = Bukkit.createInventory(player, 27, MessageUtils.color("&eDrug Exchange"));
         ItemStack border = new ItemStack(Material.GRAY_STAINED_GLASS_PANE);
         ItemMeta borderMeta = border.getItemMeta();
         borderMeta.setDisplayName(MessageUtils.color("&7"));
@@ -163,16 +171,20 @@ public class NPCListener implements Listener {
         }
         List<Drug> drugs = drugManager.getSortedDrugs();
         int[] slots = {10, 11, 12, 13, 14, 15, 16};
-        for (int i = 0; i < drugs.size() && i < slots.length; i++) {
-            Drug drug = drugs.get(i);
-            ItemStack drugItem = drug.getItem(null);
-            ItemMeta meta = drugItem.getItemMeta();
-            List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
-            lore.add(MessageUtils.color("{#FFD700}Click to Sell: {#00FF00}$" + drug.getSellPrice()));
-            meta.setLore(lore);
-            drugItem.setItemMeta(meta);
-            gui.setItem(slots[i], drugItem);
+        int index = 0;
+        for (Drug drug : drugs) {
+            if (index < slots.length) {
+                ItemStack drugItem = drug.getItem(null);
+                ItemMeta meta = drugItem.getItemMeta();
+                List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
+                lore.add(MessageUtils.color("&eClick to Sell: &a$" + drug.sellPrice()));
+                meta.setLore(lore);
+                drugItem.setItemMeta(meta);
+                gui.setItem(slots[index], drugItem);
+                index++;
+            }
         }
+        logger.fine("Opened Sell Drugs GUI for " + player.getName() + " with " + index + " drugs");
         player.openInventory(gui);
         activeGUIs.put(player.getUniqueId(), "sell_drugs");
     }
@@ -229,7 +241,7 @@ public class NPCListener implements Listener {
             for (Drug drug : drugs) {
                 if (clickedItem.getType() == drug.getItem(null).getType() &&
                         clickedItem.getItemMeta().getDisplayName().equals(drug.getItem(null).getItemMeta().getDisplayName())) {
-                    sellItem(player, drug, drug.getSellPrice(), drug.getName());
+                    sellItem(player, drug, drug.sellPrice(), drug.getName());
                     return;
                 }
             }
@@ -238,21 +250,21 @@ public class NPCListener implements Listener {
 
     private void buyItem(Player player, ItemStack item, double price, String itemName) {
         if (!plugin.getEconomyManager().isEconomyAvailable()) {
-            player.sendMessage(MessageUtils.color("{#FF5555}Economy system is not available!"));
+            player.sendMessage(MessageUtils.color("&cEconomy system is not available!"));
             return;
         }
         if (economy.has(player, price)) {
             economy.withdrawPlayer(player, price);
             player.getInventory().addItem(item);
-            player.sendMessage(MessageUtils.color("{#00FF00}Purchased " + itemName + " for $" + price));
+            player.sendMessage(MessageUtils.color("&aPurchased " + itemName + " for $" + price));
         } else {
-            player.sendMessage(MessageUtils.color("{#FF5555}You do not have enough money to buy " + itemName + "!"));
+            player.sendMessage(MessageUtils.color("&cYou do not have enough money to buy " + itemName + "!"));
         }
     }
 
     private void sellItem(Player player, Drug drug, double price, String itemName) {
         if (!plugin.getEconomyManager().isEconomyAvailable()) {
-            player.sendMessage(MessageUtils.color("{#FF5555}Economy system is not available!"));
+            player.sendMessage(MessageUtils.color("&cEconomy system is not available!"));
             return;
         }
         ItemStack drugItem = drug.getItem(null);
@@ -265,11 +277,11 @@ public class NPCListener implements Listener {
                     player.getInventory().remove(item);
                 }
                 economy.depositPlayer(player, price);
-                player.sendMessage(MessageUtils.color("{#00FF00}Sold " + itemName + " for $" + price));
+                player.sendMessage(MessageUtils.color("&aSold " + itemName + " for $" + price));
                 return;
             }
         }
-        player.sendMessage(MessageUtils.color("{#FF5555}You do not have " + itemName + " to sell!"));
+        player.sendMessage(MessageUtils.color("&cYou do not have " + itemName + " to sell!"));
     }
 
     @EventHandler

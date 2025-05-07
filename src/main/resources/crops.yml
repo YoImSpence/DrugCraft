@@ -1,10 +1,1 @@
-crops:
-# Example format
-# world_x_y_z:
-#   world: world
-#   x: 100
-#   y: 64
-#   z: 100
-#   drug_id: cannabis_sativa
-#   planting_time: 1643723400
-#   hologram_id: crop_world_100_64_100
+crops: {}

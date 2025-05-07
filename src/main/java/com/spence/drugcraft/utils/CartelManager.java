@@ -82,55 +82,55 @@ public class CartelManager {
 
     public void createCartel(Player player, String cartelName) {
         if (playerCartels.containsKey(player.getUniqueId())) {
-            player.sendMessage(MessageUtils.color("{#FF5555}You are already in a cartel."));
+            player.sendMessage(MessageUtils.color("&cYou are already in a cartel."));
             return;
         }
         if (cartels.containsKey(cartelName)) {
-            player.sendMessage(MessageUtils.color("{#FF5555}A cartel with this name already exists."));
+            player.sendMessage(MessageUtils.color("&cA cartel with this name already exists."));
             return;
         }
         Cartel cartel = new Cartel(cartelName, player.getUniqueId(), new ArrayList<>(), 1, 0.0, new HashMap<>(), new HashMap<>());
         cartels.put(cartelName, cartel);
         playerCartels.put(player.getUniqueId(), cartelName);
         dataManager.saveCartels();
-        player.sendMessage(MessageUtils.color("{#00FF00}Created cartel: " + cartelName));
+        player.sendMessage(MessageUtils.color("&aCreated cartel: " + cartelName));
         logger.info("Player " + player.getName() + " created cartel: " + cartelName);
     }
 
     public void invitePlayer(Player leader, Player target) {
         String cartelName = playerCartels.get(leader.getUniqueId());
         if (cartelName == null) {
-            leader.sendMessage(MessageUtils.color("{#FF5555}You are not in a cartel."));
+            leader.sendMessage(MessageUtils.color("&cYou are not in a cartel."));
             return;
         }
         Cartel cartel = cartels.get(cartelName);
         if (!cartel.getLeader().equals(leader.getUniqueId())) {
-            leader.sendMessage(MessageUtils.color("{#FF5555}Only the cartel leader can invite players."));
+            leader.sendMessage(MessageUtils.color("&cOnly the cartel leader can invite players."));
             return;
         }
         if (playerCartels.containsKey(target.getUniqueId())) {
-            leader.sendMessage(MessageUtils.color("{#FF5555}This player is already in a cartel."));
+            leader.sendMessage(MessageUtils.color("&cThis player is already in a cartel."));
             return;
         }
         pendingInvites.computeIfAbsent(target.getUniqueId(), k -> new ArrayList<>()).add(cartelName);
-        target.sendMessage(MessageUtils.color("{#00FF00}You have been invited to join the cartel: " + cartelName + ". Use /cartel join " + cartelName + " to accept."));
-        leader.sendMessage(MessageUtils.color("{#00FF00}Invited " + target.getName() + " to your cartel."));
+        target.sendMessage(MessageUtils.color("&aYou have been invited to join the cartel: " + cartelName + ". Use /cartel join " + cartelName + " to accept."));
+        leader.sendMessage(MessageUtils.color("&aInvited " + target.getName() + " to your cartel."));
         logger.info("Player " + leader.getName() + " invited " + target.getName() + " to cartel: " + cartelName);
     }
 
     public void joinCartel(Player player, String cartelName) {
         if (playerCartels.containsKey(player.getUniqueId())) {
-            player.sendMessage(MessageUtils.color("{#FF5555}You are already in a cartel."));
+            player.sendMessage(MessageUtils.color("&cYou are already in a cartel."));
             return;
         }
         Cartel cartel = cartels.get(cartelName);
         if (cartel == null) {
-            player.sendMessage(MessageUtils.color("{#FF5555}Cartel not found."));
+            player.sendMessage(MessageUtils.color("&cCartel not found."));
             return;
         }
         List<String> invites = pendingInvites.getOrDefault(player.getUniqueId(), new ArrayList<>());
         if (!invites.contains(cartelName)) {
-            player.sendMessage(MessageUtils.color("{#FF5555}You have not been invited to this cartel."));
+            player.sendMessage(MessageUtils.color("&cYou have not been invited to this cartel."));
             return;
         }
         cartel.getMembers().add(player.getUniqueId());
@@ -142,21 +142,21 @@ public class CartelManager {
         dataManager.saveCartels();
         Player leader = Bukkit.getPlayer(cartel.getLeader());
         if (leader != null) {
-            leader.sendMessage(MessageUtils.color("{#00FF00}" + player.getName() + " has joined your cartel."));
+            leader.sendMessage(MessageUtils.color("&a" + player.getName() + " has joined your cartel."));
         }
-        player.sendMessage(MessageUtils.color("{#00FF00}You have joined the cartel: " + cartelName));
+        player.sendMessage(MessageUtils.color("&aYou have joined the cartel: " + cartelName));
         logger.info("Player " + player.getName() + " joined cartel: " + cartelName);
     }
 
     public void leaveCartel(Player player) {
         String cartelName = playerCartels.get(player.getUniqueId());
         if (cartelName == null) {
-            player.sendMessage(MessageUtils.color("{#FF5555}You are not in a cartel."));
+            player.sendMessage(MessageUtils.color("&cYou are not in a cartel."));
             return;
         }
         Cartel cartel = cartels.get(cartelName);
         if (cartel.getLeader().equals(player.getUniqueId())) {
-            player.sendMessage(MessageUtils.color("{#FF5555}As the leader, you must disband the cartel or transfer leadership."));
+            player.sendMessage(MessageUtils.color("&cAs the leader, you must disband the cartel or transfer leadership."));
             return;
         }
         cartel.getMembers().remove(player.getUniqueId());
@@ -164,26 +164,26 @@ public class CartelManager {
         dataManager.saveCartels();
         Player leader = Bukkit.getPlayer(cartel.getLeader());
         if (leader != null) {
-            leader.sendMessage(MessageUtils.color("{#FF5555}" + player.getName() + " has left your cartel."));
+            leader.sendMessage(MessageUtils.color("&c" + player.getName() + " has left your cartel."));
         }
-        player.sendMessage(MessageUtils.color("{#00FF00}You have left the cartel: " + cartelName));
+        player.sendMessage(MessageUtils.color("&aYou have left the cartel: " + cartelName));
         logger.info("Player " + player.getName() + " left cartel: " + cartelName);
     }
 
     public void showCartelInfo(Player player) {
         String cartelName = playerCartels.get(player.getUniqueId());
         if (cartelName == null) {
-            player.sendMessage(MessageUtils.color("{#FF5555}You are not in a cartel."));
+            player.sendMessage(MessageUtils.color("&cYou are not in a cartel."));
             return;
         }
         Cartel cartel = cartels.get(cartelName);
         Player leader = Bukkit.getPlayer(cartel.getLeader());
-        player.sendMessage(MessageUtils.color("{#FFD700}Cartel Info:"));
-        player.sendMessage(MessageUtils.color("{#AAAAAA}Name: " + cartelName));
-        player.sendMessage(MessageUtils.color("{#AAAAAA}Leader: " + (leader != null ? leader.getName() : "Offline")));
-        player.sendMessage(MessageUtils.color("{#AAAAAA}Level: " + cartel.getLevel()));
-        player.sendMessage(MessageUtils.color("{#AAAAAA}Stashed Money: $" + cartel.getStashedMoney()));
-        player.sendMessage(MessageUtils.color("{#AAAAAA}Members: " + cartel.getMembers().size()));
+        player.sendMessage(MessageUtils.color("&eCartel Info:"));
+        player.sendMessage(MessageUtils.color("&7Name: " + cartelName));
+        player.sendMessage(MessageUtils.color("&7Leader: " + (leader != null ? leader.getName() : "Offline")));
+        player.sendMessage(MessageUtils.color("&7Level: " + cartel.getLevel()));
+        player.sendMessage(MessageUtils.color("&7Stashed Money: $" + cartel.getStashedMoney()));
+        player.sendMessage(MessageUtils.color("&7Members: " + cartel.getMembers().size()));
     }
 
     public void updatePermissions(String cartelName, UUID memberId, Map<String, Boolean> permissions) {

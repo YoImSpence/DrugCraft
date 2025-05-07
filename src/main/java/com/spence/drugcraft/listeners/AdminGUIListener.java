@@ -44,26 +44,25 @@ public class AdminGUIListener implements Listener {
         }
         Player player = (Player) event.getWhoClicked();
         String title = event.getView().getTitle();
-        if (!title.equals(MessageUtils.color("{#FFA500}Admin Drug Control")) &&
-                !title.equals(MessageUtils.color("{#FFA500}Select Item")) &&
-                !title.startsWith(MessageUtils.color("{#FFA500}Configure "))) {
+        if (!title.equals(MessageUtils.color("&eAdmin Drug Control")) &&
+                !title.equals(MessageUtils.color("&eSelect Item")) &&
+                !title.startsWith(MessageUtils.color("&eConfigure "))) {
             return;
         }
         event.setCancelled(true);
         ItemStack clickedItem = event.getCurrentItem();
         if (clickedItem == null ||
                 clickedItem.getType() == Material.GRAY_STAINED_GLASS_PANE ||
-                clickedItem.getType() == Material.YELLOW_STAINED_GLASS_PANE ||
-                clickedItem.getType() == Material.ORANGE_STAINED_GLASS_PANE) {
+                clickedItem.getType() == Material.YELLOW_STAINED_GLASS_PANE) {
             return;
         }
 
-        if (title.equals(MessageUtils.color("{#FFA500}Admin Drug Control"))) {
+        if (title.equals(MessageUtils.color("&eAdmin Drug Control"))) {
             if (clickedItem.getType() == Material.EMERALD) {
                 pendingActions.put(player.getUniqueId(), "give");
                 player.openInventory(new AdminGUI(plugin, drugManager).createItemGUI());
             }
-        } else if (title.equals(MessageUtils.color("{#FFA500}Select Item"))) {
+        } else if (title.equals(MessageUtils.color("&eSelect Item"))) {
             List<Drug> drugs = drugManager.getSortedDrugs();
             for (Drug drug : drugs) {
                 if (clickedItem.getType() == drug.getItem(null).getType() &&
@@ -96,7 +95,7 @@ public class AdminGUIListener implements Listener {
                     return;
                 }
             }
-            if (clickedItem.getType() == Material.SHEARS) {
+            if (clickedItem.getType() == Material.SHEARS && clickedItem.getItemMeta().hasDisplayName()) {
                 String trimmerName = clickedItem.getItemMeta().getDisplayName();
                 String quality = trimmerName.contains("Exotic") ? "Exotic" : trimmerName.contains("Standard") ? "Standard" : "Basic";
                 selectedItems.put(player.getUniqueId(), clickedItem.clone());
@@ -111,7 +110,7 @@ public class AdminGUIListener implements Listener {
                         clickedItem.clone(), quality + " Trimmer", false, false, "Trimmer", quality, 1, player.getName()));
                 return;
             }
-            if (clickedItem.getType() == Material.REDSTONE_LAMP) {
+            if (clickedItem.getType() == Material.OCHRE_FROGLIGHT) {
                 String growLightName = clickedItem.getItemMeta().getDisplayName();
                 String quality = growLightName.contains("Exotic") ? "Exotic" : growLightName.contains("Standard") ? "Standard" : "Basic";
                 selectedItems.put(player.getUniqueId(), clickedItem.clone());
@@ -126,7 +125,7 @@ public class AdminGUIListener implements Listener {
                         clickedItem.clone(), quality + " Grow Light", false, true, "Grow Light", quality, 1, player.getName()));
                 return;
             }
-        } else if (title.startsWith(MessageUtils.color("{#FFA500}Configure "))) {
+        } else if (title.startsWith(MessageUtils.color("&eConfigure "))) {
             if (clickedItem.getType() == Material.DIAMOND) {
                 String currentQuality = selectedQualities.get(player.getUniqueId());
                 String newQuality = switch (currentQuality) {
@@ -156,7 +155,7 @@ public class AdminGUIListener implements Listener {
                 if (itemType.equals("Trimmer")) {
                     giveItem = selectedItems.get(player.getUniqueId()).clone();
                     ItemMeta meta = giveItem.getItemMeta();
-                    meta.setDisplayName(MessageUtils.color("{#FFD700}" + quality + " Trimmer"));
+                    meta.setDisplayName(MessageUtils.color("&e" + quality + " Trimmer"));
                     meta.setLore(Arrays.asList(MessageUtils.color(getQualityColor(quality) + "Quality: " + quality)));
                     meta.setUnbreakable(true);
                     giveItem.setItemMeta(meta);
@@ -173,9 +172,9 @@ public class AdminGUIListener implements Listener {
                 }
                 giveItem.setAmount(quantity);
                 target.getInventory().addItem(giveItem);
-                player.sendMessage(MessageUtils.color("{#00FF00}Gave " + quantity + " " + quality + " " + itemName + " to " + target.getName()));
+                player.sendMessage(MessageUtils.color("&aGave " + quantity + " " + quality + " " + itemName + " to " + target.getName()));
                 if (target != player) {
-                    target.sendMessage(MessageUtils.color("{#00FF00}You received " + quantity + " " + quality + " " + itemName + " from " + player.getName()));
+                    target.sendMessage(MessageUtils.color("&aYou received " + quantity + " " + quality + " " + itemName + " from " + player.getName()));
                 }
                 clearPlayerData(player);
                 player.closeInventory();
@@ -206,7 +205,7 @@ public class AdminGUIListener implements Listener {
         conversation.getContext().setSessionData("player", player);
         conversation.addConversationAbandonedListener(event -> {
             if (!event.gracefulExit()) {
-                player.sendMessage(MessageUtils.color("{#FF5555}Action cancelled."));
+                player.sendMessage(MessageUtils.color("&cAction cancelled."));
                 clearPlayerData(player);
             }
         });
@@ -224,7 +223,7 @@ public class AdminGUIListener implements Listener {
         conversation.getContext().setSessionData("player", player);
         conversation.addConversationAbandonedListener(event -> {
             if (!event.gracefulExit()) {
-                player.sendMessage(MessageUtils.color("{#FF5555}Action cancelled."));
+                player.sendMessage(MessageUtils.color("&cAction cancelled."));
                 clearPlayerData(player);
             }
         });
@@ -245,18 +244,18 @@ public class AdminGUIListener implements Listener {
 
     private String getQualityColor(String quality) {
         return switch (quality) {
-            case "Legendary" -> "{#FF00FF}";
-            case "Prime" -> "{#1E90FF}";
-            case "Exotic" -> "{#FFA500}";
-            case "Standard" -> "{#00FF00}";
-            default -> "{#AAAAAA}"; // Basic
+            case "Legendary" -> "&d"; // Magenta
+            case "Prime" -> "&9"; // Blue
+            case "Exotic" -> "&e"; // Yellow
+            case "Standard" -> "&a"; // Green
+            default -> "&b"; // Cyan (Basic)
         };
     }
 
     private class PlayerNamePrompt extends StringPrompt {
         @Override
         public String getPromptText(ConversationContext context) {
-            return MessageUtils.color("{#FFD700}Enter the target player's name (or 'cancel' to abort):");
+            return MessageUtils.color("&eEnter the target player's name (or 'cancel' to abort):");
         }
 
         @Override
@@ -264,7 +263,7 @@ public class AdminGUIListener implements Listener {
             Player player = (Player) context.getSessionData("player");
             Player target = Bukkit.getPlayerExact(input);
             if (target == null) {
-                context.getForWhom().sendRawMessage(MessageUtils.color("{#FF5555}Player not found! Try again or type 'cancel'."));
+                context.getForWhom().sendRawMessage(MessageUtils.color("&cPlayer not found! Try again or type 'cancel'."));
                 return this;
             }
             selectedPlayers.put(player.getUniqueId(), target);
@@ -282,14 +281,14 @@ public class AdminGUIListener implements Listener {
 
         @Override
         public String getPromptText(ConversationContext context) {
-            return MessageUtils.color("{#FFD700}Enter the quantity for " + itemName + " (1-64, or 'cancel' to abort):");
+            return MessageUtils.color("&eEnter the quantity for " + itemName + " (1-64, or 'cancel' to abort):");
         }
 
         @Override
         protected Prompt acceptValidatedInput(ConversationContext context, Number input) {
             int quantity = input.intValue();
             if (quantity < 1 || quantity > 64) {
-                context.getForWhom().sendRawMessage(MessageUtils.color("{#FF5555}Quantity must be between 1 and 64! Try again or type 'cancel'."));
+                context.getForWhom().sendRawMessage(MessageUtils.color("&cQuantity must be between 1 and 64! Try again or type 'cancel'."));
                 return this;
             }
             Player player = (Player) context.getSessionData("player");
@@ -313,7 +312,7 @@ public class AdminGUIListener implements Listener {
 
         @Override
         protected String getFailedValidationText(ConversationContext context, String invalidInput) {
-            return MessageUtils.color("{#FF5555}Invalid quantity! Enter a number between 1 and 64, or 'cancel'.");
+            return MessageUtils.color("&cInvalid quantity! Enter a number between 1 and 64, or 'cancel'.");
         }
     }
 }

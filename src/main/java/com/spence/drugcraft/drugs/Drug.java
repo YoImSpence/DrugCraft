@@ -38,11 +38,11 @@ public class Drug {
             ItemMeta meta = result.getItemMeta();
             List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
             String color = switch (quality) {
-                case "Legendary" -> "{#FF00FF}";
-                case "Prime" -> "{#1E90FF}";
-                case "Exotic" -> "{#FFA500}";
-                case "Standard" -> "{#00FF00}";
-                default -> "{#AAAAAA}"; // Basic
+                case "Legendary" -> "&d"; // Magenta
+                case "Prime" -> "&9"; // Blue
+                case "Exotic" -> "&e"; // Yellow
+                case "Standard" -> "&a"; // Green
+                default -> "&b"; // Cyan (Basic)
             };
             lore.add(MessageUtils.color(color + "Quality: " + quality));
             meta.setLore(lore);
@@ -91,11 +91,11 @@ public class Drug {
             ItemMeta meta = result.getItemMeta();
             List<String> lore = meta.getLore() != null ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
             String color = switch (quality) {
-                case "Legendary" -> "{#FF00FF}";
-                case "Prime" -> "{#1E90FF}";
-                case "Exotic" -> "{#FFA500}";
-                case "Standard" -> "{#00FF00}";
-                default -> "{#AAAAAA}"; // Basic
+                case "Legendary" -> "&d"; // Magenta
+                case "Prime" -> "&9"; // Blue
+                case "Exotic" -> "&e"; // Yellow
+                case "Standard" -> "&a"; // Green
+                default -> "&b"; // Cyan (Basic)
             };
             lore.add(MessageUtils.color(color + "Quality: " + quality));
             meta.setLore(lore);
@@ -120,7 +120,7 @@ public class Drug {
         return buyPrice;
     }
 
-    public double getSellPrice() {
+    public double sellPrice() {
         return sellPrice;
     }
 

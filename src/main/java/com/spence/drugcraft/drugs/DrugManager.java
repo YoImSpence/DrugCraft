@@ -114,21 +114,30 @@ public class DrugManager {
         List<Drug> sorted = new ArrayList<>(drugs.values());
         sorted.sort((a, b) -> {
             int aRank = switch (a.getQuality()) {
-                case "Legendary" -> 5;
-                case "Prime" -> 4;
-                case "Exotic" -> 3;
+                case "Basic" -> 1;
                 case "Standard" -> 2;
-                default -> 1; // Basic
+                case "Exotic" -> 3;
+                case "Prime" -> 4;
+                case "Legendary" -> 5;
+                default -> 0;
             };
             int bRank = switch (b.getQuality()) {
-                case "Legendary" -> 5;
-                case "Prime" -> 4;
-                case "Exotic" -> 3;
+                case "Basic" -> 1;
                 case "Standard" -> 2;
-                default -> 1; // Basic
+                case "Exotic" -> 3;
+                case "Prime" -> 4;
+                case "Legendary" -> 5;
+                default -> 0;
             };
-            return bRank - aRank; // Descending order
+            if (aRank != bRank) {
+                return aRank - bRank; // Ascending quality
+            }
+            String aName = a.getName().replaceAll("&[0-9a-fk-or]", "");
+            String bName = b.getName().replaceAll("&[0-9a-fk-or]", "");
+            return aName.compareTo(bName); // Alphabetical within quality
         });
+        // Log sorting order for debugging
+        logger.fine("Sorted drugs: " + sorted.stream().map(d -> d.getName() + " (" + d.getQuality() + ")").collect(Collectors.joining(", ")));
         return sorted;
     }
 
@@ -249,7 +258,6 @@ public class DrugManager {
                 logger.warning("Failed to apply effect for drug " + drugId + ": " + effect + " (" + e.getMessage() + ")");
             }
         }
-        // Consume item regardless of effect success
         if (item.getAmount() > 1) {
             item.setAmount(item.getAmount() - 1);
         } else {

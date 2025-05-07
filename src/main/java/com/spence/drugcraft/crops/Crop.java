@@ -7,7 +7,7 @@ public class Crop {
     private final String drugId;
     private final long plantingTime;
     private String hologramId;
-    private int age; // Wheat age (0-7)
+    private int age;
 
     public Crop(Location location, String drugId, long plantingTime) {
         this.location = location;
@@ -41,6 +41,6 @@ public class Crop {
     }
 
     public void setAge(int age) {
-        this.age = Math.max(0, Math.min(7, age));
+        this.age = age;
     }
 }

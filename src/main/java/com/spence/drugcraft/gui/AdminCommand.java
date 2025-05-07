@@ -28,9 +28,15 @@ public class AdminCommand implements CommandExecutor {
             player.sendMessage(MessageUtils.color("&cYou do not have permission to use this command."));
             return true;
         }
-        if (args.length > 0 && args[0].equalsIgnoreCase("clearcrops")) {
-            plugin.getCropManager().clearAllCrops(player);
-            return true;
+        if (args.length > 0) {
+            if (args[0].equalsIgnoreCase("clearcrops")) {
+                plugin.getCropManager().clearAllCrops(player);
+                return true;
+            } else if (args[0].equalsIgnoreCase("spawnpolice")) {
+                plugin.getPoliceManager().spawnPoliceNPC(player.getLocation(), "Officer");
+                player.sendMessage(MessageUtils.color("&aSpawned police NPC at your location."));
+                return true;
+            }
         }
         new AdminGUI(plugin, drugManager).openGUI(player);
         return true;

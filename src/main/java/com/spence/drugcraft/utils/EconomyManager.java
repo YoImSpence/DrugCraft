@@ -19,27 +19,23 @@ public class EconomyManager {
 
     private void setupEconomy() {
         if (plugin.getServer().getPluginManager().getPlugin("Vault") == null) {
-            logger.severe("Vault not found! Economy features will be disabled.");
+            logger.severe("Vault plugin not found! Economy features will be disabled.");
             return;
         }
         RegisteredServiceProvider<Economy> rsp = plugin.getServer().getServicesManager().getRegistration(Economy.class);
         if (rsp == null) {
-            logger.severe("No economy provider found! Ensure an economy plugin (e.g., EssentialsX) is installed.");
+            logger.severe("No economy provider found! Economy features will be disabled.");
             return;
         }
         economy = rsp.getProvider();
-        if (economy != null) {
-            logger.info("Vault economy hooked successfully: " + economy.getName());
-        } else {
-            logger.severe("Failed to hook Vault economy provider!");
-        }
-    }
-
-    public Economy getEconomy() {
-        return economy;
+        logger.info("Economy provider found: " + economy.getName());
     }
 
     public boolean isEconomyAvailable() {
         return economy != null;
+    }
+
+    public Economy getEconomy() {
+        return economy;
     }
 }

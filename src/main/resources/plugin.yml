@@ -2,26 +2,41 @@ name: DrugCraft
 version: 1.0.0
 main: com.spence.drugcraft.DrugCraft
 api-version: 1.21
-depend: [Citizens, DecentHolograms, Essentials, NBTAPI, LuckPerms, Vault]
+depend:
+  - Vault
+  - Citizens
+  - DecentHolograms
+  - NBTAPI
+  - LuckPerms
+  - Essentials
 commands:
   drugadmin:
-    description: Admin commands for DrugCraft
-    usage: /<command> [clearcrops]
+    description: Admin command for DrugCraft
+    usage: /<command> [clearcrops|spawnpolice]
     permission: drugcraft.admin
   cartel:
-    description: Manage drug cartels
-    usage: /<command> <create|invite|join|leave|info> [args]
+    description: Manage cartels
+    usage: /<command> <create|invite|join|leave|info|manage>
     permission: drugcraft.cartel
 permissions:
   drugcraft.admin:
-    description: Allows access to DrugCraft admin commands
+    description: Allows access to admin commands
     default: op
   drugcraft.use:
-    description: Allows interaction with DrugCraft NPCs
-    default: true
-  drugcraft.cartel:
-    description: Allows use of cartel commands
+    description: Allows use of drugs
     default: true
   drugcraft.bypass.police:
     description: Bypasses police detection
-    default: op
+    default: false
+  drugcraft.cartel:
+    description: Allows cartel management
+    default: true
+  drugcraft.cartel.harvest:
+    description: Allows harvesting cartel crops
+    default: false
+  drugcraft.cartel.plant:
+    description: Allows planting cartel crops
+    default: false
+  drugcraft.cartel.stash:
+    description: Allows accessing cartel stashes
+    default: false
