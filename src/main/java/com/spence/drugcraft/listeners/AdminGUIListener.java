@@ -1,19 +1,17 @@
 package com.spence.drugcraft.listeners;
 
 import com.spence.drugcraft.DrugCraft;
-import com.spence.drugcraft.crops.GrowLight;
-import com.spence.drugcraft.drugs.Drug;
+import com.spence.drugcraft.admin.AdminGUI;
 import com.spence.drugcraft.drugs.DrugManager;
-import com.spence.drugcraft.gui.AdminGUI;
 import com.spence.drugcraft.utils.MessageUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.conversations.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -22,15 +20,10 @@ import java.util.*;
 public class AdminGUIListener implements Listener {
     private final DrugCraft plugin;
     private final DrugManager drugManager;
-    private final Map<UUID, String> pendingActions = new HashMap<>();
-    private final Map<UUID, ItemStack> selectedItems = new HashMap<>();
-    private final Map<UUID, String> selectedItemNames = new HashMap<>();
-    private final Map<UUID, String> selectedItemTypes = new HashMap<>();
-    private final Map<UUID, Boolean> isSeedItems = new HashMap<>();
-    private final Map<UUID, Boolean> isGrowLights = new HashMap<>();
-    private final Map<UUID, String> selectedQualities = new HashMap<>();
-    private final Map<UUID, Integer> selectedQuantities = new HashMap<>();
-    private final Map<UUID, Player> selectedPlayers = new HashMap<>();
+    private final Map<UUID, List<ItemStack>> selectedItems = new HashMap<>();
+    private final Map<UUID, List<Player>> selectedPlayers = new HashMap<>();
+    private final Map<UUID, Map<ItemStack, Integer>> itemQuantities = new HashMap<>();
+    private final Map<UUID, String> activeGUIs = new HashMap<>();
 
     public AdminGUIListener(DrugCraft plugin, DrugManager drugManager) {
         this.plugin = plugin;
@@ -39,280 +32,154 @@ public class AdminGUIListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) {
-            return;
-        }
+        if (!(event.getWhoClicked() instanceof Player)) return;
         Player player = (Player) event.getWhoClicked();
         String title = event.getView().getTitle();
-        if (!title.equals(MessageUtils.color("&eAdmin Drug Control")) &&
-                !title.equals(MessageUtils.color("&eSelect Item")) &&
-                !title.startsWith(MessageUtils.color("&eConfigure "))) {
-            return;
-        }
+        if (!title.startsWith(MessageUtils.color("&#FF5555&lDrugCraft Admin")) &&
+                !title.startsWith(MessageUtils.color("&#FF5555&lSelect Items")) &&
+                !title.startsWith(MessageUtils.color("&#FF5555&lSelect Players")) &&
+                !title.startsWith(MessageUtils.color("&#FF5555&lSet Quantities"))) return;
         event.setCancelled(true);
         ItemStack clickedItem = event.getCurrentItem();
         if (clickedItem == null ||
                 clickedItem.getType() == Material.GRAY_STAINED_GLASS_PANE ||
-                clickedItem.getType() == Material.YELLOW_STAINED_GLASS_PANE) {
-            return;
-        }
+                clickedItem.getType() == Material.BLACK_STAINED_GLASS_PANE) return;
 
-        if (title.equals(MessageUtils.color("&eAdmin Drug Control"))) {
-            if (clickedItem.getType() == Material.EMERALD) {
-                pendingActions.put(player.getUniqueId(), "give");
-                player.openInventory(new AdminGUI(plugin, drugManager).createItemGUI());
-            }
-        } else if (title.equals(MessageUtils.color("&eSelect Item"))) {
-            List<Drug> drugs = drugManager.getSortedDrugs();
-            for (Drug drug : drugs) {
-                if (clickedItem.getType() == drug.getItem(null).getType() &&
-                        clickedItem.getItemMeta().getDisplayName().equals(drug.getItem(null).getItemMeta().getDisplayName())) {
-                    selectedItems.put(player.getUniqueId(), drug.getItem(null));
-                    selectedItemNames.put(player.getUniqueId(), drug.getName());
-                    selectedItemTypes.put(player.getUniqueId(), "Drug");
-                    isSeedItems.put(player.getUniqueId(), false);
-                    isGrowLights.put(player.getUniqueId(), false);
-                    selectedQualities.put(player.getUniqueId(), "Basic");
-                    selectedQuantities.put(player.getUniqueId(), 1);
-                    selectedPlayers.put(player.getUniqueId(), player);
-                    player.openInventory(new AdminGUI(plugin, drugManager).createGiveGUI(
-                            drug.getItem(null), drug.getName(), false, false, "Drug", "Basic", 1, player.getName()));
-                    return;
-                }
-                if (drug.hasSeed() &&
-                        clickedItem.getType() == drug.getSeedItem(null).getType() &&
-                        clickedItem.getItemMeta().getDisplayName().equals(drug.getSeedItem(null).getItemMeta().getDisplayName())) {
-                    selectedItems.put(player.getUniqueId(), drug.getSeedItem(null));
-                    selectedItemNames.put(player.getUniqueId(), drug.getName() + " Seed");
-                    selectedItemTypes.put(player.getUniqueId(), "Seed");
-                    isSeedItems.put(player.getUniqueId(), true);
-                    isGrowLights.put(player.getUniqueId(), false);
-                    selectedQualities.put(player.getUniqueId(), "Basic");
-                    selectedQuantities.put(player.getUniqueId(), 1);
-                    selectedPlayers.put(player.getUniqueId(), player);
-                    player.openInventory(new AdminGUI(plugin, drugManager).createGiveGUI(
-                            drug.getSeedItem(null), drug.getName() + " Seed", true, false, "Seed", "Basic", 1, player.getName()));
-                    return;
-                }
-            }
-            if (clickedItem.getType() == Material.SHEARS && clickedItem.getItemMeta().hasDisplayName()) {
-                String trimmerName = clickedItem.getItemMeta().getDisplayName();
-                String quality = trimmerName.contains("Exotic") ? "Exotic" : trimmerName.contains("Standard") ? "Standard" : "Basic";
-                selectedItems.put(player.getUniqueId(), clickedItem.clone());
-                selectedItemNames.put(player.getUniqueId(), quality + " Trimmer");
-                selectedItemTypes.put(player.getUniqueId(), "Trimmer");
-                isSeedItems.put(player.getUniqueId(), false);
-                isGrowLights.put(player.getUniqueId(), false);
-                selectedQualities.put(player.getUniqueId(), quality);
-                selectedQuantities.put(player.getUniqueId(), 1);
-                selectedPlayers.put(player.getUniqueId(), player);
-                player.openInventory(new AdminGUI(plugin, drugManager).createGiveGUI(
-                        clickedItem.clone(), quality + " Trimmer", false, false, "Trimmer", quality, 1, player.getName()));
-                return;
-            }
-            if (clickedItem.getType() == Material.OCHRE_FROGLIGHT) {
-                String growLightName = clickedItem.getItemMeta().getDisplayName();
-                String quality = growLightName.contains("Exotic") ? "Exotic" : growLightName.contains("Standard") ? "Standard" : "Basic";
-                selectedItems.put(player.getUniqueId(), clickedItem.clone());
-                selectedItemNames.put(player.getUniqueId(), quality + " Grow Light");
-                selectedItemTypes.put(player.getUniqueId(), "Grow Light");
-                isSeedItems.put(player.getUniqueId(), false);
-                isGrowLights.put(player.getUniqueId(), true);
-                selectedQualities.put(player.getUniqueId(), quality);
-                selectedQuantities.put(player.getUniqueId(), 1);
-                selectedPlayers.put(player.getUniqueId(), player);
-                player.openInventory(new AdminGUI(plugin, drugManager).createGiveGUI(
-                        clickedItem.clone(), quality + " Grow Light", false, true, "Grow Light", quality, 1, player.getName()));
-                return;
-            }
-        } else if (title.startsWith(MessageUtils.color("&eConfigure "))) {
-            if (clickedItem.getType() == Material.DIAMOND) {
-                String currentQuality = selectedQualities.get(player.getUniqueId());
-                String newQuality = switch (currentQuality) {
-                    case "Basic" -> "Standard";
-                    case "Standard" -> "Exotic";
-                    case "Exotic" -> "Prime";
-                    case "Prime" -> "Legendary";
-                    default -> "Basic";
-                };
-                selectedQualities.put(player.getUniqueId(), newQuality);
-                updateGiveGUI(player);
-            } else if (clickedItem.getType() == Material.PAPER) {
-                player.closeInventory();
-                startQuantityConversation(player);
+        UUID playerId = player.getUniqueId();
+        if (title.equals(MessageUtils.color("&#FF5555&lDrugCraft Admin"))) {
+            if (clickedItem.getType() == Material.CHEST) {
+                activeGUIs.put(playerId, "items");
+                new AdminGUI(plugin, drugManager).openItemsMenu(player);
             } else if (clickedItem.getType() == Material.PLAYER_HEAD) {
-                player.closeInventory();
-                startPlayerNameConversation(player);
-            } else if (clickedItem.getType() == Material.EMERALD) {
-                String quality = selectedQualities.get(player.getUniqueId());
-                int quantity = selectedQuantities.get(player.getUniqueId());
-                Player target = selectedPlayers.get(player.getUniqueId());
-                boolean isSeed = isSeedItems.get(player.getUniqueId());
-                boolean isGrowLight = isGrowLights.get(player.getUniqueId());
-                String itemName = selectedItemNames.get(player.getUniqueId());
-                String itemType = selectedItemTypes.get(player.getUniqueId());
-                ItemStack giveItem;
-                if (itemType.equals("Trimmer")) {
-                    giveItem = selectedItems.get(player.getUniqueId()).clone();
-                    ItemMeta meta = giveItem.getItemMeta();
-                    meta.setDisplayName(MessageUtils.color("&e" + quality + " Trimmer"));
-                    meta.setLore(Arrays.asList(MessageUtils.color(getQualityColor(quality) + "Quality: " + quality)));
-                    meta.setUnbreakable(true);
-                    giveItem.setItemMeta(meta);
-                } else if (itemType.equals("Grow Light")) {
-                    giveItem = GrowLight.createGrowLight(quality);
-                    giveItem.setAmount(quantity);
-                } else {
-                    String drugId = drugManager.getDrugIdFromItem(selectedItems.get(player.getUniqueId()));
-                    if (drugId == null) {
-                        drugId = drugManager.getDrugIdFromSeed(selectedItems.get(player.getUniqueId()));
-                    }
-                    Drug drug = drugManager.getDrug(drugId);
-                    giveItem = isSeed ? drug.getSeedItem(quality) : drug.getItem(quality);
+                activeGUIs.put(playerId, "players");
+                new AdminGUI(plugin, drugManager).openPlayersMenu(player);
+            } else if (clickedItem.getType() == Material.PAPER) {
+                List<ItemStack> items = selectedItems.getOrDefault(playerId, new ArrayList<>());
+                if (items.isEmpty()) {
+                    player.sendMessage(MessageUtils.color("&#FF4040Please select items first."));
+                    return;
                 }
-                giveItem.setAmount(quantity);
-                target.getInventory().addItem(giveItem);
-                player.sendMessage(MessageUtils.color("&aGave " + quantity + " " + quality + " " + itemName + " to " + target.getName()));
-                if (target != player) {
-                    target.sendMessage(MessageUtils.color("&aYou received " + quantity + " " + quality + " " + itemName + " from " + player.getName()));
-                }
-                clearPlayerData(player);
-                player.closeInventory();
+                activeGUIs.put(playerId, "quantities");
+                new AdminGUI(plugin, drugManager).openQuantityMenu(player, items);
             }
-        }
-    }
-
-    private void updateGiveGUI(Player player) {
-        String itemName = selectedItemNames.get(player.getUniqueId());
-        boolean isSeed = isSeedItems.get(player.getUniqueId());
-        boolean isGrowLight = isGrowLights.get(player.getUniqueId());
-        String itemType = selectedItemTypes.get(player.getUniqueId());
-        ItemStack item = selectedItems.get(player.getUniqueId());
-        String quality = selectedQualities.get(player.getUniqueId());
-        int quantity = selectedQuantities.get(player.getUniqueId());
-        Player target = selectedPlayers.get(player.getUniqueId());
-        Inventory giveGUI = new AdminGUI(plugin, drugManager).createGiveGUI(item, itemName, isSeed, isGrowLight, itemType, quality, quantity, target.getName());
-        player.openInventory(giveGUI);
-    }
-
-    private void startPlayerNameConversation(Player player) {
-        ConversationFactory factory = new ConversationFactory(plugin)
-                .withModality(true)
-                .withFirstPrompt(new PlayerNamePrompt())
-                .withEscapeSequence("cancel")
-                .withTimeout(30);
-        Conversation conversation = factory.buildConversation(player);
-        conversation.getContext().setSessionData("player", player);
-        conversation.addConversationAbandonedListener(event -> {
-            if (!event.gracefulExit()) {
-                player.sendMessage(MessageUtils.color("&cAction cancelled."));
-                clearPlayerData(player);
+        } else if (title.equals(MessageUtils.color("&#FF5555&lSelect Items"))) {
+            List<ItemStack> items = selectedItems.computeIfAbsent(playerId, k -> new ArrayList<>());
+            ItemStack itemClone = clickedItem.clone();
+            ItemMeta meta = itemClone.getItemMeta();
+            if (items.stream().anyMatch(i -> i.isSimilar(itemClone))) {
+                items.removeIf(i -> i.isSimilar(itemClone));
+                meta.setLore(new AdminGUI(plugin, drugManager).addSelectionLore(meta.getLore(), false));
+            } else {
+                items.add(itemClone);
+                meta.setLore(new AdminGUI(plugin, drugManager).addSelectionLore(meta.getLore(), true));
             }
-        });
-        conversation.begin();
-    }
-
-    private void startQuantityConversation(Player player) {
-        String itemName = selectedItemNames.get(player.getUniqueId());
-        ConversationFactory factory = new ConversationFactory(plugin)
-                .withModality(true)
-                .withFirstPrompt(new QuantityPrompt(itemName))
-                .withEscapeSequence("cancel")
-                .withTimeout(30);
-        Conversation conversation = factory.buildConversation(player);
-        conversation.getContext().setSessionData("player", player);
-        conversation.addConversationAbandonedListener(event -> {
-            if (!event.gracefulExit()) {
-                player.sendMessage(MessageUtils.color("&cAction cancelled."));
-                clearPlayerData(player);
-            }
-        });
-        conversation.begin();
-    }
-
-    private void clearPlayerData(Player player) {
-        pendingActions.remove(player.getUniqueId());
-        selectedItems.remove(player.getUniqueId());
-        selectedItemNames.remove(player.getUniqueId());
-        selectedItemTypes.remove(player.getUniqueId());
-        isSeedItems.remove(player.getUniqueId());
-        isGrowLights.remove(player.getUniqueId());
-        selectedQualities.remove(player.getUniqueId());
-        selectedQuantities.remove(player.getUniqueId());
-        selectedPlayers.remove(player.getUniqueId());
-    }
-
-    private String getQualityColor(String quality) {
-        return switch (quality) {
-            case "Legendary" -> "&d"; // Magenta
-            case "Prime" -> "&9"; // Blue
-            case "Exotic" -> "&e"; // Yellow
-            case "Standard" -> "&a"; // Green
-            default -> "&b"; // Cyan (Basic)
-        };
-    }
-
-    private class PlayerNamePrompt extends StringPrompt {
-        @Override
-        public String getPromptText(ConversationContext context) {
-            return MessageUtils.color("&eEnter the target player's name (or 'cancel' to abort):");
-        }
-
-        @Override
-        public Prompt acceptInput(ConversationContext context, String input) {
-            Player player = (Player) context.getSessionData("player");
-            Player target = Bukkit.getPlayerExact(input);
+            itemClone.setItemMeta(meta);
+            event.getInventory().setItem(event.getSlot(), itemClone);
+        } else if (title.equals(MessageUtils.color("&#FF5555&lSelect Players"))) {
+            List<Player> players = selectedPlayers.computeIfAbsent(playerId, k -> new ArrayList<>());
+            String playerName = clickedItem.getItemMeta().getDisplayName().replace(MessageUtils.color("&#FFFF00"), "");
+            Player target = Bukkit.getPlayer(playerName);
             if (target == null) {
-                context.getForWhom().sendRawMessage(MessageUtils.color("&cPlayer not found! Try again or type 'cancel'."));
-                return this;
+                player.sendMessage(MessageUtils.color("&#FF4040Player is offline."));
+                return;
             }
-            selectedPlayers.put(player.getUniqueId(), target);
-            updateGiveGUI(player);
-            return END_OF_CONVERSATION;
+            ItemMeta meta = clickedItem.getItemMeta();
+            if (players.contains(target)) {
+                players.remove(target);
+                meta.setLore(Arrays.asList(MessageUtils.color("&#FFFF00Click to toggle selection")));
+            } else {
+                players.add(target);
+                meta.setLore(Arrays.asList(MessageUtils.color("�FF7FSelected")));
+            }
+            clickedItem.setItemMeta(meta);
+            event.getInventory().setItem(event.getSlot(), clickedItem);
+        } else if (title.equals(MessageUtils.color("&#FF5555&lSet Quantities"))) {
+            if (clickedItem.getType() == Material.LIME_DYE) {
+                List<ItemStack> items = selectedItems.getOrDefault(playerId, new ArrayList<>());
+                List<Player> players = selectedPlayers.getOrDefault(playerId, new ArrayList<>());
+                Map<ItemStack, Integer> quantities = itemQuantities.getOrDefault(playerId, new HashMap<>());
+                if (items.isEmpty()) {
+                    player.sendMessage(MessageUtils.color("&#FF4040No items selected."));
+                    return;
+                }
+                if (players.isEmpty()) {
+                    player.sendMessage(MessageUtils.color("&#FF4040No players selected."));
+                    return;
+                }
+                for (Player target : players) {
+                    for (ItemStack item : items) {
+                        int quantity = quantities.getOrDefault(item, 1);
+                        ItemStack giveItem = item.clone();
+                        giveItem.setAmount(quantity);
+                        target.getInventory().addItem(giveItem);
+                        player.sendMessage(MessageUtils.color("�FF7FGave " + quantity + " " + item.getItemMeta().getDisplayName() + " to " + target.getName()));
+                    }
+                }
+                player.closeInventory();
+                clearPlayerData(player);
+            } else {
+                List<ItemStack> items = selectedItems.getOrDefault(playerId, new ArrayList<>());
+                ItemStack itemClone = clickedItem.clone();
+                Map<ItemStack, Integer> quantities = itemQuantities.computeIfAbsent(playerId, k -> new HashMap<>());
+                int quantity = quantities.getOrDefault(itemClone, 1);
+                if (event.getClick() == ClickType.LEFT) {
+                    quantity++;
+                } else if (event.getClick() == ClickType.RIGHT && quantity > 1) {
+                    quantity--;
+                } else if (event.getClick() == ClickType.SHIFT_LEFT || event.getClick() == ClickType.SHIFT_RIGHT) {
+                    items.removeIf(i -> i.isSimilar(itemClone));
+                    quantities.remove(itemClone);
+                    new AdminGUI(plugin, drugManager).openQuantityMenu(player, items);
+                    return;
+                }
+                quantities.put(itemClone, quantity);
+                ItemMeta meta = itemClone.getItemMeta();
+                meta.setLore(Arrays.asList(
+                        MessageUtils.color("&#FFFF00Quantity: " + quantity),
+                        MessageUtils.color("&#FFFF00Left Click: +1"),
+                        MessageUtils.color("&#FFFF00Right Click: -1"),
+                        MessageUtils.color("&#FFFF00Shift+Click: Remove")
+                ));
+                itemClone.setItemMeta(meta);
+                event.getInventory().setItem(event.getSlot(), itemClone);
+            }
         }
     }
 
-    private class QuantityPrompt extends NumericPrompt {
-        private final String itemName;
-
-        public QuantityPrompt(String itemName) {
-            this.itemName = itemName;
+    @EventHandler
+    public void onInventoryClose(InventoryCloseEvent event) {
+        if (!(event.getPlayer() instanceof Player)) return;
+        Player player = (Player) event.getPlayer();
+        String title = event.getView().getTitle();
+        if (title.startsWith(MessageUtils.color("&#FF5555&lDrugCraft Admin")) ||
+                title.startsWith(MessageUtils.color("&#FF5555&lSelect Items")) ||
+                title.startsWith(MessageUtils.color("&#FF5555&lSelect Players")) ||
+                title.startsWith(MessageUtils.color("&#FF5555&lSet Quantities"))) {
+            new AdminGUI(plugin, drugManager).removePlayerData(player);
+            activeGUIs.remove(player.getUniqueId());
         }
+    }
 
-        @Override
-        public String getPromptText(ConversationContext context) {
-            return MessageUtils.color("&eEnter the quantity for " + itemName + " (1-64, or 'cancel' to abort):");
-        }
+    public void clearPlayerData(Player player) {
+        selectedItems.remove(player.getUniqueId());
+        selectedPlayers.remove(player.getUniqueId());
+        itemQuantities.remove(player.getUniqueId());
+        activeGUIs.remove(player.getUniqueId());
+    }
 
-        @Override
-        protected Prompt acceptValidatedInput(ConversationContext context, Number input) {
-            int quantity = input.intValue();
-            if (quantity < 1 || quantity > 64) {
-                context.getForWhom().sendRawMessage(MessageUtils.color("&cQuantity must be between 1 and 64! Try again or type 'cancel'."));
-                return this;
-            }
-            Player player = (Player) context.getSessionData("player");
-            selectedQuantities.put(player.getUniqueId(), quantity);
-            updateGiveGUI(player);
-            return END_OF_CONVERSATION;
-        }
+    public Map<UUID, List<ItemStack>> getSelectedItems() {
+        return selectedItems;
+    }
 
-        @Override
-        protected boolean isInputValid(ConversationContext context, String input) {
-            if (input.equalsIgnoreCase("cancel")) {
-                return true;
-            }
-            try {
-                int quantity = Integer.parseInt(input);
-                return quantity >= 1 && quantity <= 64;
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }
+    public Map<UUID, List<Player>> getSelectedPlayers() {
+        return selectedPlayers;
+    }
 
-        @Override
-        protected String getFailedValidationText(ConversationContext context, String invalidInput) {
-            return MessageUtils.color("&cInvalid quantity! Enter a number between 1 and 64, or 'cancel'.");
-        }
+    public Map<UUID, Map<ItemStack, Integer>> getItemQuantities() {
+        return itemQuantities;
+    }
+
+    public Map<UUID, String> getActiveGUIs() {
+        return activeGUIs;
     }
 }

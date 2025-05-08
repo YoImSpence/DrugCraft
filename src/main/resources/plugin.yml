@@ -9,6 +9,9 @@ depend:
   - NBTAPI
   - LuckPerms
   - Essentials
+  - EssentialsChat
+  - WorldEdit
+  - WorldGuard
 commands:
   drugadmin:
     description: Admin command for DrugCraft

@@ -1,7 +1,12 @@
-package com.spence.drugcraft.utils;
+package com.spence.drugcraft.police;
 
 import com.spence.drugcraft.DrugCraft;
+import com.spence.drugcraft.cartel.CartelManager;
 import com.spence.drugcraft.drugs.DrugManager;
+import com.spence.drugcraft.listeners.PoliceListener;
+import com.spence.drugcraft.utils.EconomyManager;
+import com.spence.drugcraft.utils.MessageUtils;
+import com.spence.drugcraft.utils.PermissionManager;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.api.npc.NPCRegistry;
@@ -11,6 +16,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.entity.EntityType;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +36,7 @@ public class PoliceManager {
     private final List<NPC> policeNPCs = new ArrayList<>();
     private final NPCRegistry npcRegistry;
     private final Map<UUID, Long> playerCooldowns = new HashMap<>();
-    private static final long COOLDOWN_MS = 30000; // 30 seconds
+    private static final long COOLDOWN_MS = 30000;
 
     public PoliceManager(DrugCraft plugin, DrugManager drugManager, EconomyManager economyManager,
                          PermissionManager permissionManager, CartelManager cartelManager) {
@@ -56,7 +63,7 @@ public class PoliceManager {
         }
         NPC npc = npcRegistry.createNPC(EntityType.PLAYER, name);
         npc.setName("Officer");
-        npc.setAlwaysUseNameHologram(false); // Hide nametag
+        npc.setAlwaysUseNameHologram(false);
         try {
             npc.spawn(location);
             policeNPCs.add(npc);
@@ -84,11 +91,15 @@ public class PoliceManager {
             return;
         }
         if (!permissionManager.hasPermission(player, "drugcraft.bypass.police")) {
-            // Check cooldown
             long currentTime = System.currentTimeMillis();
             Long lastDetection = playerCooldowns.get(player.getUniqueId());
             if (lastDetection != null && (currentTime - lastDetection) < COOLDOWN_MS) {
                 logger.fine("Player " + player.getName() + " is on police detection cooldown");
+                return;
+            }
+            Long lastAction = PoliceListener.getRecentDrugAction(player.getUniqueId());
+            if (lastAction == null || (currentTime - lastAction) > 10000) {
+                logger.fine("No recent drug-related action for " + player.getName());
                 return;
             }
             String cartelName = cartelManager.getPlayerCartel(player.getUniqueId());
@@ -106,14 +117,24 @@ public class PoliceManager {
                     logger.warning("Police NPC ID " + npc.getId() + " has null name");
                     continue;
                 }
+                Location npcLoc = npc.getEntity().getLocation();
                 if (npc.getName().equalsIgnoreCase("Officer") &&
-                        npc.getEntity().getLocation().getWorld() != null &&
-                        npc.getEntity().getLocation().getWorld().equals(location.getWorld()) &&
-                        npc.getEntity().getLocation().distanceSquared(location) < 400) { // ~20 blocks
-                    logger.info("Police NPC " + npc.getId() + " detected " + (isInventoryCheck ? "inventory" : "activity") + " by " + player.getName() + " at " + location);
-                    applyConsequence(player, isInventoryCheck);
-                    playerCooldowns.put(player.getUniqueId(), currentTime);
-                    break;
+                        npcLoc.getWorld() != null &&
+                        npcLoc.getWorld().equals(location.getWorld()) &&
+                        npcLoc.distanceSquared(location) < 400) {
+                    Vector start = npcLoc.clone().add(0, 1.6, 0).toVector();
+                    Vector end = location.clone().add(0, 1.6, 0).toVector();
+                    Vector direction = end.subtract(start).normalize();
+                    RayTraceResult result = location.getWorld().rayTraceBlocks(start.toLocation(location.getWorld()), direction, 20);
+                    if (result == null || result.getHitBlock() == null) {
+                        logger.info("Police NPC " + npc.getId() + " detected " + (isInventoryCheck ? "inventory" : "activity") + " by " + player.getName() + " at " + location);
+                        applyConsequence(player, isInventoryCheck);
+                        playerCooldowns.put(player.getUniqueId(), currentTime);
+                        PoliceListener.clearRecentDrugAction(player.getUniqueId());
+                        break;
+                    } else {
+                        logger.fine("Police NPC " + npc.getId() + " has no line of sight to " + player.getName() + " at " + location);
+                    }
                 }
             }
         } else {
@@ -123,14 +144,13 @@ public class PoliceManager {
 
     private void applyConsequence(Player player, boolean isInventoryCheck) {
         if (!economyManager.isEconomyAvailable()) {
-            player.sendMessage(MessageUtils.color("&cEconomy system is not available, police cannot fine you!"));
+            player.sendMessage(MessageUtils.color("&#FF4040Economy system is not available, police cannot fine you!"));
             logger.severe("Economy not available for police consequence to " + player.getName());
             return;
         }
         Economy economy = economyManager.getEconomy();
         logger.fine("Applying consequence to " + player.getName() + ", inventory check: " + isInventoryCheck);
 
-        // Validate illegal action or item
         boolean hasIllegalItem = false;
         if (isInventoryCheck) {
             for (ItemStack item : player.getInventory().getContents()) {
@@ -145,7 +165,6 @@ public class PoliceManager {
             return;
         }
 
-        // Try confiscation if inventory check
         boolean confiscated = false;
         if (isInventoryCheck) {
             for (ItemStack item : player.getInventory().getContents()) {
@@ -158,34 +177,32 @@ public class PoliceManager {
                         player.getInventory().remove(item);
                     }
                     confiscated = true;
-                    player.sendMessage(MessageUtils.color("&cPolice confiscated one " + itemName + "!"));
+                    player.sendMessage(MessageUtils.color("&#FF4040Police confiscated one " + itemName + "!"));
                     logger.info("Confiscated one " + itemName + " from " + player.getName());
                     break;
                 }
             }
         }
 
-        // Apply fine or jail only if confiscation succeeded or not inventory check
         if (confiscated || !isInventoryCheck) {
             double fine = 500.0;
             try {
                 if (economy.has(player, fine)) {
                     economy.withdrawPlayer(player, fine);
-                    player.sendMessage(MessageUtils.color("&cYou were fined $500 by police for illegal activity!"));
+                    player.sendMessage(MessageUtils.color("&#FF4040You were fined $500 by police for illegal activity!"));
                     logger.info("Fined player " + player.getName() + " $500 for illegal activity");
                 } else {
                     Location jailLocation = new Location(player.getWorld(), 0, 100, 0);
-                    // Ensure safe jail location
                     while (!jailLocation.getBlock().isPassable() || !jailLocation.clone().add(0, 1, 0).getBlock().isPassable()) {
                         jailLocation = jailLocation.clone().add(0, 1, 0);
                     }
                     player.teleport(jailLocation);
-                    player.sendMessage(MessageUtils.color("&cYou were jailed for illegal activity due to insufficient funds!"));
+                    player.sendMessage(MessageUtils.color("&#FF4040You were jailed for illegal activity due to insufficient funds!"));
                     logger.info("Jailed player " + player.getName() + " at " + jailLocation + " for illegal activity");
                 }
             } catch (Exception e) {
                 logger.severe("Failed to apply fine or jail to " + player.getName() + ": " + e.getMessage());
-                player.sendMessage(MessageUtils.color("&cPolice action failed due to an error!"));
+                player.sendMessage(MessageUtils.color("&#FF4040Police action failed due to an error!"));
             }
         }
     }
@@ -199,9 +216,7 @@ public class PoliceManager {
                         logger.warning("Police NPC is null, not spawned, or has no entity");
                         continue;
                     }
-                    if (!npc.getName().equalsIgnoreCase("Officer")) {
-                        continue;
-                    }
+                    if (!npc.getName().equalsIgnoreCase("Officer")) continue;
                     Location current = npc.getEntity().getLocation();
                     if (current.getWorld() == null) {
                         logger.warning("Police NPC ID " + npc.getId() + " is in an invalid world");

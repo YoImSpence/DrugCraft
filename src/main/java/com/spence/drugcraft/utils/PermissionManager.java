@@ -1,5 +1,6 @@
 package com.spence.drugcraft.utils;
 
+import com.spence.drugcraft.cartel.CartelManager;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -17,9 +18,8 @@ public class PermissionManager {
     }
 
     public boolean hasPermission(Player player, String permission) {
-        if (player.hasPermission(permission)) {
-            return true;
-        }
+        if (player == null) return false;
+        if (player.hasPermission(permission)) return true;
         String cartelName = cartelManager.getPlayerCartel(player.getUniqueId());
         if (cartelName != null) {
             CartelManager.Cartel cartel = cartelManager.getCartel(cartelName);

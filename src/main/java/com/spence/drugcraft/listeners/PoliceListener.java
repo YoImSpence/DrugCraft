@@ -2,10 +2,10 @@ package com.spence.drugcraft.listeners;
 
 import com.spence.drugcraft.DrugCraft;
 import com.spence.drugcraft.drugs.DrugManager;
-import com.spence.drugcraft.utils.CartelManager;
+import com.spence.drugcraft.cartel.CartelManager;
 import com.spence.drugcraft.utils.EconomyManager;
 import com.spence.drugcraft.utils.PermissionManager;
-import com.spence.drugcraft.utils.PoliceManager;
+import com.spence.drugcraft.police.PoliceManager;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,6 +13,9 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 public class PoliceListener implements Listener {
@@ -23,6 +26,7 @@ public class PoliceListener implements Listener {
     private final CartelManager cartelManager;
     private final PoliceManager policeManager;
     private final Logger logger;
+    private static final Map<UUID, Long> recentDrugActions = new HashMap<>();
 
     public PoliceListener(DrugCraft plugin, DrugManager drugManager, EconomyManager economyManager,
                           PermissionManager permissionManager, CartelManager cartelManager) {
@@ -39,6 +43,7 @@ public class PoliceListener implements Listener {
     public void onBlockPlace(BlockPlaceEvent event) {
         if (drugManager.isSeedItem(event.getItemInHand())) {
             logger.info("Detected seed planting by " + event.getPlayer().getName() + " at " + event.getBlock().getLocation());
+            recentDrugActions.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
             policeManager.detectIllegalActivity(event.getPlayer(), event.getBlock().getLocation(), false);
         }
     }
@@ -48,6 +53,7 @@ public class PoliceListener implements Listener {
         if (event.getBlock().getType() == Material.WHEAT &&
                 plugin.getCropManager().getCrop(event.getBlock().getLocation()) != null) {
             logger.info("Detected crop harvesting by " + event.getPlayer().getName() + " at " + event.getBlock().getLocation());
+            recentDrugActions.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
             policeManager.detectIllegalActivity(event.getPlayer(), event.getBlock().getLocation(), false);
         }
     }
@@ -56,7 +62,16 @@ public class PoliceListener implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.hasItem() && event.getAction().isRightClick() && drugManager.isDrugItem(event.getItem())) {
             logger.info("Detected drug use by " + event.getPlayer().getName() + " at " + event.getPlayer().getLocation());
+            recentDrugActions.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
             policeManager.detectIllegalActivity(event.getPlayer(), event.getPlayer().getLocation(), true);
         }
+    }
+
+    public static Long getRecentDrugAction(UUID playerId) {
+        return recentDrugActions.get(playerId);
+    }
+
+    public static void clearRecentDrugAction(UUID playerId) {
+        recentDrugActions.remove(playerId);
     }
 }
