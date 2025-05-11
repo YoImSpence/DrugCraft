@@ -106,7 +106,7 @@ public class CartelGUIListener implements Listener {
                 memberPermissions.put(permission, !current);
                 cartelManager.updatePermissions(cartelName, memberId, memberPermissions);
                 player.openInventory(new CartelGUI(plugin, cartelManager).createPermissionsGUI(cartel, memberId));
-                player.sendMessage(MessageUtils.color("&#00FF7FToggled " + permission + " for member to " + (!current ? "enabled" : "disabled")));
+                player.sendMessage(MessageUtils.color("&#FF7F00Toggled " + permission + " for member to " + (!current ? "enabled" : "disabled")));
             }
         } else if (title.startsWith(MessageUtils.color("&#4682B4Upgrades"))) {
             if (clickedItem.getType() == Material.EMERALD) {
@@ -116,7 +116,7 @@ public class CartelGUIListener implements Listener {
                 if (cartel.getStashedMoney() >= cost) {
                     cartelManager.upgradeCartel(cartelName, upgrade, level + 1, cost);
                     player.openInventory(new CartelGUI(plugin, cartelManager).createUpgradesGUI(cartel));
-                    player.sendMessage(MessageUtils.color("&#00FF7FUpgraded " + upgrade + " to level " + (level + 1)));
+                    player.sendMessage(MessageUtils.color("&#FF7F00Upgraded " + upgrade + " to level " + (level + 1)));
                 } else {
                     player.sendMessage(MessageUtils.color("&#FF4040Insufficient stashed money for upgrade."));
                 }
@@ -132,7 +132,7 @@ public class CartelGUIListener implements Listener {
                     economy.withdrawPlayer(player, 1000);
                     cartel.setStashedMoney(cartel.getStashedMoney() + 1000);
                     plugin.getDataManager().saveStash(cartelName, cartel.getStash());
-                    player.sendMessage(MessageUtils.color("&#00FF7FDeposited $1000 to the cartel stash."));
+                    player.sendMessage(MessageUtils.color("&#FF7F00Deposited $1000 to the cartel stash."));
                     player.openInventory(new CartelGUI(plugin, cartelManager).createStashGUI(cartel));
                 } else {
                     player.sendMessage(MessageUtils.color("&#FF4040You do not have enough money to deposit."));
@@ -142,7 +142,7 @@ public class CartelGUIListener implements Listener {
                     cartel.setStashedMoney(cartel.getStashedMoney() - 1000);
                     economy.depositPlayer(player, 1000);
                     plugin.getDataManager().saveStash(cartelName, cartel.getStash());
-                    player.sendMessage(MessageUtils.color("&#00FF7FWithdrew $1000 from the cartel stash."));
+                    player.sendMessage(MessageUtils.color("&#FF7F00Withdrew $1000 from the cartel stash."));
                     player.openInventory(new CartelGUI(plugin, cartelManager).createStashGUI(cartel));
                 } else {
                     player.sendMessage(MessageUtils.color("&#FF4040Insufficient money in the cartel stash."));

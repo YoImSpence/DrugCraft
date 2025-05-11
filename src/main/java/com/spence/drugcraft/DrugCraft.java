@@ -1,20 +1,24 @@
 package com.spence.drugcraft;
 
-import com.spence.drugcraft.admin.AdminCommand;
-import com.spence.drugcraft.listeners.BlockBreakListener;
-import com.spence.drugcraft.listeners.BlockPlaceListener;
-import com.spence.drugcraft.crops.CropListener;
-import com.spence.drugcraft.crops.CropManager;
-import com.spence.drugcraft.listeners.PlayerInteractListener;
-import com.spence.drugcraft.data.DataManager;
-import com.spence.drugcraft.drugs.DrugManager;
+import com.spence.drugcraft.addiction.AddictionManager;
 import com.spence.drugcraft.admin.AdminGUI;
 import com.spence.drugcraft.listeners.AdminGUIListener;
+import com.spence.drugcraft.cartel.CartelCommand;
+import com.spence.drugcraft.listeners.CartelGUIListener;
+import com.spence.drugcraft.cartel.CartelManager;
+import com.spence.drugcraft.listeners.CartelStashListener;
+import com.spence.drugcraft.listeners.BlockPlaceListener;
+import com.spence.drugcraft.crops.CropManager;
+import com.spence.drugcraft.crops.GrowLight;
+import com.spence.drugcraft.utils.ConfigManager;
+import com.spence.drugcraft.data.DataManager;
+import com.spence.drugcraft.drugs.DrugManager;
+import com.spence.drugcraft.houses.HouseCommand;
+import com.spence.drugcraft.houses.HouseManager;
 import com.spence.drugcraft.listeners.AddictionListener;
+import com.spence.drugcraft.listeners.BlockBreakListener;
 import com.spence.drugcraft.listeners.NPCListener;
 import com.spence.drugcraft.listeners.PlayerListener;
-import com.spence.drugcraft.data.ConfigManager;
-import com.spence.drugcraft.cartel.CartelManager;
 import com.spence.drugcraft.utils.EconomyManager;
 import com.spence.drugcraft.utils.PermissionManager;
 import net.milkbowl.vault.economy.Economy;
@@ -24,47 +28,56 @@ public class DrugCraft extends JavaPlugin {
     private ConfigManager configManager;
     private DataManager dataManager;
     private DrugManager drugManager;
-    private CropManager cropManager;
-    private PermissionManager permissionManager;
     private EconomyManager economyManager;
+    private PermissionManager permissionManager;
+    private AddictionManager addictionManager;
     private CartelManager cartelManager;
+    private CropManager cropManager;
+    private HouseManager houseManager;
+    private GrowLight growLight;
 
     @Override
     public void onEnable() {
-        // Initialize managers
+        saveDefaultConfig();
         configManager = new ConfigManager(this);
-        dataManager = new DataManager(this);
         drugManager = new DrugManager(this);
-        cropManager = new CropManager(this, drugManager, dataManager);
-        permissionManager = new PermissionManager();
         economyManager = new EconomyManager(this);
-        cartelManager = new CartelManager(this);
+        permissionManager = new PermissionManager(this);
+        dataManager = new DataManager(this);
+        addictionManager = new AddictionManager(this, dataManager);
+        cartelManager = new CartelManager(this, dataManager, economyManager);
+        cropManager = new CropManager(this, drugManager, dataManager, growLight);
+        houseManager = new HouseManager(this, economyManager);
+        growLight = new GrowLight(cropManager, drugManager);
 
-        // Initialize GUI
-        AdminGUI adminGUI = new AdminGUI(this, drugManager);
+        // Now that all managers are initialized, load crops
+        dataManager.loadCrops();
 
-        // Register commands
-        getCommand("drugadmin").setExecutor(new AdminCommand(this, cropManager, adminGUI));
+        Economy economy = economyManager.getEconomy();
+        getServer().getPluginManager().registerEvents(new AddictionListener(this, dataManager, drugManager, addictionManager), this);
+        getServer().getPluginManager().registerEvents(new AdminGUIListener(this, drugManager, growLight), this);
+        getServer().getPluginManager().registerEvents(new CartelGUIListener(this, cartelManager), this);
+        getServer().getPluginManager().registerEvents(new CartelStashListener(this, cartelManager, dataManager), this);
+        getServer().getPluginManager().registerEvents(new BlockPlaceListener(this, cropManager, drugManager, growLight), this);
+        getServer().getPluginManager().registerEvents(new BlockBreakListener(growLight), this);
+        getServer().getPluginManager().registerEvents(new NPCListener(this, drugManager, economy), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(this, cropManager, drugManager, growLight), this);
 
-        // Register listeners
-        getServer().getPluginManager().registerEvents(new BlockPlaceListener(this, cropManager), this);
-        getServer().getPluginManager().registerEvents(new BlockBreakListener(), this);
-        getServer().getPluginManager().registerEvents(new PlayerInteractListener(), this);
-        getServer().getPluginManager().registerEvents(new CropListener(this, cropManager, drugManager), this);
-        getServer().getPluginManager().registerEvents(new AddictionListener(this, dataManager, drugManager), this);
-        getServer().getPluginManager().registerEvents(new PlayerListener(this, dataManager, cropManager, drugManager), this);
-        getServer().getPluginManager().registerEvents(new AdminGUIListener(this, drugManager), this);
-        getServer().getPluginManager().registerEvents(new NPCListener(this, drugManager, getEconomy()), this);
+        getCommand("cartel").setExecutor(new CartelCommand(this, cartelManager));
+        getCommand("house").setExecutor(new HouseCommand(this, houseManager));
 
-        getLogger().info("DrugCraft has been enabled!");
+        getLogger().info("DrugCraft enabled successfully");
     }
 
     @Override
     public void onDisable() {
-        cropManager.cleanupHolograms();
-        dataManager.saveCrops();
-        dataManager.savePlayerData();
-        getLogger().info("DrugCraft has been disabled!");
+        if (cropManager != null) {
+            cropManager.cleanupHolograms();
+        }
+        if (dataManager != null) {
+            dataManager.saveAll();
+        }
+        getLogger().info("DrugCraft disabled successfully");
     }
 
     public ConfigManager getConfigManager() {
@@ -79,23 +92,27 @@ public class DrugCraft extends JavaPlugin {
         return drugManager;
     }
 
-    public CropManager getCropManager() {
-        return cropManager;
+    public EconomyManager getEconomyManager() {
+        return economyManager;
     }
 
     public PermissionManager getPermissionManager() {
         return permissionManager;
     }
 
-    public EconomyManager getEconomyManager() {
-        return economyManager;
+    public AddictionManager getAddictionManager() {
+        return addictionManager;
     }
 
     public CartelManager getCartelManager() {
         return cartelManager;
     }
 
-    public Economy getEconomy() {
-        return economyManager.getEconomy();
+    public CropManager getCropManager() {
+        return cropManager;
+    }
+
+    public HouseManager getHouseManager() {
+        return houseManager;
     }
 }

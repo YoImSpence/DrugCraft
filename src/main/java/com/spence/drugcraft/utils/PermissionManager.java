@@ -1,39 +1,55 @@
 package com.spence.drugcraft.utils;
 
-import com.spence.drugcraft.cartel.CartelManager;
+import com.spence.drugcraft.DrugCraft;
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import org.bukkit.plugin.RegisteredServiceProvider;
 
 public class PermissionManager {
-    private final JavaPlugin plugin;
-    private final CartelManager cartelManager;
+    private final DrugCraft plugin;
+    private Permission vaultPermission;
 
-    public PermissionManager(JavaPlugin plugin, CartelManager cartelManager) {
+    public PermissionManager(DrugCraft plugin) {
         this.plugin = plugin;
-        this.cartelManager = cartelManager;
+        setupVaultPermissions();
+        // Register permissions if needed
+        plugin.getServer().getPluginManager().addPermission(new org.bukkit.permissions.Permission("drugcraft.cartel.stash"));
+        plugin.getServer().getPluginManager().addPermission(new org.bukkit.permissions.Permission("drugcraft.admin"));
+        plugin.getServer().getPluginManager().addPermission(new org.bukkit.permissions.Permission("drugcraft.use"));
+    }
+
+    private void setupVaultPermissions() {
+        RegisteredServiceProvider<Permission> rsp = plugin.getServer().getServicesManager().getRegistration(Permission.class);
+        if (rsp != null) {
+            vaultPermission = rsp.getProvider();
+            plugin.getLogger().info("Vault permissions hooked successfully");
+        } else {
+            plugin.getLogger().warning("Vault permissions not found, falling back to default permission checks");
+        }
     }
 
     public boolean hasPermission(Player player, String permission) {
-        if (player == null) return false;
-        if (player.hasPermission(permission)) return true;
-        String cartelName = cartelManager.getPlayerCartel(player.getUniqueId());
-        if (cartelName != null) {
-            CartelManager.Cartel cartel = cartelManager.getCartel(cartelName);
-            Map<UUID, Map<String, Boolean>> permissions = cartel.getPermissions();
-            Map<String, Boolean> memberPermissions = permissions.getOrDefault(player.getUniqueId(), new HashMap<>());
-            switch (permission) {
-                case "drugcraft.cartel.harvest":
-                    return memberPermissions.getOrDefault("Harvest Crops", false);
-                case "drugcraft.cartel.plant":
-                    return memberPermissions.getOrDefault("Plant Crops", false);
-                case "drugcraft.cartel.stash":
-                    return memberPermissions.getOrDefault("Access Stash", false);
-            }
+        if (vaultPermission != null) {
+            return vaultPermission.has(player, permission);
         }
-        return false;
+        return player.hasPermission(permission);
+    }
+
+    public void addPermission(Player player, String permission) {
+        if (vaultPermission != null) {
+            vaultPermission.playerAdd(null, player, permission);
+        } else {
+            // Fallback: Cannot dynamically add permissions without Vault
+            plugin.getLogger().warning("Cannot add permission " + permission + " to " + player.getName() + " without Vault permissions");
+        }
+    }
+
+    public void removePermission(Player player, String permission) {
+        if (vaultPermission != null) {
+            vaultPermission.playerRemove(null, player, permission);
+        } else {
+            // Fallback: Cannot dynamically remove permissions without Vault
+            plugin.getLogger().warning("Cannot remove permission " + permission + " from " + player.getName() + " without Vault permissions");
+        }
     }
 }

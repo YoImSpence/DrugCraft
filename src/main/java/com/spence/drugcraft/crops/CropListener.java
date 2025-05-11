@@ -67,6 +67,6 @@ public class CropListener implements Listener {
             }
         }
         cropManager.removeCrop(crop);
-        event.getPlayer().sendMessage(MessageUtils.color("�FF7FHarvested " + drugItem.getItemMeta().getDisplayName()));
+        event.getPlayer().sendMessage(MessageUtils.color("&#00FF7FHarvested " + drugItem.getItemMeta().getDisplayName()));
     }
 }

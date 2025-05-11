@@ -20,42 +20,41 @@ public class CartelCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
-            sender.sendMessage(MessageUtils.color("&cThis command can only be used by players."));
+            sender.sendMessage(MessageUtils.color("&#FF4040This command can only be used by players."));
             return true;
         }
+
         Player player = (Player) sender;
-        if (!plugin.getPermissionManager().hasPermission(player, "drugcraft.cartel")) {
-            player.sendMessage(MessageUtils.color("&cYou do not have permission to use this command."));
-            return true;
-        }
         if (args.length == 0) {
-            player.sendMessage(MessageUtils.color("&eUsage: /cartel <create|invite|join|leave|info|manage>"));
+            cartelManager.showCartelInfo(player);
             return true;
         }
+
         String subCommand = args[0].toLowerCase();
         switch (subCommand) {
             case "create":
                 if (args.length < 2) {
-                    player.sendMessage(MessageUtils.color("&cUsage: /cartel create <name>"));
+                    player.sendMessage(MessageUtils.color("&#FF4040Usage: /cartel create <name>"));
                     return true;
                 }
-                cartelManager.createCartel(player, args[1]);
+                String cartelName = args[1];
+                cartelManager.createCartel(player, cartelName);
                 break;
             case "invite":
                 if (args.length < 2) {
-                    player.sendMessage(MessageUtils.color("&cUsage: /cartel invite <player>"));
+                    player.sendMessage(MessageUtils.color("&#FF4040Usage: /cartel invite <player>"));
                     return true;
                 }
                 Player target = Bukkit.getPlayer(args[1]);
                 if (target == null) {
-                    player.sendMessage(MessageUtils.color("&cPlayer not found."));
+                    player.sendMessage(MessageUtils.color("&#FF4040Player not found."));
                     return true;
                 }
                 cartelManager.invitePlayer(player, target);
                 break;
             case "join":
                 if (args.length < 2) {
-                    player.sendMessage(MessageUtils.color("&cUsage: /cartel join <cartel>"));
+                    player.sendMessage(MessageUtils.color("&#FF4040Usage: /cartel join <cartel>"));
                     return true;
                 }
                 cartelManager.joinCartel(player, args[1]);
@@ -66,11 +65,16 @@ public class CartelCommand implements CommandExecutor {
             case "info":
                 cartelManager.showCartelInfo(player);
                 break;
-            case "manage":
-                new CartelGUI(plugin, cartelManager).openGUI(player);
+            case "attack":
+                if (args.length < 2) {
+                    player.sendMessage(MessageUtils.color("&#FF4040Usage: /cartel attack <cartel>"));
+                    return true;
+                }
+                cartelManager.attackCartel(player, args[1]);
                 break;
             default:
-                player.sendMessage(MessageUtils.color("&eUsage: /cartel <create|invite|join|leave|info|manage>"));
+                player.sendMessage(MessageUtils.color("&#FF4040Unknown subcommand. Usage: /cartel [create|invite|join|leave|info|attack]"));
+                break;
         }
         return true;
     }

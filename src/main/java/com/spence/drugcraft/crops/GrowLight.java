@@ -1,32 +1,30 @@
 package com.spence.drugcraft.crops;
 
+import com.spence.drugcraft.drugs.Drug;
+import com.spence.drugcraft.drugs.DrugManager;
 import com.spence.drugcraft.utils.MessageUtils;
 import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class GrowLight {
-    private static final Map<Location, String> holograms = new HashMap<>();
-    private static final Map<Location, ArmorStand> growLights = new HashMap<>();
-    private static final NamespacedKey QUALITY_KEY = new NamespacedKey("drugcraft", "grow_light_quality");
-    private static final NamespacedKey GROW_LIGHT_KEY = new NamespacedKey("drugcraft", "is_grow_light");
+    private final CropManager cropManager;
+    private final DrugManager drugManager;
+    private static final Map<Location, String> growLights = new HashMap<>();
+    private static final Map<Location, String> hologramIds = new HashMap<>();
 
-    public static ItemStack createGrowLightItem(String quality) {
-        ItemStack growLight = new ItemStack(Material.GLOWSTONE_DUST);
+    public GrowLight(CropManager cropManager, DrugManager drugManager) {
+        this.cropManager = cropManager;
+        this.drugManager = drugManager;
+    }
+
+    public ItemStack createGrowLightItem(String quality) {
+        ItemStack growLight = new ItemStack(Material.SEA_LANTERN);
         ItemMeta meta = growLight.getItemMeta();
         String displayName = switch (quality) {
             case "Legendary" -> "&#FFD700Legendary Grow Light";
@@ -37,107 +35,65 @@ public class GrowLight {
         };
         meta.setDisplayName(MessageUtils.color(displayName));
         meta.setLore(Arrays.asList(
-                MessageUtils.color(getQualityColor(quality) + "Quality: " + quality),
-                MessageUtils.color("&#D3D3D3Place above crops to boost growth speed"),
-                MessageUtils.color("&#FFFF00Shift+Right Click to pick up")
+                MessageUtils.color(qualityColors.getOrDefault(quality, "&#FFFFFF") + "Quality: " + quality),
+                MessageUtils.color("&#D3D3D3Boosts crop growth when placed above")
         ));
-        meta.setCustomModelData(3000);
-        meta.getPersistentDataContainer().set(QUALITY_KEY, PersistentDataType.STRING, quality);
-        meta.getPersistentDataContainer().set(GROW_LIGHT_KEY, PersistentDataType.BYTE, (byte) 1);
         growLight.setItemMeta(meta);
         return growLight;
     }
 
-    public static ArmorStand placeGrowLight(Location location, String quality) {
-        ArmorStand armorStand = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
-        armorStand.setInvisible(true);
-        armorStand.setInvulnerable(true);
-        armorStand.setGravity(false);
-        armorStand.setMarker(true);
-        ItemStack lightItem = new ItemStack(Material.GLOWSTONE_DUST);
-        ItemMeta meta = lightItem.getItemMeta();
-        meta.setCustomModelData(3000);
-        lightItem.setItemMeta(meta);
-        armorStand.getEquipment().setHelmet(lightItem);
-        armorStand.setGlowing(true);
-
-        PersistentDataContainer container = armorStand.getPersistentDataContainer();
-        container.set(QUALITY_KEY, PersistentDataType.STRING, quality);
-        container.set(GROW_LIGHT_KEY, PersistentDataType.BYTE, (byte) 1);
-
-        growLights.put(location, armorStand);
+    public boolean placeGrowLight(Location location, String quality) {
+        if (growLights.containsKey(location)) return false;
+        growLights.put(location, quality);
         createHologram(location, quality);
-        return armorStand;
+        return true;
     }
 
-    public static String getQualityAtLocation(Location location) {
-        for (Entity entity : location.getWorld().getNearbyEntities(location, 0.5, 0.5, 0.5)) {
-            if (entity instanceof ArmorStand armorStand && isGrowLight(armorStand)) {
-                PersistentDataContainer container = armorStand.getPersistentDataContainer();
-                return container.get(QUALITY_KEY, PersistentDataType.STRING);
-            }
-        }
-        return null;
-    }
-
-    public static void removeGrowLight(Location location) {
-        ArmorStand armorStand = growLights.remove(location);
-        if (armorStand != null) {
-            armorStand.remove();
-        }
-        removeHologram(location);
-    }
-
-    public static boolean isGrowLight(ArmorStand armorStand) {
-        PersistentDataContainer container = armorStand.getPersistentDataContainer();
-        return container.has(GROW_LIGHT_KEY, PersistentDataType.BYTE) &&
-                container.get(GROW_LIGHT_KEY, PersistentDataType.BYTE) == 1;
-    }
-
-    public static boolean isGrowLightItem(ItemStack item) {
-        if (item == null || item.getType() != Material.GLOWSTONE_DUST || !item.hasItemMeta()) {
-            return false;
-        }
-        ItemMeta meta = item.getItemMeta();
-        PersistentDataContainer container = meta.getPersistentDataContainer();
-        return container.has(GROW_LIGHT_KEY, PersistentDataType.BYTE) &&
-                container.get(GROW_LIGHT_KEY, PersistentDataType.BYTE) == 1;
-    }
-
-    public static String getQualityFromGrowLight(ItemStack item) {
-        if (item == null || item.getType() != Material.GLOWSTONE_DUST || !item.hasItemMeta()) {
-            return "Basic";
-        }
-        ItemMeta meta = item.getItemMeta();
-        String quality = meta.getPersistentDataContainer().get(QUALITY_KEY, PersistentDataType.STRING);
-        return quality != null ? quality : "Basic";
-    }
-
-    public static void createHologram(Location location, String quality) {
-        String hologramId = "growlight_" + UUID.randomUUID();
+    private void createHologram(Location location, String quality) {
+        String hologramId = "growlight_" + location.getWorld().getName() + "_" + location.getBlockX() + "_" +
+                location.getBlockY() + "_" + location.getBlockZ();
         Location hologramLoc = location.clone().add(0.5, 1.5, 0.5);
         hologramLoc.setPitch(0);
         hologramLoc.setYaw(0);
+
         Hologram hologram = DHAPI.createHologram(hologramId, hologramLoc);
-        if (hologram == null) {
-            return;
-        }
-        String color = switch (quality) {
-            case "Legendary" -> "&#FFD700";
-            case "Prime" -> "&#1E90FF";
-            case "Exotic" -> "&#FF4500";
-            case "Standard" -> "&#00FF00";
-            default -> "&#00FFFF";
-        };
-        DHAPI.setHologramLines(hologram, Arrays.asList(
-                MessageUtils.color("&#FFDAB9" + quality + " Grow Light"),
-                MessageUtils.color("&#D3D3D3Boosting crop growth")
-        ));
-        holograms.put(location, hologramId);
+        if (hologram == null) return;
+
+        updateHologramLines(hologram, location, quality);
+        hologramIds.put(location, hologramId);
     }
 
-    public static void removeHologram(Location location) {
-        String hologramId = holograms.remove(location);
+    private void updateHologramLines(Hologram hologram, Location location, String quality) {
+        String cropName = "None";
+        Crop crop = null;
+        for (int y = -3; y <= 0; y++) {
+            Location below = location.clone().add(0, y, 0);
+            crop = cropManager.getCrop(below);
+            if (crop != null) {
+                Drug drug = drugManager.getDrug(crop.getDrugId());
+                cropName = drug != null ? drug.getName() : crop.getDrugId();
+                break;
+            }
+        }
+        List<String> lines = new ArrayList<>(Arrays.asList(
+                MessageUtils.color("&#FFFF00&l" + quality + " Grow Light"),
+                MessageUtils.color("&#D3D3D3Boosting: " + cropName)
+        ));
+        DHAPI.setHologramLines(hologram, lines);
+    }
+
+    public void updateHologram(Location location) {
+        String hologramId = hologramIds.get(location);
+        if (hologramId == null) return;
+        Hologram hologram = DHAPI.getHologram(hologramId);
+        if (hologram == null) return;
+        String quality = growLights.get(location);
+        updateHologramLines(hologram, location, quality);
+    }
+
+    public void removeGrowLight(Location location) {
+        growLights.remove(location);
+        String hologramId = hologramIds.remove(location);
         if (hologramId != null) {
             Hologram hologram = DHAPI.getHologram(hologramId);
             if (hologram != null) {
@@ -146,13 +102,33 @@ public class GrowLight {
         }
     }
 
-    private static String getQualityColor(String quality) {
-        return switch (quality) {
-            case "Legendary" -> "&#FFD700";
-            case "Prime" -> "&#1E90FF";
-            case "Exotic" -> "&#FF4500";
-            case "Standard" -> "&#00FF00";
-            default -> "&#00FFFF";
-        };
+    public String getQualityAtLocation(Location location) {
+        return growLights.get(location);
+    }
+
+    public boolean isGrowLightItem(ItemStack item) {
+        if (item == null || item.getType() != Material.SEA_LANTERN || !item.hasItemMeta()) return false;
+        String displayName = item.getItemMeta().getDisplayName();
+        return displayName.contains("Grow Light");
+    }
+
+    public String getQualityFromGrowLight(ItemStack item) {
+        if (!isGrowLightItem(item)) return "Basic";
+        String displayName = item.getItemMeta().getDisplayName();
+        if (displayName.contains("Legendary")) return "Legendary";
+        if (displayName.contains("Prime")) return "Prime";
+        if (displayName.contains("Exotic")) return "Exotic";
+        if (displayName.contains("Standard")) return "Standard";
+        return "Basic";
+    }
+
+    private static final Map<String, String> qualityColors = new HashMap<>();
+
+    static {
+        qualityColors.put("Basic", "&#00FFFF");
+        qualityColors.put("Standard", "&#00FF00");
+        qualityColors.put("Exotic", "&#FF4500");
+        qualityColors.put("Prime", "&#1E90FF");
+        qualityColors.put("Legendary", "&#FFD700");
     }
 }

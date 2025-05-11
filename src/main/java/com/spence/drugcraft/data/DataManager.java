@@ -2,174 +2,107 @@ package com.spence.drugcraft.data;
 
 import com.spence.drugcraft.DrugCraft;
 import com.spence.drugcraft.crops.Crop;
-import com.spence.drugcraft.cartel.CartelManager;
+import com.spence.drugcraft.houses.HouseManager;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 public class DataManager {
     private final DrugCraft plugin;
     private final Logger logger;
-    private File cropsFile;
-    private FileConfiguration cropsConfig;
-    private File cartelsFile;
+    private final File cartelsFile;
+    private final File cropsFile;
+    private final File addictionFile;
     private FileConfiguration cartelsConfig;
-    private File dataFile;
-    private FileConfiguration dataConfig;
+    private FileConfiguration cropsConfig;
+    private FileConfiguration addictionConfig;
 
     public DataManager(DrugCraft plugin) {
         this.plugin = plugin;
         this.logger = plugin.getLogger();
-        initializeFiles();
-    }
+        this.cartelsFile = new File(plugin.getDataFolder(), "cartels.yml");
+        this.cropsFile = new File(plugin.getDataFolder(), "crops.yml");
+        this.addictionFile = new File(plugin.getDataFolder(), "addiction.yml");
 
-    private void initializeFiles() {
-        cropsFile = new File(plugin.getDataFolder(), "crops.yml");
-        cartelsFile = new File(plugin.getDataFolder(), "cartels.yml");
-        dataFile = new File(plugin.getDataFolder(), "data.yml");
-
-        if (!cropsFile.exists()) {
-            plugin.saveResource("crops.yml", false);
-        }
         if (!cartelsFile.exists()) {
             plugin.saveResource("cartels.yml", false);
         }
-        if (!dataFile.exists()) {
-            plugin.saveResource("data.yml", false);
+        if (!cropsFile.exists()) {
+            plugin.saveResource("crops.yml", false);
+        }
+        if (!addictionFile.exists()) {
+            plugin.saveResource("addiction.yml", false);
         }
 
-        cropsConfig = YamlConfiguration.loadConfiguration(cropsFile);
-        cartelsConfig = YamlConfiguration.loadConfiguration(cartelsFile);
-        dataConfig = YamlConfiguration.loadConfiguration(dataFile);
+        this.cartelsConfig = YamlConfiguration.loadConfiguration(cartelsFile);
+        this.cropsConfig = YamlConfiguration.loadConfiguration(cropsFile);
+        this.addictionConfig = YamlConfiguration.loadConfiguration(addictionFile);
     }
 
-    public void saveCrop(Crop crop) {
-        String key = crop.getLocation().getWorld().getName() + "_" +
-                crop.getLocation().getBlockX() + "_" +
-                crop.getLocation().getBlockY() + "_" +
-                crop.getLocation().getBlockZ();
-        ConfigurationSection section = cropsConfig.createSection("crops." + key);
-        section.set("drug_id", crop.getDrugId());
-        section.set("planting_time", crop.getPlantingTime());
-        section.set("age", crop.getAge());
-        section.set("hologram_id", crop.getHologramId());
-        saveCropsConfig();
-    }
-
-    public void removeCrop(Crop crop) {
-        String key = crop.getLocation().getWorld().getName() + "_" +
-                crop.getLocation().getBlockX() + "_" +
-                crop.getLocation().getBlockY() + "_" +
-                crop.getLocation().getBlockZ();
-        cropsConfig.set("crops." + key, null);
-        saveCropsConfig();
-    }
-
-    public List<Crop> loadCrops() {
-        List<Crop> crops = new ArrayList<>();
+    public void loadCrops() {
         ConfigurationSection cropsSection = cropsConfig.getConfigurationSection("crops");
         if (cropsSection == null) {
             logger.info("No crops found in crops.yml");
-            return crops;
+            return;
         }
         for (String key : cropsSection.getKeys(false)) {
-            ConfigurationSection section = cropsSection.getConfigurationSection(key);
-            String[] parts = key.split("_");
-            if (parts.length != 4) {
-                logger.warning("Invalid crop key format: " + key);
-                continue;
-            }
             try {
-                Location location = new Location(
-                        plugin.getServer().getWorld(parts[0]),
-                        Integer.parseInt(parts[1]),
-                        Integer.parseInt(parts[2]),
-                        Integer.parseInt(parts[3])
-                );
-                String drugId = section.getString("drug_id");
-                long plantingTime = section.getLong("planting_time");
-                int age = section.getInt("age");
-                String hologramId = section.getString("hologram_id");
-                Crop crop = new Crop(location, drugId, plantingTime, age, hologramId);
-                crops.add(crop);
-            } catch (NumberFormatException e) {
-                logger.warning("Invalid coordinates in crop key: " + key);
+                ConfigurationSection cropSection = cropsSection.getConfigurationSection(key);
+                if (cropSection == null) continue;
+                String drugId = cropSection.getString("drug_id");
+                String worldName = cropSection.getString("world");
+                World world = Bukkit.getWorld(worldName);
+                if (world == null) {
+                    logger.warning("World not found for crop at " + key + ": " + worldName);
+                    continue;
+                }
+                int x = cropSection.getInt("x");
+                int y = cropSection.getInt("y");
+                int z = cropSection.getInt("z");
+                Location location = new Location(world, x, y, z);
+                UUID playerUUID = UUID.fromString(cropSection.getString("player_uuid"));
+                long plantingTime = cropSection.getLong("planting_time");
+                String quality = cropSection.getString("quality", "Basic");
+                Crop crop = new Crop(drugId, location, playerUUID, plantingTime, quality);
+                plugin.getCropManager().addCrop(crop);
+                logger.fine("Loaded crop: " + drugId + " at " + key);
+            } catch (IllegalArgumentException e) {
+                logger.warning("Failed to load crop " + key + ": " + e.getMessage());
             }
         }
-        logger.info("Loaded " + crops.size() + " crops from crops.yml");
-        return crops;
-    }
-
-    public void saveCrops() {
-        cropsConfig.set("crops", null);
-        for (Crop crop : plugin.getCropManager().getCrops().values()) {
-            saveCrop(crop);
-        }
-        logger.info("Saved " + plugin.getCropManager().getCrops().size() + " crops to crops.yml");
+        logger.info("Loaded " + plugin.getCropManager().getCrops().size() + " crops");
     }
 
     public FileConfiguration getCartelsConfig() {
         return cartelsConfig;
     }
 
+    public FileConfiguration getCropsConfig() {
+        return cropsConfig;
+    }
+
+    public FileConfiguration getAddictionConfig() {
+        return addictionConfig;
+    }
+
     public void saveCartels() {
-        ConfigurationSection cartelsSection = cartelsConfig.createSection("cartels");
-        for (CartelManager.Cartel cartel : plugin.getCartelManager().getCartels().values()) {
-            ConfigurationSection cartelSection = cartelsSection.createSection(cartel.getName());
-            cartelSection.set("leader", cartel.getLeader().toString());
-            cartelSection.set("members", cartel.getMembers().stream()
-                    .map(UUID::toString)
-                    .collect(Collectors.toList()));
-            cartelSection.set("level", cartel.getLevel());
-            cartelSection.set("stashed_money", cartel.getStashedMoney());
-            ConfigurationSection permsSection = cartelSection.createSection("permissions");
-            for (Map.Entry<UUID, Map<String, Boolean>> permEntry : cartel.getPermissions().entrySet()) {
-                permsSection.set(permEntry.getKey().toString(), permEntry.getValue());
-            }
-            cartelSection.set("upgrades", cartel.getUpgrades());
-            cartelSection.set("stash", cartel.getStash());
-        }
-        saveCartelsConfig();
-        logger.info("Saved " + plugin.getCartelManager().getCartels().size() + " cartels to cartels.yml");
-    }
-
-    public void saveShutdownTime() {
-        dataConfig.set("last_shutdown", System.currentTimeMillis());
         try {
-            dataConfig.save(dataFile);
-            logger.fine("Saved shutdown time to data.yml");
+            cartelsConfig.save(cartelsFile);
         } catch (IOException e) {
-            logger.severe("Failed to save shutdown time to data.yml: " + e.getMessage());
+            logger.severe("Failed to save cartels.yml: " + e.getMessage());
         }
     }
 
-    public long getOfflineTime() {
-        long lastShutdown = dataConfig.getLong("last_shutdown", 0);
-        if (lastShutdown == 0) {
-            logger.info("No previous shutdown time found, assuming no offline time");
-            return 0;
-        }
-        long offlineTime = System.currentTimeMillis() - lastShutdown;
-        logger.info("Calculated offline time: " + offlineTime + "ms");
-        return offlineTime;
-    }
-
-    public void saveStash(String cartelName, Map<String, Object> stash) {
-        cartelsConfig.set("cartels." + cartelName + ".stash", stash);
-        saveCartelsConfig();
-    }
-
-    private void saveCropsConfig() {
+    public void saveCrops() {
         try {
             cropsConfig.save(cropsFile);
         } catch (IOException e) {
@@ -177,11 +110,48 @@ public class DataManager {
         }
     }
 
-    private void saveCartelsConfig() {
+    public void saveAddiction() {
         try {
-            cartelsConfig.save(cartelsFile);
+            addictionConfig.save(addictionFile);
         } catch (IOException e) {
-            logger.severe("Failed to save cartels.yml: " + e.getMessage());
+            logger.severe("Failed to save addiction.yml: " + e.getMessage());
         }
+    }
+
+    public void saveAll() {
+        saveCartels();
+        saveCrops();
+        saveAddiction();
+        plugin.getHouseManager().saveHouses();
+    }
+
+    public void saveCrop(Crop crop) {
+        String key = crop.getLocation().getWorld().getName() + "_" + crop.getLocation().getBlockX() + "_" +
+                crop.getLocation().getBlockY() + "_" + crop.getLocation().getBlockZ();
+        String path = "crops." + key;
+        cropsConfig.set(path + ".drug_id", crop.getDrugId());
+        cropsConfig.set(path + ".world", crop.getLocation().getWorld().getName());
+        cropsConfig.set(path + ".x", crop.getLocation().getBlockX());
+        cropsConfig.set(path + ".y", crop.getLocation().getBlockY());
+        cropsConfig.set(path + ".z", crop.getLocation().getBlockZ());
+        cropsConfig.set(path + ".player_uuid", crop.getPlayerUUID().toString());
+        cropsConfig.set(path + ".planting_time", crop.getPlantingTime());
+        cropsConfig.set(path + ".quality", crop.getQuality());
+        saveCrops();
+    }
+
+    public void removeCrop(Crop crop) {
+        String key = crop.getLocation().getWorld().getName() + "_" + crop.getLocation().getBlockX() + "_" +
+                crop.getLocation().getBlockY() + "_" + crop.getLocation().getBlockZ();
+        cropsConfig.set("crops." + key, null);
+        saveCrops();
+    }
+
+    public void saveStash(String cartelName, Map<String, Object> stash) {
+        ConfigurationSection stashSection = cartelsConfig.createSection("cartels." + cartelName + ".stash");
+        for (Map.Entry<String, Object> entry : stash.entrySet()) {
+            stashSection.set(entry.getKey(), entry.getValue());
+        }
+        saveCartels();
     }
 }

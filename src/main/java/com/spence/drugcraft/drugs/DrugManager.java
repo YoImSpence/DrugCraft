@@ -22,16 +22,64 @@ public class DrugManager {
     private final Logger logger;
     private final Map<String, Drug> drugs = new HashMap<>();
     private final Map<String, String> qualityColors = new HashMap<>();
+    private final Map<String, String> effectColors = new HashMap<>();
+    private final Map<String, List<String>> uniqueLore = new HashMap<>();
 
     public DrugManager(DrugCraft plugin) {
         this.plugin = plugin;
         this.config = plugin.getConfigManager().getDrugsConfig();
         this.logger = plugin.getLogger();
-        qualityColors.put("Basic", "�FFFF");
-        qualityColors.put("Standard", "�FF00");
-        qualityColors.put("Exotic", "&#FF4500");
-        qualityColors.put("Prime", "E90FF");
-        qualityColors.put("Legendary", "&#FFD700");
+        // Use proper &#RRGGBB format
+        qualityColors.put("Basic", "&#00FFFF"); // Cyan
+        qualityColors.put("Standard", "&#00FF00"); // Lime
+        qualityColors.put("Exotic", "&#FF4500"); // Orange Red
+        qualityColors.put("Prime", "&#1E90FF"); // Dodger Blue
+        qualityColors.put("Legendary", "&#FFD700"); // Gold
+        effectColors.put("SPEED", "&#00BFFF"); // Deep Sky Blue
+        effectColors.put("NIGHT_VISION", "&#FFD700"); // Gold
+        effectColors.put("PARTICLE", "&#FF00FF"); // Magenta
+        effectColors.put("REGENERATION", "&#32CD32"); // Lime Green
+        effectColors.put("SLOW", "&#808080"); // Gray
+        effectColors.put("HEALTH_BOOST", "&#FF4500"); // Orange Red
+        effectColors.put("HUNGER", "&#8B4513"); // Saddle Brown
+        effectColors.put("INCREASE_DAMAGE", "&#FF0000"); // Red
+        effectColors.put("SOUND", "&#4682B4"); // Steel Blue
+        effectColors.put("FAST_DIGGING", "&#FFFF00"); // Yellow
+        effectColors.put("JUMP", "&#00FF00"); // Lime
+        effectColors.put("CONFUSION", "&#DA70D6"); // Orchid
+        // Unique lore descriptions for each drug
+        uniqueLore.put("cannabis_blue_dream", Arrays.asList(
+                "&#00FFFFA dreamy strain with a sweet berry aroma",
+                "&#00FFFFRelaxes the mind and body"
+        ));
+        uniqueLore.put("cannabis_dosidos", Arrays.asList(
+                "&#00FF00Nutty and earthy with a hint of lime",
+                "&#00FF00Perfect for a calming evening"
+        ));
+        uniqueLore.put("cannabis_granddaddy_purp", Arrays.asList(
+                "&#FF4500Deep purple buds with a grape flavor",
+                "&#FF4500Induces a heavy, soothing high"
+        ));
+        uniqueLore.put("cannabis_og_kush", Arrays.asList(
+                "&#1E90FFClassic strain with a piney scent",
+                "&#1E90FFDelivers a balanced, euphoric buzz"
+        ));
+        uniqueLore.put("cannabis_sour_diesel", Arrays.asList(
+                "&#32CD32Pungent diesel aroma with a citrus kick",
+                "&#32CD32Energizes and uplifts the spirit"
+        ));
+        uniqueLore.put("lsd", Arrays.asList(
+                "&#FF00FFMind-bending visuals and thoughts",
+                "&#FF00FFPrepare for a cosmic journey"
+        ));
+        uniqueLore.put("mystic_shroom", Arrays.asList(
+                "&#DA70D6Glowing mushrooms from enchanted forests",
+                "&#DA70D6Unleashes mystical hallucinations"
+        ));
+        uniqueLore.put("cocaine", Arrays.asList(
+                "&#FFFFFFPure white powder for a quick rush",
+                "&#FFFFFFHeightens alertness, use with caution"
+        ));
         loadDrugs();
     }
 
@@ -43,49 +91,93 @@ public class DrugManager {
         }
         for (String drugId : drugsSection.getKeys(false)) {
             ConfigurationSection drugSection = drugsSection.getConfigurationSection(drugId);
-            if (drugSection == null) continue;
+            if (drugSection == null) {
+                logger.warning("Skipping drug " + drugId + ": Invalid configuration section");
+                continue;
+            }
             try {
-                Material type = Material.valueOf(drugSection.getString("type"));
-                String name = drugSection.getString("name");
+                Material type = Material.valueOf(drugSection.getString("type", "STONE"));
+                String name = drugSection.getString("name", drugId);
                 int customModelData = drugSection.getInt("custom_model_data", 0);
                 List<String> lore = drugSection.getStringList("lore").stream()
                         .map(MessageUtils::color)
                         .collect(Collectors.toList());
+                List<String> uniqueDrugLore = uniqueLore.getOrDefault(drugId, lore);
+                lore = new ArrayList<>(uniqueDrugLore);
                 List<String> rawEffects = drugSection.getStringList("effects");
-                List<String> coloredEffects = new ArrayList<>();
+                List<String> formattedEffects = new ArrayList<>();
                 for (String effect : rawEffects) {
-                    String[] parts = effect.split(":");
-                    String effectType = parts[0];
-                    String coloredEffect = switch (effectType) {
-                        case "SPEED" -> "�BFFF" + effect;
-                        case "NIGHT_VISION" -> "&#FFD700" + effect;
-                        case "PARTICLE" -> "&#FF00FF" + effect;
-                        case "REGENERATION" -> " CD32" + effect;
-                        case "SLOW" -> "󅒐" + effect;
-                        case "HEALTH_BOOST" -> "&#FF4500" + effect;
-                        case "HUNGER" -> "B4513" + effect;
-                        case "INCREASE_DAMAGE" -> "&#FF0000" + effect;
-                        case "SOUND" -> "ቊB4" + effect;
-                        case "FAST_DIGGING" -> "&#FFFF00" + effect;
-                        case "JUMP" -> "�FF00" + effect;
-                        case "CONFUSION" -> "&#DA70D6" + effect;
-                        default -> "&#D3D3D3" + effect;
-                    };
-                    coloredEffects.add(MessageUtils.color(coloredEffect));
+                    try {
+                        String[] parts = effect.split(":");
+                        String effectType = parts[0].toUpperCase();
+                        String formattedEffect;
+                        if (effectType.equals("PARTICLE")) {
+                            if (parts.length < 2) {
+                                logger.warning("Invalid PARTICLE effect format for drug " + drugId + ": " + effect + " (expected PARTICLE:NAME)");
+                                continue;
+                            }
+                            String particleName = parts[1].toUpperCase();
+                            String displayName = switch (particleName) {
+                                case "WATER_SPLASH" -> "Water Splash Burst";
+                                case "VILLAGER_HAPPY" -> "Villager Happiness Glow";
+                                case "SMOKE_LARGE" -> "Large Smoke Cloud";
+                                case "PORTAL" -> "Nether Portal Swirl";
+                                case "SMOKE_NORMAL" -> "Gentle Smoke Puff";
+                                default -> particleName;
+                            };
+                            formattedEffect = effectColors.getOrDefault(effectType, "&#FFFFFF") + "Particle: " + displayName;
+                        } else if (effectType.equals("SOUND")) {
+                            if (parts.length < 2) {
+                                logger.warning("Invalid SOUND effect format for drug " + drugId + ": " + effect + " (expected SOUND:NAME)");
+                                continue;
+                            }
+                            String soundName = parts[1].toUpperCase();
+                            String displayName = switch (soundName) {
+                                case "ENTITY_CAT_PURR" -> "Cat Purring Echo";
+                                case "ENTITY_WOLF_HOWL" -> "Wolf Howling Cry";
+                                case "ENTITY_GHAST_SCREAM" -> "Ghastly Wail";
+                                default -> soundName;
+                            };
+                            formattedEffect = effectColors.getOrDefault(effectType, "&#FFFFFF") + "Sound: " + displayName;
+                        } else {
+                            if (parts.length < 3) {
+                                logger.warning("Invalid potion effect format for drug " + drugId + ": " + effect + " (expected EFFECT:LEVEL:DURATION)");
+                                continue;
+                            }
+                            int level = Integer.parseInt(parts[1]);
+                            int duration = Integer.parseInt(parts[2]);
+                            String effectName = switch (effectType) {
+                                case "SPEED" -> "Speed Boost";
+                                case "NIGHT_VISION" -> "Night Vision";
+                                case "REGENERATION" -> "Healing Surge";
+                                case "SLOW" -> "Sluggishness";
+                                case "HEALTH_BOOST" -> "Vitality Increase";
+                                case "HUNGER" -> "Ravenous Craving";
+                                case "INCREASE_DAMAGE" -> "Strength Surge";
+                                case "FAST_DIGGING" -> "Mining Haste";
+                                case "JUMP" -> "Leap Enhancement";
+                                case "CONFUSION" -> "Mind Fog";
+                                default -> effectType;
+                            };
+                            formattedEffect = effectColors.getOrDefault(effectType, "&#FFFFFF") + effectName + " (Level " + level + ", " + duration + "s)";
+                        }
+                        formattedEffects.add(MessageUtils.color(formattedEffect));
+                    } catch (Exception e) {
+                        logger.warning("Failed to parse effect for drug " + drugId + ": " + effect + " (" + e.getMessage() + ")");
+                    }
                 }
-                lore.set(1, coloredEffects.get(0));
-                if (coloredEffects.size() > 1) {
-                    lore.addAll(coloredEffects.subList(1, coloredEffects.size()));
-                }
+                lore.addAll(formattedEffects);
                 ItemStack seed = null;
                 ConfigurationSection seedSection = drugSection.getConfigurationSection("seed");
                 if (seedSection != null) {
-                    Material seedType = Material.valueOf(seedSection.getString("type"));
-                    String seedName = seedSection.getString("name");
+                    Material seedType = Material.valueOf(seedSection.getString("type", "WHEAT_SEEDS"));
+                    String seedName = seedSection.getString("name", drugId + " Seed");
                     int seedCustomModelData = seedSection.getInt("custom_model_data", 0);
                     List<String> seedLore = seedSection.getStringList("lore").stream()
                             .map(MessageUtils::color)
                             .collect(Collectors.toList());
+                    List<String> uniqueSeedLore = uniqueLore.getOrDefault(drugId + "_seed", seedLore);
+                    seedLore = new ArrayList<>(uniqueSeedLore);
                     seed = new ItemStack(seedType);
                     ItemMeta seedMeta = seed.getItemMeta();
                     seedMeta.setDisplayName(MessageUtils.color(seedName));
@@ -115,7 +207,7 @@ public class DrugManager {
         ItemStack item = drug.getItem(quality);
         ItemMeta meta = item.getItemMeta();
         List<String> lore = new ArrayList<>(meta.getLore());
-        lore.add(MessageUtils.color(qualityColors.getOrDefault(quality, "&#D3D3D3") + "Quality: " + quality));
+        lore.add(MessageUtils.color(qualityColors.getOrDefault(quality, "&#FFFFFF") + "Quality: " + quality));
         meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
@@ -127,7 +219,7 @@ public class DrugManager {
         ItemStack seed = drug.getSeedItem(quality);
         ItemMeta meta = seed.getItemMeta();
         List<String> lore = new ArrayList<>(meta.getLore());
-        lore.add(MessageUtils.color(qualityColors.getOrDefault(quality, "&#D3D3D3") + "Quality: " + quality));
+        lore.add(MessageUtils.color(qualityColors.getOrDefault(quality, "&#FFFFFF") + "Quality: " + quality));
         meta.setLore(lore);
         seed.setItemMeta(meta);
         return seed;
@@ -172,7 +264,16 @@ public class DrugManager {
 
     public List<Drug> getSortedDrugs() {
         return drugs.values().stream()
-                .sorted((d1, d2) -> d1.getName().compareTo(d2.getName()))
+                .sorted((d1, d2) -> {
+                    int nameCompare = d1.getName().compareTo(d2.getName());
+                    if (nameCompare != 0) return nameCompare;
+                    return compareQuality(d1.getQuality(), d2.getQuality());
+                })
                 .collect(Collectors.toList());
+    }
+
+    private int compareQuality(String q1, String q2) {
+        List<String> qualityOrder = Arrays.asList("Basic", "Standard", "Exotic", "Prime", "Legendary");
+        return Integer.compare(qualityOrder.indexOf(q1), qualityOrder.indexOf(q2));
     }
 }

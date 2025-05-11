@@ -7,6 +7,7 @@ import com.spence.drugcraft.drugs.DrugManager;
 import com.spence.drugcraft.utils.MessageUtils;
 import eu.decentsoftware.holograms.api.DHAPI;
 import eu.decentsoftware.holograms.api.holograms.Hologram;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -17,7 +18,6 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -32,21 +32,32 @@ public class CropManager {
     private final DrugCraft plugin;
     private final DrugManager drugManager;
     private final DataManager dataManager;
+    private final GrowLight growLight;
     private final Map<String, Crop> crops = new HashMap<>();
     private final Map<String, Item> cropIcons = new HashMap<>();
     private final Map<String, String> hologramIds = new HashMap<>();
     private final Logger logger;
 
-    public CropManager(DrugCraft plugin, DrugManager drugManager, DataManager dataManager) {
+    public CropManager(DrugCraft plugin, DrugManager drugManager, DataManager dataManager, GrowLight growLight) {
         this.plugin = plugin;
         this.drugManager = drugManager;
         this.dataManager = dataManager;
+        this.growLight = growLight;
         this.logger = plugin.getLogger();
         startUpdateTask();
     }
 
     public void addCrop(Crop crop) {
         String key = getLocationKey(crop.getLocation());
+        Player player = Bukkit.getPlayer(crop.getPlayerUUID());
+        if (player == null) {
+            logger.warning("Player not found for crop " + crop.getDrugId() + " at " + key);
+            return;
+        }
+        if (!plugin.getHouseManager().canUseDrugBlocks(player, crop.getLocation())) {
+            player.sendMessage(MessageUtils.color("&#FF4040You can only plant drug crops in a house you own."));
+            return;
+        }
         crops.put(key, crop);
         dataManager.saveCrop(crop);
         createHologram(crop);
@@ -62,7 +73,7 @@ public class CropManager {
         String growLightQuality = "Basic";
         for (int y = 1; y <= 3; y++) {
             Location aboveLoc = crop.getLocation().clone().add(0, y, 0);
-            String quality = GrowLight.getQualityAtLocation(aboveLoc);
+            String quality = growLight.getQualityAtLocation(aboveLoc);
             if (quality != null) {
                 hasGrowLight = true;
                 growLightQuality = quality;
@@ -99,7 +110,7 @@ public class CropManager {
             logger.warning("Drug not found for crop ID: " + crop.getDrugId() + " at " + key);
             return;
         }
-        ItemStack item = drugManager.getDrugItem(crop.getDrugId(), drug.getQuality());
+        ItemStack item = drugManager.getDrugItem(crop.getDrugId(), crop.getQuality());
         if (item == null) {
             logger.warning("Failed to create item icon for crop " + crop.getDrugId() + " at " + key);
             return;
@@ -138,14 +149,14 @@ public class CropManager {
         Drug drug = drugManager.getDrug(crop.getDrugId());
         String drugName = drug != null ? drug.getName() : crop.getDrugId();
         double growth = getGrowthPercentage(crop, growLightQuality);
-        String status = growth >= 100 ? "&#FFFF00Harvestable" : "&#00FF7FGrowing: &#D3D3D3" + String.format("%.2f", growth) + "%";
+        String status = growth >= 100 ? "&#FFFF00Harvestable" : "&#FF7F00Growing: &#D3D3D3" + String.format("%.2f", growth) + "%";
         List<String> hologramLines = new ArrayList<>(Arrays.asList(
                 "",
-                MessageUtils.color("&#FFFF00&l" + drugName), // Bold drug name
+                MessageUtils.color("&#FFFF00&l" + drugName),
                 MessageUtils.color(status)
         ));
         if (hasGrowLight) {
-            hologramLines.add(MessageUtils.color("&#00FF7FLight Boosted"));
+            hologramLines.add(MessageUtils.color("&#FFDAB9Light Boosted"));
         }
         DHAPI.setHologramLines(hologram, hologramLines);
         logger.fine("Updated hologram for crop " + drugName + " at " + hologram.getLocation() + ": " + hologramLines);
@@ -211,7 +222,7 @@ public class CropManager {
                     cleared++;
                 }
                 dataManager.saveCrops();
-                player.sendMessage(MessageUtils.color("&#00FF7FCleared " + cleared + " drug crops and their data."));
+                player.sendMessage(MessageUtils.color("&#FF7F00Cleared " + cleared + " drug crops and their data."));
                 logger.info("Player " + player.getName() + " cleared " + cleared + " drug crops");
             }
         }.runTask(plugin);
@@ -238,7 +249,7 @@ public class CropManager {
         boolean hasGrowLight = false;
         for (int y = 1; y <= 3; y++) {
             Location aboveLoc = crop.getLocation().clone().add(0, y, 0);
-            String quality = GrowLight.getQualityAtLocation(aboveLoc);
+            String quality = growLight.getQualityAtLocation(aboveLoc);
             if (quality != null) {
                 hasGrowLight = true;
                 growLightQuality = quality;
@@ -247,7 +258,7 @@ public class CropManager {
                     case "Prime" -> 0.6;
                     case "Exotic" -> 0.7;
                     case "Standard" -> 0.8;
-                    default -> 0.9;
+                    default -> 0.9; // Basic
                 };
                 Location particleLoc = crop.getLocation().clone().add(0.5, 0.5, 0.5);
                 crop.getLocation().getWorld().spawnParticle(Particle.HAPPY_VILLAGER, particleLoc, 5, 0.3, 0.3, 0.3, 0.1);
@@ -290,7 +301,7 @@ public class CropManager {
                         boolean hasGrowLight = false;
                         for (int y = 1; y <= 3; y++) {
                             Location aboveLoc = crop.getLocation().clone().add(0, y, 0);
-                            String quality = GrowLight.getQualityAtLocation(aboveLoc);
+                            String quality = growLight.getQualityAtLocation(aboveLoc);
                             if (quality != null) {
                                 hasGrowLight = true;
                                 growLightQuality = quality;
@@ -330,7 +341,7 @@ public class CropManager {
                 boolean hasGrowLight = false;
                 for (int y = 1; y <= 3; y++) {
                     Location aboveLoc = crop.getLocation().clone().add(0, y, 0);
-                    String quality = GrowLight.getQualityAtLocation(aboveLoc);
+                    String quality = growLight.getQualityAtLocation(aboveLoc);
                     if (quality != null) {
                         hasGrowLight = true;
                         growLightQuality = quality;
@@ -356,5 +367,15 @@ public class CropManager {
 
     public Map<String, Crop> getCrops() {
         return crops;
+    }
+
+    public int getYieldMultiplier(String quality) {
+        return switch (quality) {
+            case "Legendary" -> 5;
+            case "Prime" -> 4;
+            case "Exotic" -> 3;
+            case "Standard" -> 2;
+            default -> 1; // Basic
+        };
     }
 }

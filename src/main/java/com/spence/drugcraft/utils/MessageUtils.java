@@ -29,7 +29,7 @@ public class MessageUtils {
         }
         matcher.appendTail(result);
         message = result.toString();
-        // Then, handle legacy color codes with &
+        // Then, handle legacy color codes with & (in case any remain)
         return ChatColor.translateAlternateColorCodes('&', message);
     }
 

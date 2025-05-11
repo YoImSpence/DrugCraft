@@ -70,7 +70,7 @@ public class CartelStashListener implements Listener {
             cartel.getStash().put("location", locationKey);
             cartel.getStash().put("items", new ArrayList<ItemStack>());
             dataManager.saveStash(cartelName, cartel.getStash());
-            player.sendMessage(MessageUtils.color("&#00FF7FPlaced cartel stash for " + cartelName));
+            player.sendMessage(MessageUtils.color("&#FF7F00Placed cartel stash for " + cartelName));
         }
     }
 
@@ -98,7 +98,7 @@ public class CartelStashListener implements Listener {
                 cartel.getStash().remove("location");
                 cartel.getStash().remove("items");
                 dataManager.saveStash(cartelName, cartel.getStash());
-                player.sendMessage(MessageUtils.color("&#00FF7FRemoved cartel stash for " + cartelName));
+                player.sendMessage(MessageUtils.color("&#FF7F00Removed cartel stash for " + cartelName));
             }
         }
     }
@@ -152,6 +152,6 @@ public class CartelStashListener implements Listener {
         }
         cartel.getStash().put("items", items);
         dataManager.saveStash(cartelName, cartel.getStash());
-        player.sendMessage(MessageUtils.color("&#00FF7FUpdated cartel stash for " + cartelName));
+        player.sendMessage(MessageUtils.color("&#FF7F00Updated cartel stash for " + cartelName));
     }
 }

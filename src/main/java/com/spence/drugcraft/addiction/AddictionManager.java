@@ -1,13 +1,10 @@
 package com.spence.drugcraft.addiction;
 
 import com.spence.drugcraft.DrugCraft;
+import com.spence.drugcraft.data.DataManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -15,74 +12,85 @@ import java.util.logging.Logger;
 
 public class AddictionManager {
     private final DrugCraft plugin;
+    private final DataManager dataManager;
     private final Logger logger;
     private final Map<UUID, PlayerAddictionData> playerData = new HashMap<>();
-    private File addictionFile;
-    private FileConfiguration addictionConfig;
 
-    public AddictionManager(DrugCraft plugin) {
+    public AddictionManager(DrugCraft plugin, DataManager dataManager) {
         this.plugin = plugin;
+        this.dataManager = dataManager;
         this.logger = plugin.getLogger();
-        addictionFile = new File(plugin.getDataFolder(), "addiction.yml");
-        if (!addictionFile.exists()) {
-            plugin.saveResource("addiction.yml", false);
-        }
-        addictionConfig = YamlConfiguration.loadConfiguration(addictionFile);
+        loadAddictionData();
     }
 
-    public void loadPlayerData(Player player) {
-        UUID playerId = player.getUniqueId();
-        ConfigurationSection section = addictionConfig.getConfigurationSection(playerId.toString());
-        if (section != null) {
-            PlayerAddictionData data = new PlayerAddictionData();
-            for (String drugId : section.getKeys(false)) {
-                int uses = section.getInt(drugId);
-                data.setDrugUses(drugId, uses);
-            }
-            playerData.put(playerId, data);
-            logger.fine("Loaded addiction data for player " + player.getName());
+    private void loadAddictionData() {
+        FileConfiguration config = dataManager.getAddictionConfig();
+        ConfigurationSection playersSection = config.getConfigurationSection("players");
+        if (playersSection == null) {
+            logger.info("No addiction data found in addiction.yml");
+            return;
         }
-    }
-
-    public void savePlayerData(Player player) {
-        UUID playerId = player.getUniqueId();
-        PlayerAddictionData data = playerData.get(playerId);
-        if (data != null) {
-            ConfigurationSection section = addictionConfig.createSection(playerId.toString());
-            for (Map.Entry<String, Integer> entry : data.getDrugUses().entrySet()) {
-                section.set(entry.getKey(), entry.getValue());
-            }
-            saveAddictionConfig();
-            logger.fine("Saved addiction data for player " + player.getName());
-        }
-    }
-
-    public void saveAllPlayerData() {
-        for (UUID playerId : playerData.keySet()) {
-            Player player = plugin.getServer().getPlayer(playerId);
-            if (player != null) {
-                savePlayerData(player);
+        for (String uuid : playersSection.getKeys(false)) {
+            try {
+                UUID playerId = UUID.fromString(uuid);
+                ConfigurationSection playerSection = playersSection.getConfigurationSection(uuid);
+                if (playerSection == null) continue;
+                Map<String, Integer> addictionLevels = new HashMap<>();
+                ConfigurationSection levelsSection = playerSection.getConfigurationSection("addiction_levels");
+                if (levelsSection != null) {
+                    for (String drugId : levelsSection.getKeys(false)) {
+                        addictionLevels.put(drugId, levelsSection.getInt(drugId));
+                    }
+                }
+                PlayerAddictionData data = new PlayerAddictionData(playerId, addictionLevels);
+                playerData.put(playerId, data);
+                logger.fine("Loaded addiction data for player: " + uuid);
+            } catch (IllegalArgumentException e) {
+                logger.warning("Failed to load addiction data for player " + uuid + ": Invalid UUID format (" + e.getMessage() + ")");
             }
         }
+        logger.info("Loaded addiction data for " + playerData.size() + " players");
     }
 
-    public void clearPlayerData(Player player) {
-        playerData.remove(player.getUniqueId());
-        logger.fine("Cleared addiction data for player " + player.getName());
+    public void saveAddictionData() {
+        FileConfiguration config = dataManager.getAddictionConfig();
+        for (PlayerAddictionData data : playerData.values()) {
+            String path = "players." + data.getPlayerId().toString();
+            ConfigurationSection levelsSection = config.createSection(path + ".addiction_levels");
+            for (Map.Entry<String, Integer> entry : data.getAddictionLevels().entrySet()) {
+                levelsSection.set(entry.getKey(), entry.getValue());
+            }
+        }
+        dataManager.saveAddiction();
     }
 
-    public void incrementDrugUse(Player player, String drugId) {
-        UUID playerId = player.getUniqueId();
-        PlayerAddictionData data = playerData.computeIfAbsent(playerId, k -> new PlayerAddictionData());
-        data.incrementDrugUse(drugId);
-        logger.fine("Incremented drug use for " + player.getName() + ": " + drugId);
+    public PlayerAddictionData getPlayerAddictionData(UUID playerId) {
+        return playerData.computeIfAbsent(playerId, k -> new PlayerAddictionData(playerId, new HashMap<>()));
     }
 
-    private void saveAddictionConfig() {
-        try {
-            addictionConfig.save(addictionFile);
-        } catch (IOException e) {
-            logger.severe("Failed to save addiction.yml: " + e.getMessage());
+    public static class PlayerAddictionData {
+        private final UUID playerId;
+        private final Map<String, Integer> addictionLevels;
+
+        public PlayerAddictionData(UUID playerId, Map<String, Integer> addictionLevels) {
+            this.playerId = playerId;
+            this.addictionLevels = addictionLevels;
+        }
+
+        public UUID getPlayerId() {
+            return playerId;
+        }
+
+        public Map<String, Integer> getAddictionLevels() {
+            return addictionLevels;
+        }
+
+        public int getAddictionLevel(String drugId) {
+            return addictionLevels.getOrDefault(drugId, 0);
+        }
+
+        public void setAddictionLevel(String drugId, int level) {
+            addictionLevels.put(drugId, level);
         }
     }
 }

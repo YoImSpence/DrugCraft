@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ public class CartelManager {
     private final Map<String, Cartel> cartels = new HashMap<>();
     private final Map<UUID, String> playerCartels = new HashMap<>();
     private final Map<UUID, List<String>> pendingInvites = new HashMap<>();
+    private final Random random = new Random();
 
     public CartelManager(DrugCraft plugin, DataManager dataManager, EconomyManager economyManager) {
         this.plugin = plugin;
@@ -116,7 +118,7 @@ public class CartelManager {
         cartels.put(cartelName, cartel);
         playerCartels.put(player.getUniqueId(), cartelName);
         dataManager.saveCartels();
-        player.sendMessage(MessageUtils.color("&#00FF7FCreated cartel: " + cartelName));
+        player.sendMessage(MessageUtils.color("&#FF7F00Created cartel: " + cartelName));
         logger.info("Player " + player.getName() + " created cartel: " + cartelName);
     }
 
@@ -140,8 +142,8 @@ public class CartelManager {
             return;
         }
         pendingInvites.computeIfAbsent(target.getUniqueId(), k -> new ArrayList<>()).add(cartelName);
-        target.sendMessage(MessageUtils.color("&#00FF7FYou have been invited to join the cartel: " + cartelName + ". Use /cartel join " + cartelName + " to accept."));
-        leader.sendMessage(MessageUtils.color("&#00FF7FInvited " + target.getName() + " to your cartel."));
+        target.sendMessage(MessageUtils.color("&#FF7F00You have been invited to join the cartel: " + cartelName + ". Use /cartel join " + cartelName + " to accept."));
+        leader.sendMessage(MessageUtils.color("&#FF7F00Invited " + target.getName() + " to your cartel."));
         logger.info("Player " + leader.getName() + " invited " + target.getName() + " to cartel: " + cartelName);
     }
 
@@ -169,9 +171,9 @@ public class CartelManager {
         dataManager.saveCartels();
         Player leader = Bukkit.getPlayer(cartel.getLeader());
         if (leader != null) {
-            leader.sendMessage(MessageUtils.color("&#00FF7F" + player.getName() + " has joined your cartel."));
+            leader.sendMessage(MessageUtils.color("&#FF7F00" + player.getName() + " has joined your cartel."));
         }
-        player.sendMessage(MessageUtils.color("&#00FF7FYou have joined the cartel: " + cartelName));
+        player.sendMessage(MessageUtils.color("&#FF7F00You have joined the cartel: " + cartelName));
         logger.info("Player " + player.getName() + " joined cartel: " + cartelName);
     }
 
@@ -186,7 +188,7 @@ public class CartelManager {
             cartels.remove(cartelName);
             playerCartels.remove(player.getUniqueId());
             dataManager.saveCartels();
-            player.sendMessage(MessageUtils.color("&#00FF7FDisbanded cartel: " + cartelName));
+            player.sendMessage(MessageUtils.color("&#FF7F00Disbanded cartel: " + cartelName));
             logger.info("Player " + player.getName() + " disbanded cartel: " + cartelName);
             return;
         }
@@ -197,7 +199,7 @@ public class CartelManager {
         if (leader != null) {
             leader.sendMessage(MessageUtils.color("&#FF4040" + player.getName() + " has left your cartel."));
         }
-        player.sendMessage(MessageUtils.color("&#00FF7FYou have left the cartel: " + cartelName));
+        player.sendMessage(MessageUtils.color("&#FF7F00You have left the cartel: " + cartelName));
         logger.info("Player " + player.getName() + " left cartel: " + cartelName);
     }
 
@@ -238,6 +240,55 @@ public class CartelManager {
             dataManager.saveCartels();
             logger.info("Upgraded " + upgrade + " to level " + level + " for cartel: " + cartelName);
         }
+    }
+
+    public void attackCartel(Player attacker, String targetCartelName) {
+        String attackerCartelName = playerCartels.get(attacker.getUniqueId());
+        if (attackerCartelName == null) {
+            attacker.sendMessage(MessageUtils.color("&#FF4040You are not in a cartel."));
+            return;
+        }
+        Cartel attackerCartel = cartels.get(attackerCartelName);
+        if (!attackerCartel.getLeader().equals(attacker.getUniqueId())) {
+            attacker.sendMessage(MessageUtils.color("&#FF4040Only the cartel leader can initiate an attack."));
+            return;
+        }
+        Cartel targetCartel = cartels.get(targetCartelName);
+        if (targetCartel == null) {
+            attacker.sendMessage(MessageUtils.color("&#FF4040Target cartel not found."));
+            return;
+        }
+        if (attackerCartelName.equals(targetCartelName)) {
+            attacker.sendMessage(MessageUtils.color("&#FF4040You cannot attack your own cartel."));
+            return;
+        }
+
+        // Determine battle outcome based on levels and upgrades
+        int attackerStrength = attackerCartel.getLevel() + attackerCartel.getUpgrades().getOrDefault("Attack Power", 0);
+        int targetDefense = targetCartel.getLevel() + targetCartel.getUpgrades().getOrDefault("Defense", 0);
+        int totalStrength = attackerStrength + targetDefense;
+        double attackerWinChance = (double) attackerStrength / totalStrength;
+        boolean attackerWins = random.nextDouble() < attackerWinChance;
+
+        if (attackerWins) {
+            double lootAmount = targetCartel.getStashedMoney() * 0.3; // Steal 30% of stashed money
+            targetCartel.setStashedMoney(targetCartel.getStashedMoney() - lootAmount);
+            attackerCartel.setStashedMoney(attackerCartel.getStashedMoney() + lootAmount);
+            attacker.sendMessage(MessageUtils.color("&#FF7F00Your cartel won the battle against " + targetCartelName + " and looted $" + lootAmount + "!"));
+            Player targetLeader = Bukkit.getPlayer(targetCartel.getLeader());
+            if (targetLeader != null) {
+                targetLeader.sendMessage(MessageUtils.color("&#FF4040Your cartel was attacked by " + attackerCartelName + " and lost $" + lootAmount + "!"));
+            }
+        } else {
+            double penalty = attackerCartel.getStashedMoney() * 0.1; // Lose 10% of stashed money
+            attackerCartel.setStashedMoney(attackerCartel.getStashedMoney() - penalty);
+            attacker.sendMessage(MessageUtils.color("&#FF4040Your cartel lost the battle against " + targetCartelName + " and lost $" + penalty + "!"));
+            Player targetLeader = Bukkit.getPlayer(targetCartel.getLeader());
+            if (targetLeader != null) {
+                targetLeader.sendMessage(MessageUtils.color("&#FF7F00Your cartel successfully defended against an attack from " + attackerCartelName + "!"));
+            }
+        }
+        dataManager.saveCartels();
     }
 
     public double getGrowthBonus(Location location) {

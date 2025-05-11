@@ -1,70 +1,53 @@
 package com.spence.drugcraft.listeners;
 
 import com.spence.drugcraft.DrugCraft;
+import com.spence.drugcraft.drugs.Drug;
 import com.spence.drugcraft.drugs.DrugManager;
-import com.spence.drugcraft.cartel.CartelManager;
-import com.spence.drugcraft.utils.EconomyManager;
-import com.spence.drugcraft.utils.PermissionManager;
 import com.spence.drugcraft.police.PoliceManager;
-import org.bukkit.Material;
+import com.spence.drugcraft.utils.MessageUtils;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.logging.Logger;
 
 public class PoliceListener implements Listener {
     private final DrugCraft plugin;
     private final DrugManager drugManager;
-    private final EconomyManager economyManager;
-    private final PermissionManager permissionManager;
-    private final CartelManager cartelManager;
     private final PoliceManager policeManager;
-    private final Logger logger;
     private static final Map<UUID, Long> recentDrugActions = new HashMap<>();
 
-    public PoliceListener(DrugCraft plugin, DrugManager drugManager, EconomyManager economyManager,
-                          PermissionManager permissionManager, CartelManager cartelManager) {
+    public PoliceListener(DrugCraft plugin, DrugManager drugManager, PoliceManager policeManager) {
         this.plugin = plugin;
         this.drugManager = drugManager;
-        this.economyManager = economyManager;
-        this.permissionManager = permissionManager;
-        this.cartelManager = cartelManager;
-        this.policeManager = plugin.getPoliceManager();
-        this.logger = plugin.getLogger();
+        this.policeManager = policeManager;
     }
 
     @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event) {
-        if (drugManager.isSeedItem(event.getItemInHand())) {
-            logger.info("Detected seed planting by " + event.getPlayer().getName() + " at " + event.getBlock().getLocation());
-            recentDrugActions.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
-            policeManager.detectIllegalActivity(event.getPlayer(), event.getBlock().getLocation(), false);
-        }
-    }
+    public void onPlayerHoldItem(PlayerItemHeldEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = player.getInventory().getItem(event.getNewSlot());
+        if (item == null || !drugManager.isDrugItem(item)) return;
 
-    @EventHandler
-    public void onBlockBreak(BlockBreakEvent event) {
-        if (event.getBlock().getType() == Material.WHEAT &&
-                plugin.getCropManager().getCrop(event.getBlock().getLocation()) != null) {
-            logger.info("Detected crop harvesting by " + event.getPlayer().getName() + " at " + event.getBlock().getLocation());
-            recentDrugActions.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
-            policeManager.detectIllegalActivity(event.getPlayer(), event.getBlock().getLocation(), false);
+        String drugId = null;
+        for (Drug drug : drugManager.getSortedDrugs()) {
+            if (item.getType() == drug.getItem(drug.getQuality()).getType() &&
+                    item.getItemMeta().getDisplayName().equals(drug.getItem(drug.getQuality()).getItemMeta().getDisplayName())) {
+                drugId = drug.getDrugId();
+                break;
+            }
         }
-    }
+        if (drugId == null) return;
 
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        if (event.hasItem() && event.getAction().isRightClick() && drugManager.isDrugItem(event.getItem())) {
-            logger.info("Detected drug use by " + event.getPlayer().getName() + " at " + event.getPlayer().getLocation());
-            recentDrugActions.put(event.getPlayer().getUniqueId(), System.currentTimeMillis());
-            policeManager.detectIllegalActivity(event.getPlayer(), event.getPlayer().getLocation(), true);
+        recentDrugActions.put(player.getUniqueId(), System.currentTimeMillis());
+        if (player.hasPermission("drugcraft.police")) {
+            player.sendMessage(MessageUtils.color("&#FF4040You are holding an illegal item: " + drugId + "!"));
         }
+        policeManager.detectIllegalActivity(player, player.getLocation(), true);
     }
 
     public static Long getRecentDrugAction(UUID playerId) {

@@ -2,19 +2,30 @@ package com.spence.drugcraft.addiction;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class PlayerAddictionData {
-    private final Map<String, Integer> drugUses = new HashMap<>();
+    private final UUID playerUUID;
+    private final Map<String, Integer> addictionLevels;
 
-    public void incrementDrugUse(String drugId) {
-        drugUses.put(drugId, drugUses.getOrDefault(drugId, 0) + 1);
+    public PlayerAddictionData(UUID playerUUID, Map<String, Integer> addictionLevels) {
+        this.playerUUID = playerUUID;
+        this.addictionLevels = new HashMap<>(addictionLevels);
     }
 
-    public Map<String, Integer> getDrugUses() {
-        return drugUses;
+    public UUID getPlayerUUID() {
+        return playerUUID;
     }
 
-    public void setDrugUses(String drugId, int uses) {
-        drugUses.put(drugId, uses);
+    public Map<String, Integer> getAddictionLevels() {
+        return new HashMap<>(addictionLevels);
+    }
+
+    public int getAddictionLevel(String drugId) {
+        return addictionLevels.getOrDefault(drugId, 0);
+    }
+
+    public void setAddictionLevel(String drugId, int level) {
+        addictionLevels.put(drugId, level);
     }
 }

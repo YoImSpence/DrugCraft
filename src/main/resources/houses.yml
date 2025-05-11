@@ -1,0 +1,5 @@
+houses:
+  house1:
+    region_id: "apts1"
+    world: "Greenfield"
+    price: 1000.0
