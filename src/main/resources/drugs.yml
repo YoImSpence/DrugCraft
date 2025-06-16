@@ -1,0 +1,2385 @@
+  ```yaml
+  drugs:
+    # Cannabis Strains (30 unique strains with seeds)
+    cannabis_blue_dream:
+      name: "&#E90FFFBlue Dream"
+      material: SUGAR
+      customModelData: 1
+      lore:
+        - "A soothing cannabis strain"
+        - "Relax and enjoy"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 1
+      growthTime: 300
+      baseBuyPrice: 100.0
+      baseSellPrice: 50.0
+      level: 1
+      type: "Cannabis"
+      addictionChance: 0.1
+      effects:
+        - type: "REGENERATION"
+          amplifier: 1
+          duration: 200
+        - type: "SLOWNESS"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "VILLAGER_HAPPY"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_YES"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_og_kush:
+      name: "&#00CD32OG Kush"
+      material: SUGAR
+      customModelData: 3
+      lore:
+        - "A classic indica-dominant strain"
+        - "Deep relaxation awaits"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 3
+      growthTime: 320
+      baseBuyPrice: 110.0
+      baseSellPrice: 55.0
+      level: 2
+      type: "Cannabis"
+      addictionChance: 0.15
+      effects:
+        - type: "SLOWNESS"
+          amplifier: 2
+          duration: 250
+        - type: "ABSORPTION"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "HEART"
+          count: 8
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_CAT_PURR"
+          volume: 0.8
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_sour_diesel:
+      name: "&#FFD700Sour Diesel"
+      material: SUGAR
+      customModelData: 4
+      lore:
+        - "An energizing sativa strain"
+        - "Feel the buzz"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 4
+      growthTime: 280
+      baseBuyPrice: 120.0
+      baseSellPrice: 60.0
+      level: 2
+      type: "Cannabis"
+      addictionChance: 0.15
+      effects:
+        - type: "SPEED"
+          amplifier: 1
+          duration: 200
+        - type: "JUMP_BOOST"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "FLAME"
+          count: 10
+          offset: 0.3
+      sounds:
+        - type: "ENTITY_BLAZE_SHOOT"
+          volume: 0.5
+          pitch: 1.2
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_girl_scout_cookies:
+      name: "&#FF69B4Girl Scout Cookies"
+      material: SUGAR
+      customModelData: 5
+      lore:
+        - "A sweet hybrid strain"
+        - "Balanced euphoria"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 5
+      growthTime: 310
+      baseBuyPrice: 115.0
+      baseSellPrice: 57.5
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "REGENERATION"
+          amplifier: 2
+          duration: 150
+        - type: "HUNGER"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "VILLAGER_HAPPY"
+          count: 12
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_CELEBRATE"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_white_widow:
+      name: "&#F0F8FFWhite Widow"
+      material: SUGAR
+      customModelData: 6
+      lore:
+        - "A potent hybrid strain"
+        - "Clear-headed high"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 6
+      growthTime: 300
+      baseBuyPrice: 125.0
+      baseSellPrice: 62.5
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "NIGHT_VISION"
+          amplifier: 1
+          duration: 250
+        - type: "SLOWNESS"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "CLOUD"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_ENDERMAN_TELEPORT"
+          volume: 0.7
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_northern_lights:
+      name: "&#00CED1Northern Lights"
+      material: SUGAR
+      customModelData: 7
+      lore:
+        - "A calming indica strain"
+        - "Perfect for rest"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 7
+      growthTime: 330
+      baseBuyPrice: 110.0
+      baseSellPrice: 55.0
+      level: 2
+      type: "Cannabis"
+      addictionChance: 0.15
+      effects:
+        - type: "SLOWNESS"
+          amplifier: 2
+          duration: 300
+        - type: "WEAKNESS"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "SNOW"
+          count: 15
+          offset: 0.5
+      sounds:
+        - type: "BLOCK_SNOW_BREAK"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_durban_poison:
+      name: "&#FFA500Durban Poison"
+      material: SUGAR
+      customModelData: 8
+      lore:
+        - "A pure sativa strain"
+        - "Uplifting energy"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 8
+      growthTime: 270
+      baseBuyPrice: 130.0
+      baseSellPrice: 65.0
+      level: 4
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "SPEED"
+          amplifier: 2
+          duration: 250
+        - type: "HASTE"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "FIREWORK"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+          volume: 0.8
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_purple_haze:
+      name: "&#FF00FFPurple Haze"
+      material: SUGAR
+      customModelData: 9
+      lore:
+        - "A vibrant sativa strain"
+        - "Creative inspiration"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 9
+      growthTime: 290
+      baseBuyPrice: 120.0
+      baseSellPrice: 60.0
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "JUMP_BOOST"
+          amplifier: 1
+          duration: 200
+        - type: "NIGHT_VISION"
+          amplifier: 1
+          duration: 300
+      particles:
+        - type: "PORTAL"
+          count: 15
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_ENDERMAN_SCREAM"
+          volume: 0.5
+          pitch: 1.2
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_jack_herer:
+      name: "&#B2A22Jack Herer"
+      material: SUGAR
+      customModelData: 10
+      lore:
+        - "A balanced hybrid strain"
+        - "Clarity and focus"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 10
+      growthTime: 310
+      baseBuyPrice: 115.0
+      baseSellPrice: 57.5
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "SPEED"
+          amplifier: 1
+          duration: 200
+        - type: "REGENERATION"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "VILLAGER_HAPPY"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_YES"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_gorilla_glue:
+      name: "&#B4513EGorilla Glue"
+      material: SUGAR
+      customModelData: 11
+      lore:
+        - "A sticky indica strain"
+        - "Heavy relaxation"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 11
+      growthTime: 340
+      baseBuyPrice: 110.0
+      baseSellPrice: 55.0
+      level: 2
+      type: "Cannabis"
+      addictionChance: 0.15
+      effects:
+        - type: "SLOWNESS"
+          amplifier: 3
+          duration: 300
+        - type: "RESISTANCE"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "SLIME"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "BLOCK_SLIME_BLOCK_STEP"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_pineapple_express:
+      name: "&#FFFF00Pineapple Express"
+      material: SUGAR
+      customModelData: 12
+      lore:
+        - "A tropical hybrid strain"
+        - "Fruity and uplifting"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 12
+      growthTime: 300
+      baseBuyPrice: 120.0
+      baseSellPrice: 60.0
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "SPEED"
+          amplifier: 1
+          duration: 200
+        - type: "HUNGER"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "FIREWORK"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_CELEBRATE"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_wedding_cake:
+      name: "&#FFB6C1Wedding Cake"
+      material: SUGAR
+      customModelData: 13
+      lore:
+        - "A sweet indica strain"
+        - "Calming and delicious"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 13
+      growthTime: 320
+      baseBuyPrice: 115.0
+      baseSellPrice: 57.5
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "REGENERATION"
+          amplifier: 2
+          duration: 200
+        - type: "SLOWNESS"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "HEART"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_YES"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_granddaddy_purple:
+      name: "&#B00082Granddaddy Purple"
+      material: SUGAR
+      customModelData: 14
+      lore:
+        - "A grape-flavored indica"
+        - "Deep relaxation"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 14
+      growthTime: 330
+      baseBuyPrice: 110.0
+      baseSellPrice: 55.0
+      level: 2
+      type: "Cannabis"
+      addictionChance: 0.15
+      effects:
+        - type: "SLOWNESS"
+          amplifier: 2
+          duration: 250
+        - type: "WEAKNESS"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "DRIPPING_LAVA"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "BLOCK_LAVA_POP"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_lemon_haze:
+      name: "&#FFFACDLemon Haze"
+      material: SUGAR
+      customModelData: 15
+      lore:
+        - "A citrusy sativa strain"
+        - "Energizing and refreshing"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 15
+      growthTime: 280
+      baseBuyPrice: 125.0
+      baseSellPrice: 62.5
+      level: 4
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "SPEED"
+          amplifier: 1
+          duration: 200
+        - type: "JUMP_BOOST"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "FLAME"
+          count: 10
+          offset: 0.3
+      sounds:
+        - type: "ENTITY_BLAZE_SHOOT"
+          volume: 0.5
+          pitch: 1.2
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_ak_47:
+      name: "&#DC143CAK-47"
+      material: SUGAR
+      customModelData: 16
+      lore:
+        - "A potent hybrid strain"
+        - "Balanced effects"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 16
+      growthTime: 310
+      baseBuyPrice: 120.0
+      baseSellPrice: 60.0
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "REGENERATION"
+          amplifier: 1
+          duration: 200
+        - type: "SPEED"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "EXPLOSION"
+          count: 5
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_TNT_PRIMED"
+          volume: 0.8
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_amnesia_haze:
+      name: "&#F0FA9AAmnesia Haze"
+      material: SUGAR
+      customModelData: 17
+      lore:
+        - "A mind-bending sativa"
+        - "Forget your worries"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 17
+      growthTime: 290
+      baseBuyPrice: 130.0
+      baseSellPrice: 65.0
+      level: 4
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "NIGHT_VISION"
+          amplifier: 1
+          duration: 300
+        - type: "NAUSEA"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "PORTAL"
+          count: 15
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_ENDERMAN_SCREAM"
+          volume: 0.5
+          pitch: 1.2
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_bubba_kush:
+      name: "&#A2BE2ABubba Kush"
+      material: SUGAR
+      customModelData: 18
+      lore:
+        - "A heavy indica strain"
+        - "Sleepy and relaxed"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 18
+      growthTime: 340
+      baseBuyPrice: 110.0
+      baseSellPrice: 55.0
+      level: 2
+      type: "Cannabis"
+      addictionChance: 0.15
+      effects:
+        - type: "SLOWNESS"
+          amplifier: 3
+          duration: 300
+        - type: "WEAKNESS"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "DRIPPING_WATER"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "BLOCK_WATER_AMBIENT"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_cheese:
+      name: "&#FFFF99Cheese"
+      material: SUGAR
+      customModelData: 19
+      lore:
+        - "A pungent hybrid strain"
+        - "Strong and savory"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 19
+      growthTime: 310
+      baseBuyPrice: 115.0
+      baseSellPrice: 57.5
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "REGENERATION"
+          amplifier: 1
+          duration: 200
+        - type: "HUNGER"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "VILLAGER_HAPPY"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_YES"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_gelato:
+      name: "&#FF6347Gelato"
+      material: SUGAR
+      customModelData: 20
+      lore:
+        - "A creamy hybrid strain"
+        - "Sweet and uplifting"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 20
+      growthTime: 310
+      baseBuyPrice: 120.0
+      baseSellPrice: 60.0
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "SPEED"
+          amplifier: 1
+          duration: 200
+        - type: "REGENERATION"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "HEART"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_CELEBRATE"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_skywalker_og:
+      name: "&#00BFFFSkywalker OG"
+      material: SUGAR
+      customModelData: 21
+      lore:
+        - "A galactic indica strain"
+        - "Forceful relaxation"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 21
+      growthTime: 330
+      baseBuyPrice: 110.0
+      baseSellPrice: 55.0
+      level: 2
+      type: "Cannabis"
+      addictionChance: 0.15
+      effects:
+        - type: "SLOWNESS"
+          amplifier: 2
+          duration: 250
+        - type: "RESISTANCE"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "CLOUD"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_ENDERMAN_TELEPORT"
+          volume: 0.7
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_trainwreck:
+      name: "&#FF4500Trainwreck"
+      material: SUGAR
+      customModelData: 22
+      lore:
+        - "A powerful hybrid strain"
+        - "Intense and fast-acting"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 22
+      growthTime: 300
+      baseBuyPrice: 125.0
+      baseSellPrice: 62.5
+      level: 4
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "SPEED"
+          amplifier: 2
+          duration: 200
+        - type: "NAUSEA"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "EXPLOSION"
+          count: 5
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_TNT_PRIMED"
+          volume: 0.8
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_chocolope:
+      name: "&#D2691EChocolope"
+      material: SUGAR
+      customModelData: 23
+      lore:
+        - "A chocolatey sativa strain"
+        - "Energizing and sweet"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 23
+      growthTime: 280
+      baseBuyPrice: 130.0
+      baseSellPrice: 65.0
+      level: 4
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "SPEED"
+          amplifier: 1
+          duration: 200
+        - type: "JUMP_BOOST"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "FLAME"
+          count: 10
+          offset: 0.3
+      sounds:
+        - type: "ENTITY_BLAZE_SHOOT"
+          volume: 0.5
+          pitch: 1.2
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_strawberry_cough:
+      name: "&#FF1493Strawberry Cough"
+      material: SUGAR
+      customModelData: 24
+      lore:
+        - "A fruity sativa strain"
+        - "Berry-flavored high"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 24
+      growthTime: 290
+      baseBuyPrice: 120.0
+      baseSellPrice: 60.0
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "SPEED"
+          amplifier: 1
+          duration: 200
+        - type: "HUNGER"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "FIREWORK"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_CELEBRATE"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_banana_kush:
+      name: "&#FFDAB9Banana Kush"
+      material: SUGAR
+      customModelData: 25
+      lore:
+        - "A tropical indica strain"
+        - "Banana-flavored bliss"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 25
+      growthTime: 320
+      baseBuyPrice: 110.0
+      baseSellPrice: 55.0
+      level: 2
+      type: "Cannabis"
+      addictionChance: 0.15
+      effects:
+        - type: "SLOWNESS"
+          amplifier: 2
+          duration: 250
+        - type: "REGENERATION"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "HEART"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_YES"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_cherry_pie:
+      name: "&#C71585Cherry Pie"
+      material: SUGAR
+      customModelData: 26
+      lore:
+        - "A sweet hybrid strain"
+        - "Cherry-flavored calm"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 26
+      growthTime: 310
+      baseBuyPrice: 115.0
+      baseSellPrice: 57.5
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "REGENERATION"
+          amplifier: 2
+          duration: 200
+        - type: "SLOWNESS"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "HEART"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_CELEBRATE"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_bruce_banner:
+      name: "&#00FF00Bruce Banner"
+      material: SUGAR
+      customModelData: 27
+      lore:
+        - "A powerful hybrid strain"
+        - "Hulk-like intensity"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 27
+      growthTime: 300
+      baseBuyPrice: 125.0
+      baseSellPrice: 62.5
+      level: 4
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "SPEED"
+          amplifier: 2
+          duration: 200
+        - type: "STRENGTH"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "EXPLOSION"
+          count: 5
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_TNT_PRIMED"
+          volume: 0.8
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_gsc_thin_mint:
+      name: "&#B2AA00GSC Thin Mint"
+      material: SUGAR
+      customModelData: 28
+      lore:
+        - "A minty hybrid strain"
+        - "Cool and refreshing"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 28
+      growthTime: 310
+      baseBuyPrice: 120.0
+      baseSellPrice: 60.0
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "REGENERATION"
+          amplifier: 1
+          duration: 200
+        - type: "SLOWNESS"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "SNOW"
+          count: 15
+          offset: 0.5
+      sounds:
+        - type: "BLOCK_SNOW_BREAK"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_acapulco_gold:
+      name: "&#FFD700Acapulco Gold"
+      material: SUGAR
+      customModelData: 29
+      lore:
+        - "A legendary sativa strain"
+        - "Golden euphoria"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 29
+      growthTime: 280
+      baseBuyPrice: 130.0
+      baseSellPrice: 65.0
+      level: 4
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "SPEED"
+          amplifier: 1
+          duration: 200
+        - type: "JUMP_BOOST"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "FLAME"
+          count: 10
+          offset: 0.3
+      sounds:
+        - type: "ENTITY_BLAZE_SHOOT"
+          volume: 0.5
+          pitch: 1.2
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_black_widow:
+      name: "&#C2526Black Widow"
+      material: SUGAR
+      customModelData: 30
+      lore:
+        - "A dark hybrid strain"
+        - "Potent and mysterious"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 30
+      growthTime: 310
+      baseBuyPrice: 120.0
+      baseSellPrice: 60.0
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "NIGHT_VISION"
+          amplifier: 1
+          duration: 300
+        - type: "SLOWNESS"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "PORTAL"
+          count: 15
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_ENDERMAN_SCREAM"
+          volume: 0.5
+          pitch: 1.2
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_mango_kush:
+      name: "&#FF8C00Mango Kush"
+      material: SUGAR
+      customModelData: 31
+      lore:
+        - "A fruity indica strain"
+        - "Mango-flavored calm"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 31
+      growthTime: 320
+      baseBuyPrice: 110.0
+      baseSellPrice: 55.0
+      level: 2
+      type: "Cannabis"
+      addictionChance: 0.15
+      effects:
+        - type: "SLOWNESS"
+          amplifier: 2
+          duration: 250
+        - type: "REGENERATION"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "HEART"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_YES"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_alaskan_thunderfuck:
+      name: "&#FFFF00Alaskan Thunderfuck"
+      material: SUGAR
+      customModelData: 32
+      lore:
+        - "A powerful sativa strain"
+        - "Electrifying high"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 32
+      growthTime: 280
+      baseBuyPrice: 130.0
+      baseSellPrice: 65.0
+      level: 4
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "SPEED"
+          amplifier: 2
+          duration: 200
+        - type: "JUMP_BOOST"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "FIREWORK"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_FIREWORK_ROCKET_LAUNCH"
+          volume: 0.8
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_cookies_and_cream:
+      name: "&#FFF5EECookies and Cream"
+      material: SUGAR
+      customModelData: 33
+      lore:
+        - "A creamy hybrid strain"
+        - "Sweet and balanced"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 33
+      growthTime: 310
+      baseBuyPrice: 115.0
+      baseSellPrice: 57.5
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "REGENERATION"
+          amplifier: 1
+          duration: 200
+        - type: "SLOWNESS"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "HEART"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_CELEBRATE"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_larry_og:
+      name: "&#ADFF2FLarry OG"
+      material: SUGAR
+      customModelData: 34
+      lore:
+        - "A citrusy hybrid strain"
+        - "Refreshing and calming"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 34
+      growthTime: 310
+      baseBuyPrice: 120.0
+      baseSellPrice: 60.0
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "REGENERATION"
+          amplifier: 2
+          duration: 200
+        - type: "SLOWNESS"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "VILLAGER_HAPPY"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_YES"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_zkittlez:
+      name: "&#FF00FFZkittlez"
+      material: SUGAR
+      customModelData: 35
+      lore:
+        - "A candy-flavored indica"
+        - "Sweet and relaxing"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 35
+      growthTime: 320
+      baseBuyPrice: 110.0
+      baseSellPrice: 55.0
+      level: 2
+      type: "Cannabis"
+      addictionChance: 0.15
+      effects:
+        - type: "SLOWNESS"
+          amplifier: 2
+          duration: 250
+        - type: "REGENERATION"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "HEART"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_CELEBRATE"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_sunset_sherbet:
+      name: "&#FF4500Sunset Sherbet"
+      material: SUGAR
+      customModelData: 36
+      lore:
+        - "A fruity hybrid strain"
+        - "Sweet and calming"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 36
+      growthTime: 310
+      baseBuyPrice: 120.0
+      baseSellPrice: 60.0
+      level: 3
+      type: "Cannabis"
+      addictionChance: 0.2
+      effects:
+        - type: "REGENERATION"
+          amplifier: 1
+          duration: 200
+        - type: "SLOWNESS"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "FIREWORK"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_VILLAGER_CELEBRATE"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    cannabis_tahoe_og:
+      name: "&#00B4FFTahoe OG"
+      material: SUGAR
+      customModelData: 37
+      lore:
+        - "A potent indica strain"
+        - "Deep relaxation"
+      seed:
+        material: WHEAT_SEEDS
+        customModelData: 37
+      growthTime: 330
+      baseBuyPrice: 110.0
+      baseSellPrice: 55.0
+      level: 2
+      type: "Cannabis"
+      addictionChance: 0.15
+      effects:
+        - type: "SLOWNESS"
+          amplifier: 2
+          duration: 250
+        - type: "WEAKNESS"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "DRIPPING_WATER"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "BLOCK_WATER_AMBIENT"
+          volume: 1.0
+          pitch: 1.0
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    # Non-Cannabis Drugs (cannot be grown, no seeds)
+    cocaine:
+      name: "&#E0FFFFCocaine"
+      material: SUGAR
+      customModelData: 2
+      lore:
+        - "A powerful stimulant"
+        - "Use with caution"
+      growthTime: 0
+      baseBuyPrice: 200.0
+      baseSellPrice: 100.0
+      level: 5
+      type: "Stimulant"
+      addictionChance: 0.5
+      effects:
+        - type: "SPEED"
+          amplifier: 2
+          duration: 300
+        - type: "NIGHT_VISION"
+          amplifier: 1
+          duration: 300
+      particles:
+        - type: "SMOKE"
+          count: 15
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_PLAYER_BREATH"
+          volume: 1.0
+          pitch: 1.2
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+    heroin:
+      name: "&#B2A09Heroin"
+      material: WHITE_DYE
+      customModelData: 38
+      lore:
+        - "A dangerous opioid"
+        - "Highly addictive"
+      growthTime: 0
+      baseBuyPrice: 250.0
+      baseSellPrice: 125.0
+      level: 6
+      type: "Opioid"
+      addictionChance: 0.7
+      effects:
+        - type: "SLOWNESS"
+          amplifier: 3
+          duration: 400
+        - type: "DAMAGE_RESISTANCE"
+          amplifier: 2
+          duration: 300
+        - type: "NAUSEA"
+          amplifier: 1
+          duration: 200
+      particles:
+        - type: "DRIPPING_OBSIDIAN_TEAR"
+          count: 10
+          offset: 0.5
+      sounds:
+        - type: "ENTITY_PLAYER_HURT"
+          volume: 0.8
+          pitch: 0.9
+      qualities:
+        standard:
+          effect-multiplier: 1.0
+          duration-seconds: 30
+          price-multiplier: 1.0
+        prime:
+          effect-multiplier: 1.3
+          duration-seconds: 45
+          price-multiplier: 1.3
+        exotic:
+          effect-multiplier: 1.5
+          duration-seconds: 60
+          price-multiplier: 1.5
+        legendary:
+          effect-multiplier: 2.0
+          duration-seconds: 90
+          price-multiplier: 2.0
+        cosmic:
+          effect-multiplier: 3.0
+          duration-seconds: 120
+          price-multiplier: 3.0
+
+      lsd:
+        name: "&#FF00FFLSD"
+        material: PURPLE_DYE
+        customModelData: 39
+        lore:
+          - "A psychedelic drug"
+          - "Mind-altering visuals"
+        growthTime: 0
+        baseBuyPrice: 180.0
+        baseSellPrice: 90.0
+        level: 5
+        type: "Psychedelic"
+        addictionChance: 0.3
+        effects:
+          - type: "NAUSEA"
+            amplifier: 2
+            duration: 600
+          - type: "GLOWING"
+            amplifier: 1
+            duration: 600
+          - type: "LEVITATION"
+            amplifier: 1
+            duration: 100
+        particles:
+          - type: "END_ROD"
+            count: 20
+            offset: 0.5
+        sounds:
+          - type: "ENTITY_SHULKER_TELEPORT"
+            volume: 0.7
+            pitch: 1.0
+        qualities:
+          standard:
+            effect-multiplier: 1.0
+            duration-seconds: 30
+            price-multiplier: 1.0
+          prime:
+            effect-multiplier: 1.3
+            duration-seconds: 45
+            price-multiplier: 1.3
+          exotic:
+            effect-multiplier: 1.5
+            duration-seconds: 60
+            price-multiplier: 1.5
+          legendary:
+            effect-multiplier: 2.0
+            duration-seconds: 90
+            price-multiplier: 2.0
+          cosmic:
+            effect-multiplier: 3.0
+            duration-seconds: 120
+            price-multiplier: 3.0
+
+      methamphetamine:
+        name: "&#00FF7FMethamphetamine"
+        material: LIGHT_BLUE_DYE
+        customModelData: 40
+        lore:
+          - "A potent stimulant"
+          - "Extreme energy boost"
+        growthTime: 0
+        baseBuyPrice: 220.0
+        baseSellPrice: 110.0
+        level: 6
+        type: "Stimulant"
+        addictionChance: 0.6
+        effects:
+          - type: "SPEED"
+            amplifier: 3
+            duration: 400
+          - type: "HASTE"
+            amplifier: 2
+            duration: 300
+          - type: "NAUSEA"
+            amplifier: 1
+            duration: 200
+        particles:
+          - type: "CRIT"
+            count: 15
+            offset: 0.5
+        sounds:
+          - type: "ENTITY_PLAYER_ATTACK_CRIT"
+            volume: 1.0
+            pitch: 1.2
+        qualities:
+          standard:
+            effect-multiplier: 1.0
+            duration-seconds: 30
+            price-multiplier: 1.0
+          prime:
+            effect-multiplier: 1.3
+            duration-seconds: 45
+            price-multiplier: 1.3
+          exotic:
+            effect-multiplier: 1.5
+            duration-seconds: 60
+            price-multiplier: 1.5
+          legendary:
+            effect-multiplier: 2.0
+            duration-seconds: 90
+            price-multiplier: 2.0
+          cosmic:
+            effect-multiplier: 3.0
+            duration-seconds: 120
+            price-multiplier: 3.0
+
+      mdma:
+        name: "&#FF69B4MDMA"
+        material: PINK_DYE
+        customModelData: 41
+        lore:
+          - "A euphoric empathogen"
+          - "Feel the love"
+        growthTime: 0
+        baseBuyPrice: 190.0
+        baseSellPrice: 95.0
+        level: 5
+        type: "Empathogen"
+        addictionChance: 0.4
+        effects:
+          - type: "GLOWING"
+            amplifier: 1
+            duration: 400
+          - type: "SPEED"
+            amplifier: 1
+            duration: 300
+          - type: "HUNGER"
+            amplifier: 1
+            duration: 200
+        particles:
+          - type: "HEART"
+            count: 20
+            offset: 0.5
+        sounds:
+          - type: "ENTITY_VILLAGER_CELEBRATE"
+            volume: 1.0
+            pitch: 1.0
+        qualities:
+          standard:
+            effect-multiplier: 1.0
+            duration-seconds: 30
+            price-multiplier: 1.0
+          prime:
+            effect-multiplier: 1.3
+            duration-seconds: 45
+            price-multiplier: 1.3
+          exotic:
+            effect-multiplier: 1.5
+            duration-seconds: 60
+            price-multiplier: 1.5
+          legendary:
+            effect-multiplier: 2.0
+            duration-seconds: 90
+            price-multiplier: 2.0
+          cosmic:
+            effect-multiplier: 3.0
+            duration-seconds: 120
+            price-multiplier: 3.0
+
+      ketamine:
+        name: "�CED1Ketamine"
+        material: CYAN_DYE
+        customModelData: 42
+        lore:
+          - "A dissociative anesthetic"
+          - "Out-of-body experience"
+        growthTime: 0
+        baseBuyPrice: 200.0
+        baseSellPrice: 100.0
+        level: 5
+        type: "Dissociative"
+        addictionChance: 0.4
+        effects:
+          - type: "SLOWNESS"
+            amplifier: 2
+            duration: 400
+          - type: "BLINDNESS"
+            amplifier: 1
+            duration: 200
+          - type: "LEVITATION"
+            amplifier: 1
+            duration: 150
+        particles:
+          - type: "CLOUD"
+            count: 15
+            offset: 0.5
+        sounds:
+          - type: "ENTITY_ENDERMAN_TELEPORT"
+            volume: 0.7
+            pitch: 1.0
+        qualities:
+          standard:
+            effect-multiplier: 1.0
+            duration-seconds: 30
+            price-multiplier: 1.0
+          prime:
+            effect-multiplier: 1.3
+            duration-seconds: 45
+            price-multiplier: 1.3
+          exotic:
+            effect-multiplier: 1.5
+            duration-seconds: 60
+            price-multiplier: 1.5
+          legendary:
+            effect-multiplier: 2.0
+            duration-seconds: 90
+            price-multiplier: 2.0
+          cosmic:
+            effect-multiplier: 3.0
+            duration-seconds: 120
+            price-multiplier: 3.0
+
+      psilocybin:
+        name: "&#B5A2BPsilocybin"
+        material: BROWN_DYE
+        customModelData: 43
+        lore:
+          - "A magic mushroom extract"
+          - "Psychedelic journey"
+        growthTime: 0
+        baseBuyPrice: 180.0
+        baseSellPrice: 90.0
+        level: 5
+        type: "Psychedelic"
+        addictionChance: 0.3
+        effects:
+          - type: "NAUSEA"
+            amplifier: 2
+            duration: 500
+          - type: "GLOWING"
+            amplifier: 1
+            duration: 500
+          - type: "WEAKNESS"
+            amplifier: 1
+            duration: 200
+        particles:
+          - type: "END_ROD"
+            count: 20
+            offset: 0.5
+        sounds:
+          - type: "ENTITY_SHULKER_TELEPORT"
+            volume: 0.7
+            pitch: 1.0
+        qualities:
+          standard:
+            effect-multiplier: 1.0
+            duration-seconds: 30
+            price-multiplier: 1.0
+          prime:
+            effect-multiplier: 1.3
+            duration-seconds: 45
+            price-multiplier: 1.3
+          exotic:
+            effect-multiplier: 1.5
+            duration-seconds: 60
+            price-multiplier: 1.5
+          legendary:
+            effect-multiplier: 2.0
+            duration-seconds: 90
+            price-multiplier: 2.0
+          cosmic:
+            effect-multiplier: 3.0
+            duration-seconds: 120
+            price-multiplier: 3.0
+
+      fentanyl:
+        name: "&#B4B4BFentanyl"
+        material: GRAY_DYE
+        customModelData: 44
+        lore:
+          - "A synthetic opioid"
+          - "Extremely potent"
+        growthTime: 0
+        baseBuyPrice: 300.0
+        baseSellPrice: 150.0
+        level: 7
+        type: "Opioid"
+        addictionChance: 0.8
+        effects:
+          - type: "SLOWNESS"
+            amplifier: 4
+            duration: 500
+          - type: "DAMAGE_RESISTANCE"
+            amplifier: 3
+            duration: 400
+          - type: "POISON"
+            amplifier: 1
+            duration: 200
+        particles:
+          - type: "DRIPPING_OBSIDIAN_TEAR"
+            count: 10
+            offset: 0.5
+        sounds:
+          - type: "ENTITY_PLAYER_HURT"
+            volume: 0.8
+            pitch: 0.9
+        qualities:
+          standard:
+            effect-multiplier: 1.0
+            duration-seconds: 30
+            price-multiplier: 1.0
+          prime:
+            effect-multiplier: 1.3
+            duration-seconds: 45
+            price-multiplier: 1.3
+          exotic:
+            effect-multiplier: 1.5
+            duration-seconds: 60
+            price-multiplier: 1.5
+          legendary:
+            effect-multiplier: 2.0
+            duration-seconds: 90
+            price-multiplier: 2.0
+          cosmic:
+            effect-multiplier: 3.0
+            duration-seconds: 120
+            price-multiplier: 3.0
+
+      dmt:
+        name: "&#FFD700DMT"
+        material: YELLOW_DYE
+        customModelData: 45
+        lore:
+          - "A spiritual psychedelic"
+          - "Transcendent experience"
+        growthTime: 0
+        baseBuyPrice: 220.0
+        baseSellPrice: 110.0
+        level: 6
+        type: "Psychedelic"
+        addictionChance: 0.3
+        effects:
+          - type: "NAUSEA"
+            amplifier: 3
+            duration: 300
+          - type: "LEVITATION"
+            amplifier: 2
+            duration: 200
+          - type: "GLOWING"
+            amplifier: 1
+            duration: 300
+        particles:
+          - type: "END_ROD"
+            count: 25
+            offset: 0.5
+        sounds:
+          - type: "ENTITY_SHULKER_TELEPORT"
+            volume: 0.7
+            pitch: 1.0
+        qualities:
+          standard:
+            effect-multiplier: 1.0
+            duration-seconds: 30
+            price-multiplier: 1.0
+          prime:
+            effect-multiplier: 1.3
+            duration-seconds: 45
+            price-multiplier: 1.3
+          exotic:
+            effect-multiplier: 1.5
+            duration-seconds: 60
+            price-multiplier: 1.5
+          legendary:
+            effect-multiplier: 2.0
+            duration-seconds: 90
+            price-multiplier: 2.0
+          cosmic:
+            effect-multiplier: 3.0
+            duration-seconds: 120
+            price-multiplier: 3.0

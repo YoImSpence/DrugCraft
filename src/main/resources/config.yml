@@ -1,0 +1,20 @@
+# General plugin settings
+# Player level requirements
+levels:
+  "1":
+    xp_required: 100
+  "5":
+    xp_required: 500
+  "10":
+    xp_required: 1000
+  "15":
+    xp_required: 1500
+  "20":
+    xp_required: 2000
+
+# Crop settings
+crops:
+  # Whether players can break immature crops (if false, breaking is prevented)
+  allow_break_immature: false
+  # Chance (0.0 to 1.0) to drop a seed when breaking an immature crop
+  seed_drop_chance: 0.0

@@ -1,0 +1,23 @@
+spawn_locations:
+- "Greenfield,2200,70,900,0"
+- "Greenfield,2205,70,905,90"
+- "Greenfield,2195,70,895,180"
+- "Greenfield,2210,70,910,270"
+# Dealer NPC spawn location from npc.yml
+- "Greenfield,2122,69,715,90"
+# Waypoints from npc.yml as additional spawn locations
+- "Greenfield,2132,69,725,0"
+- "Greenfield,2112,69,705,0"
+meetup_spots:
+- "Greenfield,2190,70,920,0"
+- "Greenfield,2215,70,880,180"
+citizen_names:
+- "John Doe"
+- "Jane Smith"
+- "Mike Johnson"
+- "Sarah Williams"
+- "Dealer John"
+citizen_skins:
+- "steve"
+- "alex"
+- "dealer"

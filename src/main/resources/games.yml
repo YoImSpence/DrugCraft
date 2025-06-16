@@ -1,0 +1,28 @@
+games:
+  chess-checkers:
+    reward-money: 300
+    reward-items:
+      - material: DIAMOND
+        amount: 1
+    bot-difficulties:
+      easy: {move-chance: 0.3}
+      medium: {move-chance: 0.6}
+      hard: {move-chance: 0.9}
+  connect4:
+    reward-money: 200
+    reward-items:
+      - material: EMERALD
+        amount: 2
+    bot-difficulties:
+      easy: {move-chance: 0.4}
+      medium: {move-chance: 0.7}
+      hard: {move-chance: 0.95}
+  rps:
+    reward-money: 100
+    reward-items:
+      - material: GOLD_INGOT
+        amount: 3
+    bot-difficulties:
+      easy: {move-chance: 0.5}
+      medium: {move-chance: 0.75}
+      hard: {move-chance: 0.9}

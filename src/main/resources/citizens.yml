@@ -1,0 +1,4 @@
+ # plugins/Citizens/config.yml
+  general:
+    save-on-changes: false
+    auto-save-interval: 0

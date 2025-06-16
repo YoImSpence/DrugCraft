@@ -1,0 +1,14 @@
+# Player data for DrugCraft
+# Stores addiction levels, XP, and other player-specific data
+players:
+# Example: player_uuid: data
+# "123e4567-e89b-12d3-a456-426614174000":
+#   addiction_levels:
+#     cannabis_blue_dream: 10
+#     cocaine: 5
+#   last_used_times:
+#     cannabis_blue_dream: 1625184000000
+#     cocaine: 1625184000000
+#   drug_xp:
+#     total: 1500
+#   level: 5

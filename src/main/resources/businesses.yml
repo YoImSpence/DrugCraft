@@ -1,0 +1,40 @@
+businesses:
+  dispensary_1:
+    name: Dispensary
+    owner: null
+    revenue: 0.0
+    price: 1000.0
+    region: dispo1
+    allowedDrugs:
+      - cannabis
+      - cannabis_blue_dream
+      - cannabis_og_kush
+      - cannabis_sour_diesel
+  car_wash_1:
+    name: Car Wash
+    owner: null
+    revenue: 0.0
+    price: 1500.0
+    region: carwash1
+    allowedDrugs:
+      - cocaine
+  grow_house_1:
+    name: Grow House
+    owner: null
+    revenue: 0.0
+    price: 2000.0
+    region: growhouse1
+    allowedDrugs:
+      - cannabis
+      - cannabis_blue_dream
+      - cannabis_og_kush
+      - cannabis_sour_diesel
+      - cocaine
+  smugglers_den_1:
+    name: Smuggler’s Den
+    owner: null
+    revenue: 0.0
+    price: 2500.0
+    region: smugglers1
+    allowedDrugs:
+      - cocaine

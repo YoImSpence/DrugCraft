@@ -1,0 +1,28 @@
+# Player-owned vehicles mapping
+player_vehicles:
+# Example: player_uuid: vehicle_uuid
+# "123e4567-e89b-12d3-a456-426614174000": "987fcdeb-4567-89ab-cdef-1234567890ab"
+
+# Vehicle type configurations
+vehicles:
+  basic_horse:
+    display_name: "&#FFFFFFBasic Horse"
+    price: 1000.0
+    speed: 0.2
+    jump_strength: 0.5
+    health: 15.0
+  speed_horse:
+    display_name: "&#FFD700Speed Horse"
+    price: 2000.0
+    speed: 0.3
+    jump_strength: 0.6
+    health: 20.0
+  elite_horse:
+    display_name: "&#FF4500Elite Horse"
+    price: 5000.0
+    speed: 0.4
+    jump_strength: 0.8
+    health: 25.0
+
+# Maximum number of vehicles a player can spawn at once
+spawn_limit: 1
