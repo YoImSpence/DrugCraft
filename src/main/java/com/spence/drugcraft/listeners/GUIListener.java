@@ -2,12 +2,15 @@ package com.spence.drugcraft.listeners;
 
 import com.spence.drugcraft.DrugCraft;
 import com.spence.drugcraft.gui.*;
+import com.spence.drugcraft.town.DealRequestGUI;
 import com.spence.drugcraft.utils.MessageUtils;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+
+import java.util.UUID;
 
 public class GUIListener implements Listener {
     private final DrugCraft plugin;
@@ -16,7 +19,7 @@ public class GUIListener implements Listener {
     private final BusinessMachineGUIHandler businessMachineGUIHandler;
     private final VehicleGUIHandler vehicleGUIHandler;
     private final CasinoGUIHandler casinoGUIHandler;
-    private final LevelsGUIHandler levelsGUIHandler;
+    private final PlayerLevelsGUIHandler levelsGUIHandler;
     private final GamesGUIHandler gamesGUIHandler;
     private final DealerGUIHandler dealerGUIHandler;
 
@@ -25,11 +28,11 @@ public class GUIListener implements Listener {
         this.adminGUIHandler = new AdminGUIHandler(plugin, plugin.getAdminGUI(), plugin.getDataManager());
         this.cartelGUIHandler = new CartelGUIHandler(plugin, plugin.getCartelGUI(), plugin.getCartelManager());
         this.businessMachineGUIHandler = plugin.getBusinessMachineGUIHandler();
-        this.vehicleGUIHandler = new VehicleGUIHandler(plugin, plugin.getVehicleManager(), plugin.getEconomyManager());
-        this.casinoGUIHandler = new CasinoGUIHandler(plugin, plugin.getCasinoGUI(), plugin.getCasinoManager());
-        this.levelsGUIHandler = new LevelsGUIHandler(plugin, plugin.getLevelsGUI(), plugin.getDataManager());
+        this.vehicleGUIHandler = new VehicleGUIHandler(plugin, plugin.getVehicleManager(), plugin.getVehicleManager(), plugin.getEconomyManager());
+        this.casinoGUIHandler = new CasinoGUIHandler(plugin, plugin.getCasinoGUI(), plugin.getCasinoManager(), plugin.getEconomyManager());
+        this.levelsGUIHandler = new PlayerLevelsGUIHandler(plugin, plugin.getLevelsGUI(), plugin.getDataManager());
         this.gamesGUIHandler = new GamesGUIHandler(plugin, plugin.getGameManager());
-        this.dealerGUIHandler = new DealerGUIHandler(plugin, plugin.getDrugManager(), plugin.getEconomyManager());
+        this.dealerGUIHandler = new DealerGUIHandler(plugin, plugin.getDealerGUI(), plugin.getDrugManager(), plugin.getEconomyManager());
     }
 
     @EventHandler
@@ -105,6 +108,32 @@ public class GUIListener implements Listener {
             }
             activeGUI.setAwaitingChatInput(false);
             activeGUI.setChatAction(null);
+        }
+    }
+
+    public void setAwaitingChatInput(UUID playerUUID, String action, DealRequestGUI.DealRequest dealRequest) {
+        ActiveGUI activeGUI = plugin.getActiveMenus().get(playerUUID);
+        if (activeGUI != null) {
+            activeGUI.setAwaitingChatInput(true);
+            activeGUI.setChatAction(action);
+            activeGUI.setDealRequest(dealRequest);
+        }
+    }
+
+    public void setAwaitingChatInput(UUID playerUUID, String action, DealerGUIHandler.PurchaseRequest purchaseRequest) {
+        ActiveGUI activeGUI = plugin.getActiveMenus().get(playerUUID);
+        if (activeGUI != null) {
+            activeGUI.setAwaitingChatInput(true);
+            activeGUI.setChatAction(action);
+            activeGUI.setPurchaseRequest(purchaseRequest);
+        }
+    }
+
+    public void setAwaitingChatInput(UUID playerUUID, String action) {
+        ActiveGUI activeGUI = plugin.getActiveMenus().get(playerUUID);
+        if (activeGUI != null) {
+            activeGUI.setAwaitingChatInput(true);
+            activeGUI.setChatAction(action);
         }
     }
 }

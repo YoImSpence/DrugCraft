@@ -6,6 +6,7 @@ import com.spence.drugcraft.admin.AdminGUI;
 import com.spence.drugcraft.businesses.*;
 import com.spence.drugcraft.cartel.*;
 import com.spence.drugcraft.casino.*;
+import com.spence.drugcraft.commands.*;
 import com.spence.drugcraft.crops.*;
 import com.spence.drugcraft.data.DataManager;
 import com.spence.drugcraft.drugs.*;
@@ -57,6 +58,11 @@ public class DrugCraft extends JavaPlugin {
     private VehicleManager vehicleManager;
     private Economy economy;
     private GameManager gameManager;
+    private AdminGUI adminGUI;
+    private CartelGUI cartelGUI;
+    private PlayerLevelsGUI levelsGUI;
+    private AdminGUIHandler adminGUIHandler;
+    private CartelGUIHandler cartelGUIHandler;
 
     @Override
     public void onEnable() {
@@ -68,10 +74,10 @@ public class DrugCraft extends JavaPlugin {
 
     private void initializeManagers() {
         permissionManager = new PermissionManager(this);
-        economyManager = new EconomyManager(this);
         casinoManager = new CasinoManager(this, economyManager);
         dataManager = new DataManager(this);
         drugManager = new DrugManager(this);
+        economyManager = new EconomyManager(this);
         vehicleManager = new VehicleManager(this, economyManager);
         businessManager = new BusinessManager(this, dataManager, economyManager, drugManager);
         cartelManager = new CartelManager(this);
@@ -82,27 +88,32 @@ public class DrugCraft extends JavaPlugin {
         guiListener = new GUIListener(this);
         townCitizenManager = new TownCitizenManager(this);
         addictionManager = new AddictionManager(this, dataManager, drugManager, policeManager);
-        policeManager = new PoliceManager(this, drugManager, economy, permissionManager, cartelManager, new File(getDataFolder(), "police.yml"));
+        policeManager = new PoliceManager(this, drugManager, economy, permissionManager, cartelManager, new PoliceConfig(new File(getDataFolder(), "police.yml")));
         levelsGUIHandler = new PlayerLevelsGUIHandler(this, new PlayerLevelsGUI(this, dataManager));
         businessMachineGUI = new BusinessMachineGUI(this, businessManager);
         businessMachineGUIHandler = new BusinessMachineGUIHandler(this, businessMachineGUI, businessManager, economyManager);
         dealRequestGUI = new DealRequestGUI(this);
         dealRequestGUIListener = new DealRequestGUIListener(this, dealRequestGUI, guiListener, townCitizenManager);
         gameManager = new GameManager(this, economyManager);
+        adminGUI = new AdminGUI(this, dataManager, drugManager);
+        cartelGUI = new CartelGUI(this);
+        levelsGUI = new PlayerLevelsGUI(this, dataManager);
+        adminGUIHandler = new AdminGUIHandler(this, adminGUI, dataManager);
+        cartelGUIHandler = new CartelGUIHandler(this, cartelGUI, cartelManager);
     }
 
     private void registerCommands() {
-        registerCommand("admin", new AdminCommand(new AdminGUIHandler(this, new AdminGUI(this, dataManager, drugManager), dataManager)));
-        registerCommand("cartel", new CartelCommand(this, cartelManager));
-        registerCommand("business", new BusinessCommand(this, businessManager));
-        registerCommand("levels", new LevelsCommand(this, dataManager));
-        registerCommand("steed", new VehicleCommand(this, vehicleManager));
-        registerCommand("casino", new CasinoCommand(this));
-        registerCommand("games", new GamesCommand(this, new GamesGUIHandler(this, gameManager)));
+        registerCommand("admin", new AdminCommand(adminGUIHandler, dataManager, drugManager), new AdminTabCompleter());
+        registerCommand("cartel", new CartelCommand(this, cartelManager), new CartelTabCompleter());
+        registerCommand("business", new BusinessCommand(this, businessManager), new BusinessTabCompleter());
+        registerCommand("levels", new LevelsCommand(this, dataManager), new LevelsTabCompleter());
+        registerCommand("steed", new VehicleCommand(this, vehicleManager), new SteedTabCompleter());
+        registerCommand("casino", new CasinoCommand(this, casinoManager), new CasinoTabCompleter());
+        registerCommand("games", new GamesCommand(this, new GamesGUIHandler(this, gameManager)), new GamesTabCompleter());
     }
 
     private void registerListeners() {
-        getServer().getPluginManager().registerEvents(new CropListener(this, cropManager, dataManager, policeManager), this);
+        getServer().getPluginManager().registerEvents(new CropListener(this, drugManager, dataManager, policeManager), this);
         getServer().getPluginManager().registerEvents(new AddictionListener(this, drugManager, addictionManager), this);
         getServer().getPluginManager().registerEvents(new BlockPlaceListener(this, drugManager, cropManager, growLight, dataManager), this);
         getServer().getPluginManager().registerEvents(new CartelStashBreakListener(this, cartelManager), this);
@@ -111,10 +122,11 @@ public class DrugCraft extends JavaPlugin {
         getServer().getPluginManager().registerEvents(guiListener, this);
     }
 
-    private void registerCommand(String name, CommandExecutor executor) {
+    private void registerCommand(String name, CommandExecutor executor, TabCompleter tabCompleter) {
         PluginCommand command = getCommand(name);
         if (command != null) {
             command.setExecutor(executor);
+            command.setTabCompleter((org.bukkit.command.TabCompleter) tabCompleter);
         }
     }
 
@@ -145,6 +157,11 @@ public class DrugCraft extends JavaPlugin {
     public VehicleManager getVehicleManager() { return vehicleManager; }
     public Economy getEconomy() { return economy; }
     public GameManager getGameManager() { return gameManager; }
+    public AdminGUI getAdminGUI() { return adminGUI; }
+    public CartelGUI getCartelGUI() { return cartelGUI; }
+    public PlayerLevelsGUI getLevelsGUI() { return levelsGUI; }
+    public AdminGUIHandler getAdminGUIHandler() { return adminGUIHandler; }
+    public CartelGUIHandler getCartelGUIHandler() { return cartelGUIHandler; }
 
     public FileConfiguration getConfig(String fileName) {
         File file = new File(getDataFolder(), fileName);
