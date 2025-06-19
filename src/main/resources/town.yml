@@ -1,23 +1,43 @@
-spawn_locations:
-- "Greenfield,2200,70,900,0"
-- "Greenfield,2205,70,905,90"
-- "Greenfield,2195,70,895,180"
-- "Greenfield,2210,70,910,270"
-# Dealer NPC spawn location from npc.yml
-- "Greenfield,2122,69,715,90"
-# Waypoints from npc.yml as additional spawn locations
-- "Greenfield,2132,69,725,0"
-- "Greenfield,2112,69,705,0"
-meetup_spots:
-- "Greenfield,2190,70,920,0"
-- "Greenfield,2215,70,880,180"
-citizen_names:
-- "John Doe"
-- "Jane Smith"
-- "Mike Johnson"
-- "Sarah Williams"
-- "Dealer John"
-citizen_skins:
-- "steve"
-- "alex"
-- "dealer"
+town:
+  npcs:
+    - id: citizen1
+      name: John_Doe
+      location:
+        world: world
+        x: 10
+        y: 64
+        z: 10
+      pathfinding:
+        speed: 1.0
+        range: 50
+    - id: citizen2
+      name: Jane_Smith
+      location:
+        world: world
+        x: 15
+        y: 64
+        z: 15
+      pathfinding:
+        speed: 1.0
+        range: 50
+  meetupSpots:
+    - id: alley1
+      location:
+        world: world
+        x: 100
+        y: 64
+        z: 100
+    - id: dock1
+      location:
+        world: world
+        x: 200
+        y: 64
+        z: 200
+  deals:
+    frequency: 0.01 # Chance per minute
+    minQuantity: 1
+    maxQuantity: 10
+    qualities:
+      - low
+      - standard
+      - high

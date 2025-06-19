@@ -1,9 +1,11 @@
 package com.spence.drugcraft.games;
 
 import com.spence.drugcraft.DrugCraft;
-import com.spence.drugcraft.gui.ActiveGUI;
+import com.spence.drugcraft.handlers.ActiveGUI;
 import com.spence.drugcraft.utils.EconomyManager;
 import com.spence.drugcraft.utils.MessageUtils;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -34,7 +36,7 @@ public class GameManager {
     }
 
     public void startGame(Player player1, Player player2, String difficulty, String gameType) {
-        Game game = new Game(player1, player2, difficulty, gameType);
+        Game game = new Game(player1, player2, difficulty, gameType, 0.0, new ArrayList<>());
         activeGames.put(player1.getUniqueId(), game);
         if (player2 != null) {
             activeGames.put(player2.getUniqueId(), game);
@@ -54,25 +56,25 @@ public class GameManager {
             String game = subType.split("_")[0];
             Player opponent = Bukkit.getPlayer(input);
             if (opponent == null || !opponent.isOnline()) {
-                MessageUtils.sendMessage(player, "gui.games.invalid-opponent");
+                MessageUtils.sendMessage(player, "games.invalid-opponent");
                 return;
             }
             if (isPlayerInGame(opponent)) {
-                MessageUtils.sendMessage(player, "gui.games.opponent-in-game", "opponent", opponent.getName());
+                MessageUtils.sendMessage(player, "games.opponent-in-game", "opponent", opponent.getName());
                 return;
             }
             if (isPlayerInGame(player)) {
-                MessageUtils.sendMessage(player, "gui.games.already-in-game");
+                MessageUtils.sendMessage(player, "games.already-in-game");
                 return;
             }
             startGame(player, opponent, null, game);
-            MessageUtils.sendMessage(player, "gui.games.game-started", "game", game, "opponent", opponent.getName());
-            MessageUtils.sendMessage(opponent, "gui.games.game-started", "game", game, "opponent", player.getName());
+            MessageUtils.sendMessage(player, "games.game-started", "game", game, "opponent", opponent.getName());
+            MessageUtils.sendMessage(opponent, "games.game-started", "game", game, "opponent", player.getName());
         }
     }
 
     private void openGameGUI(Player player, Game game) {
-        String title = MessageUtils.color("gui.games.title-" + game.type.toLowerCase());
+        String title = MiniMessage.miniMessage().serialize(Component.text(MessageUtils.getMessage("gui.games.title-" + game.type.toLowerCase())));
         Inventory inv;
         if (game.type.equals("chess-checkers")) {
             inv = Bukkit.createInventory(null, 54, title);
@@ -101,7 +103,7 @@ public class GameManager {
             int slot = (i % 4) * 2 + (i / 4) * 9 + ((i / 4) % 2 == 0 ? 1 : 0);
             ItemStack piece = new ItemStack(Material.RED_CONCRETE);
             ItemMeta meta = piece.getItemMeta();
-            meta.displayName(MessageUtils.color("<#FF0000>Player 1 Piece"));
+            meta.setDisplayName(MessageUtils.getMessage("games.player1-piece"));
             piece.setItemMeta(meta);
             inv.setItem(slot, piece);
         }
@@ -109,7 +111,7 @@ public class GameManager {
             int slot = (i % 4) * 2 + (7 - i / 4) * 9 + ((i / 4) % 2 == 0 ? 1 : 0);
             ItemStack piece = new ItemStack(Material.BLUE_CONCRETE);
             ItemMeta meta = piece.getItemMeta();
-            meta.displayName(MessageUtils.color("<#0000FF>Player 2 Piece"));
+            meta.setDisplayName(MessageUtils.getMessage("games.player2-piece"));
             piece.setItemMeta(meta);
             inv.setItem(slot, piece);
         }
@@ -122,25 +124,25 @@ public class GameManager {
         for (int col = 0; col < 7; col++) {
             ItemStack drop = new ItemStack(Material.YELLOW_CONCRETE);
             ItemMeta meta = drop.getItemMeta();
-            meta.displayName(MessageUtils.color("<#FFFF00>Drop in Column " + (col + 1)));
+            meta.setDisplayName(MessageUtils.getMessage("games.drop-column", "column", String.valueOf(col + 1)));
             drop.setItemMeta(meta);
             inv.setItem(42 + col, drop);
         }
     }
 
     private void initializeRPSBoard(Inventory inv, Game game) {
-        ItemStack rock = createItem(Material.STONE, "<#808080>Rock");
-        ItemStack paper = createItem(Material.PAPER, "<#FFFFFF>Paper");
-        ItemStack scissors = createItem(Material.SHEARS, "<#C0C0C0>Scissors");
+        ItemStack rock = createItem(Material.STONE, "games.rock");
+        ItemStack paper = createItem(Material.PAPER, "games.paper");
+        ItemStack scissors = createItem(Material.SHEARS, "games.scissors");
         inv.setItem(2, rock);
         inv.setItem(4, paper);
         inv.setItem(6, scissors);
     }
 
-    private ItemStack createItem(Material material, String name) {
+    private ItemStack createItem(Material material, String key) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
-        meta.displayName(MessageUtils.color(name));
+        meta.setDisplayName(MessageUtils.getMessage(key));
         item.setItemMeta(meta);
         return item;
     }
@@ -185,15 +187,15 @@ public class GameManager {
         String botMove = game.botMove;
         Player player = game.player1;
         if (playerMove.equals(botMove)) {
-            MessageUtils.sendMessage(player, "gui.games.game-tie", "game", "Rock Paper Scissors");
+            MessageUtils.sendMessage(player, "games.game-tie", "game", "Rock Paper Scissors");
         } else if ((playerMove.equals("rock") && botMove.equals("scissors")) ||
                 (playerMove.equals("paper") && botMove.equals("rock")) ||
                 (playerMove.equals("scissors") && botMove.equals("paper"))) {
             awardReward(player, "rps");
-            MessageUtils.sendMessage(player, "gui.games.game-won", "game", "Rock Paper Scissors", "reward", String.valueOf(config.getDouble("games.rps.reward-money")));
+            MessageUtils.sendMessage(player, "games.game-won", "game", "Rock Paper Scissors", "reward", String.valueOf(config.getDouble("games.rps.reward-money")));
             activeGames.remove(player.getUniqueId());
         } else {
-            MessageUtils.sendMessage(player, "gui.games.game-lost", "game", "Rock Paper Scissors");
+            MessageUtils.sendMessage(player, "games.game-lost", "game", "Rock Paper Scissors");
             activeGames.remove(player.getUniqueId());
         }
         player.closeInventory();
@@ -204,9 +206,9 @@ public class GameManager {
         if (checkFourInRow(game.board)) {
             if (game.lastMoveByPlayer) {
                 awardReward(player, "connect4");
-                MessageUtils.sendMessage(player, "gui.games.game-won", "game", "Connect 4", "reward", String.valueOf(config.getDouble("games.connect4.reward-money")));
+                MessageUtils.sendMessage(player, "games.game-won", "game", "Connect 4", "reward", String.valueOf(config.getDouble("games.connect4.reward-money")));
             } else {
-                MessageUtils.sendMessage(player, "gui.games.game-lost", "game", "Connect 4");
+                MessageUtils.sendMessage(player, "games.game-lost", "game", "Connect 4");
             }
             activeGames.remove(player.getUniqueId());
             player.closeInventory();
@@ -217,11 +219,11 @@ public class GameManager {
         Player player = game.player1;
         if (countPieces(game.board, false) == 0) {
             awardReward(player, "chess-checkers");
-            MessageUtils.sendMessage(player, "gui.games.game-won", "game", "Checkers", "reward", String.valueOf(config.getDouble("games.chess-checkers.reward-money")));
+            MessageUtils.sendMessage(player, "games.game-won", "game", "Checkers", "reward", String.valueOf(config.getDouble("games.chess-checkers.reward-money")));
             activeGames.remove(player.getUniqueId());
             player.closeInventory();
         } else if (countPieces(game.board, true) == 0) {
-            MessageUtils.sendMessage(player, "gui.games.game-lost", "game", "Checkers");
+            MessageUtils.sendMessage(player, "games.game-lost", "game", "Checkers");
             activeGames.remove(player.getUniqueId());
             player.closeInventory();
         }
@@ -267,22 +269,6 @@ public class GameManager {
                 ItemStack stack = new ItemStack(Material.valueOf((String) item.get("material")), (Integer) item.get("amount"));
                 player.getInventory().addItem(stack);
             }
-        }
-    }
-
-    private class Game {
-        Player player1, player2;
-        String difficulty, type;
-        int[][] board;
-        String lastPlayerMove, botMove;
-        boolean lastMoveByPlayer;
-
-        Game(Player player1, Player player2, String difficulty, String type) {
-            this.player1 = player1;
-            this.player2 = player2;
-            this.difficulty = difficulty;
-            this.type = type;
-            this.board = type.equals("rps") ? null : type.equals("connect4") ? new int[6][7] : new int[8][8];
         }
     }
 }

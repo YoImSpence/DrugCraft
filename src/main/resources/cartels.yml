@@ -1,1 +1,30 @@
-cartels: {}
+cartels:
+  default:
+    maxRegionSize: 100
+    ranks:
+      member:
+        permissions:
+          - break_blocks
+          - place_blocks
+      admin:
+        permissions:
+          - break_blocks
+          - place_blocks
+          - interact_blocks
+          - manage_ranks
+      leader:
+        permissions:
+          - all
+    upgrades:
+      crop_growth:
+        cost: 1000.0
+        multiplier: 1.5
+      harvest_yield:
+        cost: 1500.0
+        multiplier: 2.0
+      region_size:
+        cost: 2000.0
+        increase: 50
+      business_income:
+        cost: 1000.0
+        multiplier: 1.5

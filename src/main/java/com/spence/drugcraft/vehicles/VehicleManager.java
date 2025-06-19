@@ -3,79 +3,69 @@ package com.spence.drugcraft.vehicles;
 import com.spence.drugcraft.DrugCraft;
 import com.spence.drugcraft.utils.EconomyManager;
 import com.spence.drugcraft.utils.MessageUtils;
-import net.milkbowl.vault.economy.Economy;
-import org.bukkit.configuration.ConfigurationSection;
+import de.tr7zw.nbtapi.NBTItem;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
-import java.io.File;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
-public class VehicleManager implements Listener {
+public class VehicleManager {
     private final DrugCraft plugin;
     private final EconomyManager economyManager;
-    private final Map<UUID, Steed> playerSteeds;
+    private final Map<UUID, Steed> playerSteeds = new HashMap<>();
+    private final Map<UUID, Horse> activeSteeds = new HashMap<>();
 
     public VehicleManager(DrugCraft plugin, EconomyManager economyManager) {
         this.plugin = plugin;
         this.economyManager = economyManager;
-        this.playerSteeds = new HashMap<>();
-        loadPlayerSteeds();
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
-    private void loadPlayerSteeds() {
-        File steedFile = new File(plugin.getDataFolder(), "steeds.yml");
-        if (!steedFile.exists()) {
-            try {
-                plugin.saveResource("steeds.yml", false);
-            } catch (IllegalArgumentException e) {
-                plugin.getLogger().warning("Embedded resource 'steeds.yml' not found. Creating empty steeds.yml.");
-                FileConfiguration emptyConfig = new YamlConfiguration();
-                emptyConfig.createSection("steeds");
-                try {
-                    emptyConfig.save(steedFile);
-                } catch (Exception ex) {
-                    plugin.getLogger().severe("Failed to create empty steeds.yml: " + ex.getMessage());
-                }
-            }
-        }
-        FileConfiguration steedConfig = YamlConfiguration.loadConfiguration(steedFile);
-        ConfigurationSection steedSection = steedConfig.getConfigurationSection("steeds");
-        if (steedSection == null) {
-            plugin.getLogger().warning("No 'steeds' section found in steeds.yml");
-            return;
-        }
-        for (String uuid : steedSection.getKeys(false)) {
-            try {
-                String type = steedSection.getString(uuid + ".type", "Swiftwind");
-                playerSteeds.put(UUID.fromString(uuid), new Steed(UUID.fromString(uuid), type));
-                plugin.getLogger().info("Loaded steed for player " + uuid + ": " + type);
-            } catch (IllegalArgumentException e) {
-                plugin.getLogger().warning("Invalid UUID in steeds.yml: " + uuid + ". Skipping entry.");
-            }
-        }
+    public boolean isSteedItem(ItemStack item) {
+        if (item == null) return false;
+        NBTItem nbtItem = new NBTItem(item);
+        return nbtItem.hasKey("steed_id");
     }
 
-    public void savePlayerSteeds() {
-        File steedFile = new File(plugin.getDataFolder(), "steeds.yml");
-        FileConfiguration steedConfig = new YamlConfiguration();
-        ConfigurationSection steedSection = steedConfig.createSection("steeds");
-        for (Map.Entry<UUID, Steed> entry : playerSteeds.entrySet()) {
-            UUID uuid = entry.getKey();
-            Steed steed = entry.getValue();
-            ConfigurationSection data = steedSection.createSection(uuid.toString());
-            data.set("type", steed.getType());
-        }
-        try {
-            steedConfig.save(steedFile);
-            plugin.getLogger().info("Saved " + playerSteeds.size() + " steeds to steeds.yml");
-        } catch (Exception e) {
-            plugin.getLogger().severe("Failed to save steeds.yml: " + e.getMessage());
+    public boolean canSummonSteed(Player player) {
+        return !activeSteeds.containsKey(player.getUniqueId());
+    }
+
+    public Horse summonSteed(Player player, ItemStack item) {
+        if (!canSummonSteed(player)) return null;
+
+        NBTItem nbtItem = new NBTItem(item);
+        String steedId = nbtItem.getString("steed_id");
+        FileConfiguration config = plugin.getConfig("vehicles.yml");
+        double speed = config.getDouble("steeds." + steedId + ".speed", 0.2);
+        double health = config.getDouble("steeds." + steedId + ".health", 20.0);
+
+        Horse horse = player.getWorld().spawn(player.getLocation(), Horse.class);
+        horse.setOwner(player);
+        horse.setMaxHealth(health);
+        horse.setHealth(health);
+        horse.getAttribute(Attribute.MOVEMENT_SPEED).setBaseValue(speed);
+        horse.getInventory().setSaddle(new ItemStack(org.bukkit.Material.SADDLE));
+        horse.setCustomName(MessageUtils.getMessage("vehicle.steed-name", "player_name", player.getName()));
+        activeSteeds.put(player.getUniqueId(), horse);
+
+        Steed steed = new Steed(steedId, speed, health);
+        playerSteeds.put(player.getUniqueId(), steed);
+        saveSteedData(player.getUniqueId(), steed);
+
+        return horse;
+    }
+
+    public void despawnSteed(Player player) {
+        Horse horse = activeSteeds.remove(player.getUniqueId());
+        if (horse != null) {
+            horse.remove();
+            MessageUtils.sendMessage(player, "vehicle.despawned");
         }
     }
 
@@ -83,63 +73,11 @@ public class VehicleManager implements Listener {
         return playerSteeds.get(player.getUniqueId());
     }
 
-    public void despawnSteed(Player player) {
-        Steed steed = playerSteeds.get(player.getUniqueId());
-        if (steed != null && steed.getEntity() != null) {
-            steed.getEntity().remove();
-            steed.setEntity(null);
-            plugin.getLogger().info("Despawned steed for player " + player.getName());
-        }
-    }
-
-    public boolean purchaseSteed(Player player, String steedType) {
-        if (playerSteeds.containsKey(player.getUniqueId())) {
-            MessageUtils.sendMessage(player, "vehicle.already-owned");
-            return false;
-        }
-        Economy economy = economyManager.getEconomy();
-        if (economy == null) {
-            MessageUtils.sendMessage(player, "general.no-economy");
-            return false;
-        }
-        double price = switch (steedType.toLowerCase()) {
-            case "swiftwind" -> 1000.0;
-            case "ironhoof" -> 1500.0;
-            case "shadowmare" -> 2000.0;
-            case "drug mule" -> 1200.0;
-            case "blazefury" -> 2500.0;
-            case "starbolt" -> 2200.0;
-            default -> 1000.0;
-        };
-        if (!economy.has(player, price)) {
-            MessageUtils.sendMessage(player, "general.insufficient-funds", "amount", String.format("%.2f", price));
-            return false;
-        }
-        int playerLevel = plugin.getDataManager().getPlayerLevel(player.getUniqueId());
-        int requiredLevel = switch (steedType.toLowerCase()) {
-            case "swiftwind" -> 1;
-            case "ironhoof" -> 3;
-            case "shadowmare" -> 5;
-            case "drug mule" -> 2;
-            case "blazefury" -> 7;
-            case "starbolt" -> 6;
-            default -> 1;
-        };
-        if (playerLevel < requiredLevel) {
-            MessageUtils.sendMessage(player, "vehicle.level-required", "level", String.valueOf(requiredLevel));
-            return false;
-        }
-        economy.withdrawPlayer(player, price);
-        Steed steed = new Steed(player.getUniqueId(), steedType);
-        playerSteeds.put(player.getUniqueId(), steed);
-        savePlayerSteeds();
-        MessageUtils.sendMessage(player, "vehicle.purchased", "steed", steedType, "price", String.format("%.2f", price));
-        plugin.getLogger().info("Player " + player.getName() + " purchased steed " + steedType + " for $" + price);
-        return true;
-    }
-
-    @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        // Placeholder for steed interaction logic
+    private void saveSteedData(UUID playerUUID, Steed steed) {
+        FileConfiguration data = plugin.getConfig("data.yml");
+        data.set("players." + playerUUID + ".steed.id", steed.getId());
+        data.set("players." + playerUUID + ".steed.speed", steed.getSpeed());
+        data.set("players." + playerUUID + ".steed.health", steed.getHealth());
+        plugin.saveConfig();
     }
 }

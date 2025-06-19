@@ -1,143 +1,94 @@
 package com.spence.drugcraft.cartel;
 
 import com.spence.drugcraft.DrugCraft;
+import com.spence.drugcraft.utils.MessageUtils;
 import org.bukkit.Location;
-import org.bukkit.World;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
-import java.io.File;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 public class CartelManager {
     private final DrugCraft plugin;
-    private final Map<String, Cartel> cartels = new HashMap<>();
-    private final Map<String, Location> stashLocations = new HashMap<>();
+    private final List<Cartel> cartels = new ArrayList<>();
 
     public CartelManager(DrugCraft plugin) {
         this.plugin = plugin;
-        loadCartels();
     }
 
-    private void loadCartels() {
-        File cartelFile = new File(plugin.getDataFolder(), "cartels.yml");
-        if (!cartelFile.exists()) {
-            plugin.saveResource("cartels.yml", false);
-        }
-        FileConfiguration cartelConfig = YamlConfiguration.loadConfiguration(cartelFile);
-        ConfigurationSection cartelSection = cartelConfig.getConfigurationSection("cartels");
-        if (cartelSection == null) {
-            plugin.getLogger().warning("No cartels section found in cartels.yml");
+    public void createCartel(Player player, String name) {
+        if (getCartelByPlayer(player.getUniqueId()) != null) {
+            MessageUtils.sendMessage(player, "cartel.already-in-cartel");
             return;
         }
-        for (String name : cartelSection.getKeys(false)) {
-            ConfigurationSection cartelData = cartelSection.getConfigurationSection(name);
-            if (cartelData != null) {
-                String owner = cartelData.getString("owner");
-                List<String> members = cartelData.getStringList("members");
-                int stashLevel = cartelData.getInt("stashLevel", 1);
-                int growthLevel = cartelData.getInt("growthLevel", 1);
-                Location stashLocation = loadLocation(cartelData.getConfigurationSection("stashLocation"));
-                Cartel cartel = new Cartel(name, UUID.fromString(owner));
-                members.forEach(member -> cartel.addMember(UUID.fromString(member)));
-                for (int i = 1; i < stashLevel; i++) cartel.upgradeStashLevel();
-                for (int i = 1; i < growthLevel; i++) cartel.upgradeGrowthLevel();
-                cartels.put(name, cartel);
-                if (stashLocation != null) {
-                    stashLocations.put(name, stashLocation);
-                }
-            }
-        }
-        plugin.getLogger().info("Loaded " + cartels.size() + " cartels");
-    }
-
-    public void saveCartels() {
-        File cartelFile = new File(plugin.getDataFolder(), "cartels.yml");
-        FileConfiguration cartelConfig = new YamlConfiguration();
-        ConfigurationSection cartelSection = cartelConfig.createSection("cartels");
-        for (Map.Entry<String, Cartel> entry : cartels.entrySet()) {
-            String name = entry.getKey();
-            Cartel cartel = entry.getValue();
-            ConfigurationSection cartelData = cartelSection.createSection(name);
-            cartelData.set("owner", cartel.getOwner().toString());
-            cartelData.set("members", cartel.getMembers().stream().map(UUID::toString).toList());
-            cartelData.set("stashLevel", cartel.getStashLevel());
-            cartelData.set("growthLevel", cartel.getGrowthLevel());
-            Location stashLocation = stashLocations.get(name);
-            if (stashLocation != null) {
-                ConfigurationSection locSection = cartelData.createSection("stashLocation");
-                locSection.set("world", stashLocation.getWorld().getName());
-                locSection.set("x", stashLocation.getX());
-                locSection.set("y", stashLocation.getY());
-                locSection.set("z", stashLocation.getZ());
-                locSection.set("yaw", stashLocation.getYaw());
-                locSection.set("pitch", stashLocation.getPitch());
-            }
-        }
-        try {
-            cartelConfig.save(cartelFile);
-            plugin.getLogger().info("Saved " + cartels.size() + " cartels");
-        } catch (Exception e) {
-            plugin.getLogger().severe("Failed to save cartels.yml: " + e.getMessage());
-        }
-    }
-
-    public void setStashLocation(String cartelName, Location location) {
-        stashLocations.put(cartelName, location);
-        saveCartels();
-    }
-
-    public String getCartelByStashLocation(Location location) {
-        return stashLocations.entrySet().stream()
-                .filter(e -> e.getValue().equals(location))
-                .map(Map.Entry::getKey)
-                .findFirst()
-                .orElse(null);
-    }
-
-    public void removeStashLocation(String cartelName) {
-        stashLocations.remove(cartelName);
-        saveCartels();
-    }
-
-    private Location loadLocation(ConfigurationSection section) {
-        if (section == null) return null;
-        String worldName = section.getString("world");
-        if (worldName == null) return null;
-        World world = plugin.getServer().getWorld(worldName);
-        if (world == null) return null;
-        double x = section.getDouble("x");
-        double y = section.getDouble("y");
-        double z = section.getDouble("z");
-        float yaw = (float) section.getDouble("yaw");
-        float pitch = (float) section.getDouble("pitch");
-        return new Location(world, x, y, z, yaw, pitch);
-    }
-
-    public String createCartel(Player player, String name) {
-        if (cartels.containsKey(name)) {
-            return "failed";
-        }
         Cartel cartel = new Cartel(name, player.getUniqueId());
-        cartels.put(name, cartel);
-        saveCartels();
-        return "success";
+        cartels.add(cartel);
+        MessageUtils.sendMessage(player, "cartel.created", "name", name);
+    }
+
+    public boolean joinCartel(Player player, String cartelName) {
+        Cartel cartel = getCartel(cartelName);
+        if (cartel == null) {
+            MessageUtils.sendMessage(player, "cartel.not-found", "name", cartelName);
+            return false;
+        }
+        if (getCartelByPlayer(player.getUniqueId()) != null) {
+            MessageUtils.sendMessage(player, "cartel.already-in-cartel");
+            return false;
+        }
+        cartel.addMember(player.getUniqueId());
+        MessageUtils.sendMessage(player, "cartel.joined", "name", cartelName);
+        return true;
+    }
+
+    public boolean leaveCartel(Player player) {
+        Cartel cartel = getCartelByPlayer(player.getUniqueId());
+        if (cartel == null) {
+            MessageUtils.sendMessage(player, "cartel.not-in-cartel");
+            return false;
+        }
+        cartel.removeMember(player.getUniqueId());
+        MessageUtils.sendMessage(player, "cartel.left", "name", cartel.getName());
+        return true;
+    }
+
+    public UUID getCartelLeader(String cartelName) {
+        Cartel cartel = getCartel(cartelName);
+        return cartel != null ? cartel.getLeader() : null;
+    }
+
+    public List<UUID> getCartelMembers(String cartelName) {
+        Cartel cartel = getCartel(cartelName);
+        return cartel != null ? new ArrayList<>(cartel.getMembers()) : new ArrayList<>();
+    }
+
+    public int getCartelLevel(String cartelName) {
+        Cartel cartel = getCartel(cartelName);
+        return cartel != null ? cartel.getLevel() : 0;
+    }
+
+    public Cartel getPlayerCartel(UUID playerUUID) {
+        return getCartelByPlayer(playerUUID);
+    }
+
+    public Cartel getCartelByPlayer(UUID playerUUID) {
+        return cartels.stream().filter(c -> c.getMembers().contains(playerUUID)).findFirst().orElse(null);
     }
 
     public Cartel getCartel(String name) {
-        return cartels.get(name);
+        return cartels.stream().filter(c -> c.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
     }
 
-    public String getPlayerCartel(UUID playerUUID) {
-        return cartels.entrySet().stream()
-                .filter(entry -> entry.getValue().getMembers().contains(playerUUID))
-                .map(Map.Entry::getKey)
-                .findFirst()
-                .orElse(null);
+    public Cartel getCartelByStashLocation(Location location) {
+        // Placeholder: Implement stash location lookup
+        return null;
+    }
+
+    public void setStashLocation(String cartelName, Location location) {
+        Cartel cartel = getCartel(cartelName);
+        if (cartel != null) {
+            // Placeholder: Store location
+        }
     }
 }

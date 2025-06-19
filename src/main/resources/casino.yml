@@ -1,3 +1,12 @@
-last_played:
-# Example: player_uuid: timestamp
-# "123e4567-e89b-12d3-a456-426614174000": 1625184000000
+games:
+  blackjack:
+    bet: 100.0
+  slots:
+    bet: 50.0
+    multiplier: 10.0
+  poker:
+    bet: 200.0
+  roulette:
+    bet: 100.0
+  baccarat:
+    bet: 150.0

@@ -4,11 +4,11 @@ import com.spence.drugcraft.DrugCraft;
 import com.spence.drugcraft.cartel.Cartel;
 import com.spence.drugcraft.cartel.CartelManager;
 import com.spence.drugcraft.utils.MessageUtils;
-import org.bukkit.Location;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.block.Block;
+import org.bukkit.Material;
 
 public class CartelStashListener implements Listener {
     private final DrugCraft plugin;
@@ -17,25 +17,22 @@ public class CartelStashListener implements Listener {
     public CartelStashListener(DrugCraft plugin, CartelManager cartelManager) {
         this.plugin = plugin;
         this.cartelManager = cartelManager;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (!event.hasBlock()) return;
-        Player player = event.getPlayer();
-        Location location = event.getClickedBlock().getLocation();
-        String cartelName = cartelManager.getCartelByStashLocation(location);
-        if (cartelName == null) return;
+        Block block = event.getClickedBlock();
+        if (block == null || block.getType() != Material.CHEST) return;
 
-        Cartel cartel = cartelManager.getCartel(cartelName);
+        Cartel cartel = cartelManager.getCartelByStashLocation(block.getLocation());
         if (cartel == null) return;
 
-        boolean hasPermission = cartel.hasPermission(player.getUniqueId(), "manage_stash");
-        if (!hasPermission) {
-            MessageUtils.sendMessage(player, "cartel.no-permission", "permission", "manage_stash");
+        String cartelName = cartel.getName();
+        if (!cartel.hasPermission(event.getPlayer().getUniqueId(), "access_stash")) {
+            MessageUtils.sendMessage(event.getPlayer(), "cartel.no-permission");
             event.setCancelled(true);
-            plugin.getLogger().info("Player " + player.getName() + " attempted to access cartel stash at " + location + " without permission");
+        } else {
+            plugin.getCartelStash().openStash(event.getPlayer(), block);
         }
     }
 }

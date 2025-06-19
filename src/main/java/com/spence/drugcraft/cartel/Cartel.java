@@ -1,83 +1,46 @@
 package com.spence.drugcraft.cartel;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class Cartel {
     private final String name;
-    private final UUID owner;
-    private final Set<UUID> members;
-    private int stashLevel;
-    private int growthLevel;
-    private final Map<UUID, Set<String>> permissions;
+    private final UUID leader;
+    private final List<UUID> members;
+    private final Map<UUID, String> ranks;
+    private int level;
 
-    public Cartel(String name, UUID owner) {
+    public Cartel(String name, UUID leader) {
         this.name = name;
-        this.owner = owner;
-        this.members = new HashSet<>();
-        this.members.add(owner);
-        this.stashLevel = 1;
-        this.growthLevel = 1;
-        this.permissions = new HashMap<>();
-        this.permissions.put(owner, new HashSet<>(Arrays.asList("stash_access", "manage_members", "purchase_upgrades", "manage_crops", "access_chests")));
+        this.leader = leader;
+        this.members = new ArrayList<>();
+        this.ranks = new HashMap<>();
+        this.level = 1;
+        members.add(leader);
+        ranks.put(leader, "leader");
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public UUID getOwner() {
-        return owner;
-    }
-
-    public Set<UUID> getMembers() {
-        return members;
-    }
-
-    public boolean isLeader(UUID playerUUID) {
-        return owner.equals(playerUUID);
-    }
+    public String getName() { return name; }
+    public UUID getLeader() { return leader; }
+    public List<UUID> getMembers() { return new ArrayList<>(members); }
+    public String getRank(UUID playerUUID) { return ranks.getOrDefault(playerUUID, "member"); }
+    public int getLevel() { return level; }
 
     public void addMember(UUID playerUUID) {
         members.add(playerUUID);
+        ranks.put(playerUUID, "member");
     }
 
     public void removeMember(UUID playerUUID) {
         members.remove(playerUUID);
-        permissions.remove(playerUUID);
-    }
-
-    public int getStashLevel() {
-        return stashLevel;
-    }
-
-    public void upgradeStashLevel() {
-        stashLevel++;
-    }
-
-    public int getGrowthLevel() {
-        return growthLevel;
-    }
-
-    public void upgradeGrowthLevel() {
-        growthLevel++;
-    }
-
-    public void addPermission(UUID playerUUID, String permission) {
-        permissions.computeIfAbsent(playerUUID, k -> new HashSet<>()).add(permission);
-    }
-
-    public void removePermission(UUID playerUUID, String permission) {
-        Set<String> playerPermissions = permissions.get(playerUUID);
-        if (playerPermissions != null) {
-            playerPermissions.remove(permission);
-            if (playerPermissions.isEmpty()) {
-                permissions.remove(playerUUID);
-            }
-        }
+        ranks.remove(playerUUID);
     }
 
     public boolean hasPermission(UUID playerUUID, String permission) {
-        Set<String> playerPermissions = permissions.get(playerUUID);
-        return playerPermissions != null && playerPermissions.contains(permission);
+        String rank = getRank(playerUUID);
+        return rank.equals("leader") || rank.equals("admin");
     }
 }

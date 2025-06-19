@@ -1,33 +1,38 @@
 police:
   regions:
-    - postation1
-    - postation2
-  spawn_locations:
-    location1:
-      world: "Greenfield"
-      x: 2129
-      y: 69
-      z: 706
-      yaw: 90
-      pitch: 0
-    location2:
-      world: "Greenfield"
-      x: 2124
-      y: 69
-      z: 708
-      yaw: 90
-      pitch: 0
-  max_officers: 5
-  detection_radius: 50.0
-  response_chance: 0.3
-  response_delay: 30
-  warning_threshold: 3
-  fine_amount: 500.0
-  jail_location:
-    world: "Greenfield"
-    x: 2122
-    y: 69
-    z: 715
-    yaw: 90
-    pitch: 0
-  jail_duration: 300
+    - police1
+    - police2
+  checks:
+    drugUse:
+      frequency: 0.05 # Chance per minute
+      fineBase: 500.0
+      jailTimeBase: 300 # Seconds
+    npcAttack:
+      fine: 1000.0
+      jailTime: 600
+    curfew:
+      startHour: 22
+      endHour: 6
+      fine: 200.0
+      jailTime: 120
+  k9:
+    detectionChance: 0.1
+    detectionRange: 10
+    npcs:
+      - id: police_k9_1
+        location:
+          world: world
+          x: 20
+          y: 64
+          z: 20
+        hasK9: true
+      - id: police_2
+        location:
+          world: world
+          x: 30
+          y: 64
+          z: 30
+        hasK9: false
+  wanted:
+    decayTime: 1800 # Seconds
+    maxLevel: 5

@@ -1,6 +1,7 @@
 package com.spence.drugcraft.listeners;
 
 import com.spence.drugcraft.DrugCraft;
+import com.spence.drugcraft.dealer.DealerTrait;
 import com.spence.drugcraft.drugs.Drug;
 import com.spence.drugcraft.drugs.DrugManager;
 import com.spence.drugcraft.town.TownCitizenManager;
@@ -8,75 +9,57 @@ import com.spence.drugcraft.utils.EconomyManager;
 import com.spence.drugcraft.utils.MessageUtils;
 import net.citizensnpcs.api.event.NPCRightClickEvent;
 import net.citizensnpcs.api.npc.NPC;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
+import java.util.Random;
 
 public class NPCListener implements Listener {
     private final DrugCraft plugin;
     private final DrugManager drugManager;
     private final EconomyManager economyManager;
     private final TownCitizenManager townCitizenManager;
+    private final Random random = new Random();
 
     public NPCListener(DrugCraft plugin, DrugManager drugManager, EconomyManager economyManager, TownCitizenManager townCitizenManager) {
         this.plugin = plugin;
         this.drugManager = drugManager;
         this.economyManager = economyManager;
         this.townCitizenManager = townCitizenManager;
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     @EventHandler
     public void onNPCRightClick(NPCRightClickEvent event) {
-        Player player = event.getClicker();
         NPC npc = event.getNPC();
-        ItemStack selectedDrug = player.getInventory().getItemInMainHand();
+        Player player = event.getClicker();
 
-        if (selectedDrug == null || !drugManager.isDrugItem(selectedDrug)) {
-            MessageUtils.sendMessage(player, "deal.no-drugs");
-            plugin.getLogger().warning("Player " + player.getName() + " attempted deal with NPC ID " + npc.getId() + " without a drug item");
-            return;
+        if (npc.hasTrait(DealerTrait.class)) {
+            if (!player.hasPermission("drugcraft.dealer")) {
+                MessageUtils.sendMessage(player, "general.no-permission");
+                return;
+            }
+            plugin.getDealerGUIHandler().openMainMenu(player);
+        } else if (npc.hasTrait(com.spence.drugcraft.police.PoliceTrait.class)) {
+            if (!player.hasPermission("drugcraft.police")) {
+                MessageUtils.sendMessage(player, "general.no-permission");
+                return;
+            }
+            plugin.getPoliceNPC().createPoliceNPC(npc, random.nextBoolean());
+        } else if (townCitizenManager.isTownCitizen(npc)) {
+            if (!player.hasPermission("drugcraft.town")) {
+                MessageUtils.sendMessage(player, "general.no-permission");
+                return;
+            }
+            List<Drug> drugs = drugManager.getDrugs();
+            if (drugs.isEmpty()) return;
+            Drug drug = drugs.get(random.nextInt(drugs.size()));
+            String[] qualities = {"low", "standard", "high"};
+            String quality = qualities[random.nextInt(qualities.length)];
+            int quantity = random.nextInt(5) + 1;
+            double price = drug.getPrice() * quantity * (quality.equals("high") ? 1.5 : quality.equals("low") ? 0.8 : 1.0);
+            townCitizenManager.initiateDeal(player, npc);
         }
-
-        int quantity = selectedDrug.getAmount();
-        if (quantity <= 0) {
-            MessageUtils.sendMessage(player, "general.quantity-positive");
-            plugin.getLogger().warning("Player " + player.getName() + " attempted deal with NPC ID " + npc.getId() + " with invalid quantity");
-            return;
-        }
-
-        String drugId = drugManager.getDrugIdFromItem(selectedDrug);
-        String quality = drugManager.getQualityFromItem(selectedDrug);
-        Drug drug = drugManager.getDrug(drugId);
-        if (drug == null) {
-            MessageUtils.sendMessage(player, "general.error");
-            plugin.getLogger().warning("Invalid drug ID: " + drugId + " for player " + player.getName());
-            return;
-        }
-
-        double basePrice = drug.getPrice() * quantity;
-        double qualityMultiplier = switch (quality.toLowerCase()) {
-            case "prime" -> 1.3;
-            case "exotic" -> 1.5;
-            case "legendary" -> 2.0;
-            case "cosmic" -> 3.0;
-            default -> 1.0;
-        };
-        double price = basePrice * qualityMultiplier;
-
-        List<Location> meetupSpots = townCitizenManager.getMeetupSpots();
-        if (meetupSpots.isEmpty()) {
-            MessageUtils.sendMessage(player, "general.error");
-            plugin.getLogger().warning("No meetup spots available for deal with NPC ID " + npc.getId());
-            return;
-        }
-
-        townCitizenManager.initiateDeal(player, npc.getId(), selectedDrug, quantity, price, meetupSpots);
-        MessageUtils.sendMessage(player, "deal.offer", "npc_name", npc.getName(), "quantity", String.valueOf(quantity), "drug", drugId, "price", String.format("%.2f", price));
-        plugin.getLogger().info("Player " + player.getName() + " initiated deal with NPC ID " + npc.getId() + " for " + quantity + " " + drugId + " at $" + price);
     }
 }

@@ -1,0 +1,16 @@
+heists:
+  bank_robbery:
+    stages:
+      planning:
+        duration: 600 # Seconds
+      infiltration:
+        region: bank1
+        guards: 3
+      escape:
+        duration: 300
+    rewards:
+      money: 10000.0
+      items:
+        - material: WHITE_DYE
+          amount: 50
+          nbt: drug_id=og_kush

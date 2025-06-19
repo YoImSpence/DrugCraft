@@ -1,1 +1,23 @@
-steeds: {}
+steeds:
+  fast_horse:
+    cost: 1000.0
+    effects:
+      speed: 2
+      jump: 1
+    summonCooldown: 300 # Seconds
+    despawnCooldown: 60
+    deathCooldown: 1800
+    damageSources:
+      - mobs
+      - enemy_players
+  swift_stallion:
+    cost: 2000.0
+    effects:
+      speed: 3
+      jump: 2
+    summonCooldown: 240
+    despawnCooldown: 60
+    deathCooldown: 1800
+    damageSources:
+      - mobs
+      - enemy_players

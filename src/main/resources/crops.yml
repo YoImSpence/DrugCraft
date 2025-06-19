@@ -1,1 +1,47 @@
-crops: {}
+crops:
+  og_kush:
+    seedMaterial: WHEAT_SEEDS
+    growthTime: 7200 # Seconds
+    yield:
+      low: 5
+      standard: 10
+      high: 15
+    hologram:
+      icon: WHITE_DYE
+      lines:
+        - "<gradient:#00FF00:#FFFFFF>%strain%</gradient>"
+        - "Growth: %progress%%"
+        - "%harvestable%"
+      offsetY: 1.0
+  blue_dream:
+    seedMaterial: WHEAT_SEEDS
+    growthTime: 9000
+    yield:
+      low: 4
+      standard: 8
+      high: 12
+    hologram:
+      icon: WHITE_DYE
+      lines:
+        - "<gradient:#0000FF:#FFFFFF>%strain%</gradient>"
+        - "Growth: %progress%%"
+        - "%harvestable%"
+      offsetY: 1.0
+grow_lights:
+  standard:
+    block: REDSTONE_LAMP
+    growthMultiplier: 1.5
+    range: 5
+  high:
+    block: REDSTONE_LAMP
+    nbt: quality=high
+    growthMultiplier: 2.0
+    range: 7
+trimmers:
+  standard:
+    item: SHEARS
+    maxQuality: standard
+  high:
+    item: SHEARS
+    nbt: quality=high
+    maxQuality: high

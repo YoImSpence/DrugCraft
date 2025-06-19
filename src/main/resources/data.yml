@@ -1,3 +1,52 @@
-  # Server runtime data
-  server_time: 0
-  server_shutdown_time: 0
+players:
+  # UUID
+  123e4567-e89b-12d3-a456-426614174000:
+    level: 1
+    xp: 500
+    addictions:
+      og_kush:
+        level: 0.5
+        lastUse: 1623974400000
+    businesses:
+      - dispensary1
+    cartels:
+      name: Los_Santos
+      rank: leader
+    steeds:
+      - fast_horse
+    wanted:
+      level: 1
+      expiry: 1623975000000
+npc:
+  dealer:
+    id: 1
+    location:
+      world: world
+      x: 0
+      y: 64
+      z: 0
+  town:
+    citizen1:
+      id: 2
+      location:
+        world: world
+        x: 10
+        y: 64
+        z: 10
+cartels:
+  Los_Santos:
+    leader: 123e4567-e89b-12d3-a456-426614174000
+    members:
+      - 123e4567-e89b-12d3-a456-426614174000
+    region: los_santos_region
+    upgrades:
+      crop_growth: 1
+businesses:
+  dispensary1:
+    owner: 123e4567-e89b-12d3-a456-426614174000
+    upgrades:
+      income: 1
+heists:
+  bank_robbery:
+    leader: 123e4567-e89b-12d3-a456-426614174000
+    progress: planning

@@ -1,18 +1,14 @@
 package com.spence.drugcraft.cartel;
 
 import com.spence.drugcraft.DrugCraft;
+import com.spence.drugcraft.handlers.ActiveGUI;
 import com.spence.drugcraft.utils.MessageUtils;
-import de.tr7zw.nbtapi.NBTItem;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.TextColor;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.block.Block;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.ArrayList;
-import java.util.List;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.Material;
+import org.bukkit.Bukkit;
 
 public class CartelStash {
     private final DrugCraft plugin;
@@ -23,66 +19,40 @@ public class CartelStash {
         this.cartelManager = plugin.getCartelManager();
     }
 
-    public ItemStack createCartelStashItem(String cartelName) {
-        ItemStack stash = new ItemStack(Material.CHEST);
-        ItemMeta meta = stash.getItemMeta();
-        meta.displayName(MessageUtils.color(MessageUtils.getMessage("cartel.stash-item-name")));
-        List<Component> lore = new ArrayList<>();
-        lore.add(MessageUtils.color(MessageUtils.getMessage("cartel.stash-item-lore")));
-        meta.lore(lore);
-        stash.setItemMeta(meta);
-
-        NBTItem nbtItem = new NBTItem(stash);
-        if (cartelName != null) {
-            nbtItem.setString("cartel_name", cartelName);
+    public void openStash(Player player, Block block) {
+        Cartel cartel = cartelManager.getCartelByPlayer(player.getUniqueId());
+        if (cartel == null) {
+            MessageUtils.sendMessage(player, "cartel.not-in-cartel");
+            return;
         }
-        return nbtItem.getItem();
-    }
-
-    public ItemStack createDebugGrowLightItem(String cartelName) {
-        ItemStack growLight = new ItemStack(Material.SEA_LANTERN);
-        ItemMeta meta = growLight.getItemMeta();
-        meta.displayName(MessageUtils.color("Debug Grow Light").color(TextColor.fromHexString("#FFD700")));
-        List<Component> lore = new ArrayList<>();
-        lore.add(MessageUtils.color("Used for debugging crop growth"));
-        meta.lore(lore);
-        growLight.setItemMeta(meta);
-
-        NBTItem nbtItem = new NBTItem(growLight);
-        if (cartelName != null) {
-            nbtItem.setString("cartel_name", cartelName);
+        if (!cartel.getRank(player.getUniqueId()).equals("leader") && !cartel.getRank(player.getUniqueId()).equals("admin")) {
+            MessageUtils.sendMessage(player, "cartel.no-permission");
+            return;
         }
-        nbtItem.setString("drugcraft_type", "grow_light");
-        return nbtItem.getItem();
+
+        Inventory inv = Bukkit.createInventory(null, 54, MiniMessage.miniMessage().deserialize(MessageUtils.getMessage("<gradient:#FF0000:#FFFFFF>Cartel Stash</gradient>")));
+        ActiveGUI activeGUI = new ActiveGUI("CARTEL_STASH", inv);
+        plugin.getActiveMenus().put(player.getUniqueId(), activeGUI);
+
+        player.openInventory(inv);
     }
 
-    public boolean isCartelStash(ItemStack item) {
-        if (item == null || item.getType() != Material.CHEST) return false;
-        NBTItem nbtItem = new NBTItem(item);
-        return nbtItem.hasKey("cartel_name");
-    }
+    public void placeStash(Player player, Block block) {
+        Cartel cartel = cartelManager.getCartelByPlayer(player.getUniqueId());
+        if (cartel == null) {
+            MessageUtils.sendMessage(player, "cartel.not-in-cartel");
+            return;
+        }
+        if (!cartel.getRank(player.getUniqueId()).equals("leader")) {
+            MessageUtils.sendMessage(player, "cartel.no-permission");
+            return;
+        }
+        if (block.getType() != Material.CHEST) {
+            MessageUtils.sendMessage(player, "cartel.invalid-block");
+            return;
+        }
 
-    public void addCartelStash(Location location, String cartelName) {
-        placeStash(location.getBlock(), cartelName);
-    }
-
-    public void placeStash(Block block, String cartelName) {
-        ItemStack stashItem = createCartelStashItem(cartelName);
-        block.setType(Material.CHEST);
-
-        ItemMeta meta = stashItem.getItemMeta();
-        meta.displayName(MessageUtils.color(MessageUtils.getMessage("cartel.stash-placed-name")));
-        List<Component> lore = new ArrayList<>();
-        lore.add(MessageUtils.color(MessageUtils.getMessage("cartel.stash-placed-lore")));
-        meta.lore(lore);
-        stashItem.setItemMeta(meta);
-
-        NBTItem nbtItem = new NBTItem(stashItem);
-        nbtItem.setString("cartel_name", cartelName);
-        block.getWorld().dropItemNaturally(block.getLocation(), nbtItem.getItem());
-
-        Location location = block.getLocation();
-        cartelManager.setStashLocation(cartelName, location);
-        plugin.getLogger().info("Placed cartel stash for " + cartelName + " at " + location);
+        cartelManager.setStashLocation(cartel.getName(), block.getLocation());
+        MessageUtils.sendMessage(player, "cartel.stash-placed");
     }
 }

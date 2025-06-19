@@ -1,19 +1,20 @@
 package com.spence.drugcraft.drugs;
 
 import com.spence.drugcraft.DrugCraft;
+import com.spence.drugcraft.utils.MessageUtils;
 import de.tr7zw.nbtapi.NBTItem;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.Material;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class DrugManager {
     private final DrugCraft plugin;
+    private final List<Drug> drugs = new ArrayList<>();
 
     public DrugManager(DrugCraft plugin) {
         this.plugin = plugin;
@@ -24,43 +25,65 @@ public class DrugManager {
         ConfigurationSection drugsSection = plugin.getConfig("drugs.yml").getConfigurationSection("drugs");
         if (drugsSection != null) {
             for (String drugId : drugsSection.getKeys(false)) {
-                // Load drug configurations
+                ConfigurationSection drugConfig = drugsSection.getConfigurationSection(drugId);
+                if (drugConfig != null) {
+                    Drug drug = new Drug(drugId, drugConfig);
+                    drugs.add(drug);
+                }
             }
         }
     }
 
-    public ConfigurationSection getDrugsConfig() {
-        return plugin.getConfig("drugs.yml").getConfigurationSection("drugs");
+    public boolean isDrugItem(ItemStack item) {
+        if (item == null) return false;
+        NBTItem nbtItem = new NBTItem(item);
+        return nbtItem.hasKey("drug_id");
     }
 
-    public ItemStack getDrugItem(String drugId, String quality, Player player) {
-        ConfigurationSection drugConfig = getDrugsConfig().getConfigurationSection(drugId);
-        if (drugConfig == null) return null;
-
-        ItemStack item = new ItemStack(Material.valueOf(drugConfig.getString("material", "WHITE_DYE")));
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName(drugConfig.getString("name"));
-            meta.setLore(drugConfig.getStringList("lore"));
-            meta.setCustomModelData(drugConfig.getInt("customModelData", 0));
-            item.setItemMeta(meta);
-        }
-
+    public boolean isSeedItem(ItemStack item) {
+        if (item == null) return false;
         NBTItem nbtItem = new NBTItem(item);
-        nbtItem.setString("drug_id", drugId);
-        nbtItem.setString("quality", quality);
-        return nbtItem.getItem();
+        return nbtItem.hasKey("drug_id") && item.getType() == Material.WHEAT_SEEDS;
+    }
+
+    public boolean hasDrugsInInventory(Player player) {
+        for (ItemStack item : player.getInventory().getContents()) {
+            if (isDrugItem(item)) return true;
+        }
+        return false;
+    }
+
+    public String getDrugIdFromItem(ItemStack item) {
+        if (item == null) return null;
+        NBTItem nbtItem = new NBTItem(item);
+        return nbtItem.hasKey("drug_id") ? nbtItem.getString("drug_id") : null;
+    }
+
+    public String getQualityFromItem(ItemStack item) {
+        if (item == null) return "Basic";
+        NBTItem nbtItem = new NBTItem(item);
+        return nbtItem.hasKey("quality") ? nbtItem.getString("quality") : "Basic";
+    }
+
+    public Drug getDrug(String drugId) {
+        return drugs.stream().filter(drug -> drug.getId().equalsIgnoreCase(drugId)).findFirst().orElse(null);
+    }
+
+    public boolean isTrimmer(ItemStack item) {
+        if (item == null) return false;
+        NBTItem nbtItem = new NBTItem(item);
+        return nbtItem.hasKey("trimmer") && nbtItem.getBoolean("trimmer");
     }
 
     public ItemStack getSeedItem(String drugId, String quality, Player player) {
-        ConfigurationSection drugConfig = getDrugsConfig().getConfigurationSection(drugId);
-        if (drugConfig == null) return null;
+        Drug drug = getDrug(drugId);
+        if (drug == null || !drug.isGrowable()) return null;
 
         ItemStack item = new ItemStack(Material.WHEAT_SEEDS);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName("Seed: " + drugConfig.getString("name"));
-            meta.setLore(drugConfig.getStringList("lore"));
+            meta.setDisplayName(MessageUtils.getMessage("gui.dealer.seed-name", "drug_name", "<" + drug.getHexColor() + ">" + drug.getName() + "</" + drug.getHexColor() + ">"));
+            meta.setLore(drug.getLore(quality));
             item.setItemMeta(meta);
         }
 
@@ -70,23 +93,37 @@ public class DrugManager {
         return nbtItem.getItem();
     }
 
-    public List<String> getSortedDrugs() {
-        ConfigurationSection drugsSection = getDrugsConfig();
-        if (drugsSection == null) return new ArrayList<>();
-        Set<String> drugs = drugsSection.getKeys(false);
-        List<String> sortedDrugs = new ArrayList<>(drugs);
-        sortedDrugs.sort(String::compareToIgnoreCase);
+    public ItemStack getDrugItem(String drugId, String quality, Player player) {
+        Drug drug = getDrug(drugId);
+        if (drug == null) return null;
+
+        ItemStack item = new ItemStack(drug.getMaterial());
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(MessageUtils.getMessage("gui.dealer.drug-name", "drug_name", "<" + drug.getHexColor() + ">" + drug.getName() + "</" + drug.getHexColor() + ">"));
+            meta.setLore(drug.getLore(quality));
+            meta.setCustomModelData(drug.getCustomModelData());
+            item.setItemMeta(meta);
+        }
+
+        NBTItem nbtItem = new NBTItem(item);
+        nbtItem.setString("drug_id", drugId);
+        nbtItem.setString("quality", quality);
+        return nbtItem.getItem();
+    }
+
+    public List<Drug> getDrugs() {
+        return new ArrayList<>(drugs);
+    }
+
+    public List<Drug> getSortedDrugs() {
+        List<Drug> sortedDrugs = new ArrayList<>(drugs);
+        sortedDrugs.sort((d1, d2) -> d1.getName().compareToIgnoreCase(d2.getName()));
         return sortedDrugs;
     }
 
-    public List<String> getDrugs() {
-        ConfigurationSection drugsSection = getDrugsConfig();
-        if (drugsSection == null) return new ArrayList<>();
-        return new ArrayList<>(drugsSection.getKeys(false));
-    }
-
     public double getBaseBuyPrice(String drugId) {
-        ConfigurationSection drugConfig = getDrugsConfig().getConfigurationSection(drugId);
-        return drugConfig != null ? drugConfig.getDouble("baseBuyPrice", 0.0) : 0.0;
+        Drug drug = getDrug(drugId);
+        return drug != null ? drug.getBaseBuyPrice() : 0.0;
     }
 }

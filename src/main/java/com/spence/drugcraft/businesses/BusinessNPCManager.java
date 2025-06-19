@@ -1,6 +1,7 @@
 package com.spence.drugcraft.businesses;
 
 import com.spence.drugcraft.DrugCraft;
+import com.spence.drugcraft.gui.BusinessGUI;
 import net.citizensnpcs.api.CitizensAPI;
 import net.citizensnpcs.api.npc.NPC;
 import net.citizensnpcs.api.npc.NPCRegistry;
