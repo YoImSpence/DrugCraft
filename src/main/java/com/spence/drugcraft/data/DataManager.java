@@ -2,54 +2,65 @@ package com.spence.drugcraft.data;
 
 import com.spence.drugcraft.DrugCraft;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public class DataManager {
     private final DrugCraft plugin;
-    private final FileConfiguration dataConfig;
+    private final File dataFile;
+    private FileConfiguration dataConfig;
 
     public DataManager(DrugCraft plugin) {
         this.plugin = plugin;
-        this.dataConfig = plugin.getConfig("data.yml");
+        this.dataFile = new File(plugin.getDataFolder(), "data.yml");
+        this.dataConfig = YamlConfiguration.loadConfiguration(dataFile);
     }
 
-    public int getPlayerLevel(UUID playerUUID) {
-        return dataConfig.getInt("players." + playerUUID + ".level", 0);
-    }
-
-    public void setPlayerLevel(UUID playerUUID, int level) {
-        dataConfig.set("players." + playerUUID + ".level", level);
-        plugin.saveConfig();
-    }
-
-    public long getPlayerDrugXP(UUID playerUUID, String skill) {
-        return dataConfig.getLong("players." + playerUUID + ".skills." + skill + ".xp", 0);
-    }
-
-    public long getXPRequiredForLevel(int level) {
-        return level * 1000L; // Configurable XP curve
-    }
-
-    public void saveAddiction(UUID playerUUID, String drugId, double level, long lastUse) {
-        dataConfig.set("players." + playerUUID + ".addictions." + drugId + ".level", level);
-        dataConfig.set("players." + playerUUID + ".addictions." + drugId + ".lastUse", lastUse);
-        plugin.saveConfig();
+    public void saveAddiction(UUID playerUUID, String drugId, double severity, long lastUse) {
+        String path = "players." + playerUUID + ".addictions." + drugId;
+        dataConfig.set(path + ".severity", severity);
+        dataConfig.set(path + ".lastUse", lastUse);
+        saveConfig();
     }
 
     public void removeAddiction(UUID playerUUID, String drugId) {
-        dataConfig.set("players." + playerUUID + ".addictions." + drugId, null);
-        plugin.saveConfig();
+        String path = "players." + playerUUID + ".addictions." + drugId;
+        dataConfig.set(path, null);
+        saveConfig();
     }
 
-    public void resetPlayerDrugXP(UUID playerUUID, String skill) {
-        dataConfig.set("players." + playerUUID + ".skills." + skill + ".xp", 0);
-        plugin.saveConfig();
+    public int getPlayerLevel(UUID playerUUID) {
+        return dataConfig.getInt("players." + playerUUID + ".level", 1);
     }
 
-    public void addPlayerDrugXP(UUID playerUUID, String skill, long xp) {
-        long currentXP = dataConfig.getLong("players." + playerUUID + ".skills." + skill + ".xp", 0);
-        dataConfig.set("players." + playerUUID + ".skills." + skill + ".xp", currentXP + xp);
-        plugin.saveConfig();
+    public int getPlayerXP(UUID playerUUID) {
+        return dataConfig.getInt("players." + playerUUID + ".xp", 0);
+    }
+
+    // Stub methods to fix compilation errors
+    public double getAddictionSeverity(UUID playerUUID, String drugId) {
+        String path = "players." + playerUUID + ".addictions." + drugId + ".severity";
+        return dataConfig.getDouble(path, 0.0);
+    }
+
+    public List<String> getUnlockedDrugs(UUID playerUUID) {
+        return new ArrayList<>(); // Placeholder
+    }
+
+    public List<String> getUnlockedFeatures(UUID playerUUID) {
+        return new ArrayList<>(); // Placeholder
+    }
+
+    private void saveConfig() {
+        try {
+            dataConfig.save(dataFile);
+        } catch (IOException e) {
+            plugin.getLogger().warning("Failed to save data.yml: " + e.getMessage());
+        }
     }
 }

@@ -1,14 +1,12 @@
 package com.spence.drugcraft.listeners;
 
 import com.spence.drugcraft.DrugCraft;
-import com.spence.drugcraft.cartel.Cartel;
 import com.spence.drugcraft.cartel.CartelManager;
 import com.spence.drugcraft.utils.MessageUtils;
+import org.bukkit.block.Container;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.block.Block;
-import org.bukkit.Material;
 
 public class CartelStashListener implements Listener {
     private final DrugCraft plugin;
@@ -21,18 +19,26 @@ public class CartelStashListener implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        Block block = event.getClickedBlock();
-        if (block == null || block.getType() != Material.CHEST) return;
+        if (event.getAction() != org.bukkit.event.block.Action.RIGHT_CLICK_BLOCK) return;
+        if (event.getClickedBlock() == null || event.getClickedBlock().getType() != org.bukkit.Material.CHEST) return;
 
-        Cartel cartel = cartelManager.getCartelByStashLocation(block.getLocation());
-        if (cartel == null) return;
+        org.bukkit.entity.Player player = event.getPlayer();
+        org.bukkit.Location location = event.getClickedBlock().getLocation();
+        String cartelId = cartelManager.getCartelIdByStashLocation(location);
 
-        String cartelName = cartel.getName();
-        if (!cartel.hasPermission(event.getPlayer().getUniqueId(), "access_stash")) {
-            MessageUtils.sendMessage(event.getPlayer(), "cartel.no-permission");
-            event.setCancelled(true);
-        } else {
-            plugin.getCartelStash().openStash(event.getPlayer(), block);
+        if (cartelId == null) return;
+
+        event.setCancelled(true);
+        if (!cartelManager.isPlayerInCartel(player.getUniqueId(), cartelId)) {
+            MessageUtils.sendMessage(player, "cartel.not-in-cartel");
+            return;
         }
+
+        if (!cartelManager.hasPermission(player.getUniqueId(), "interact")) {
+            MessageUtils.sendMessage(player, "cartel.no-permission");
+            return;
+        }
+
+        player.openInventory(((Container) event.getClickedBlock().getState()).getInventory());
     }
 }

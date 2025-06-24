@@ -1,58 +1,36 @@
 package com.spence.drugcraft.cartel;
 
-import com.spence.drugcraft.DrugCraft;
-import com.spence.drugcraft.handlers.ActiveGUI;
-import com.spence.drugcraft.utils.MessageUtils;
-import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Bukkit;
+import org.bukkit.World;
+
+import java.util.UUID;
 
 public class CartelStash {
-    private final DrugCraft plugin;
-    private final CartelManager cartelManager;
+    private final UUID id;
+    private final Location location;
+    private final String cartelId;
 
-    public CartelStash(DrugCraft plugin) {
-        this.plugin = plugin;
-        this.cartelManager = plugin.getCartelManager();
+    public CartelStash(String cartelId, Location location) {
+        this.id = UUID.randomUUID();
+        this.cartelId = cartelId;
+        this.location = location;
+
+        World world = location.getWorld();
+        if (world != null) {
+            world.getBlockAt(location).setType(Material.CHEST);
+        }
     }
 
-    public void openStash(Player player, Block block) {
-        Cartel cartel = cartelManager.getCartelByPlayer(player.getUniqueId());
-        if (cartel == null) {
-            MessageUtils.sendMessage(player, "cartel.not-in-cartel");
-            return;
-        }
-        if (!cartel.getRank(player.getUniqueId()).equals("leader") && !cartel.getRank(player.getUniqueId()).equals("admin")) {
-            MessageUtils.sendMessage(player, "cartel.no-permission");
-            return;
-        }
-
-        Inventory inv = Bukkit.createInventory(null, 54, MiniMessage.miniMessage().deserialize(MessageUtils.getMessage("<gradient:#FF0000:#FFFFFF>Cartel Stash</gradient>")));
-        ActiveGUI activeGUI = new ActiveGUI("CARTEL_STASH", inv);
-        plugin.getActiveMenus().put(player.getUniqueId(), activeGUI);
-
-        player.openInventory(inv);
+    public UUID getId() {
+        return id;
     }
 
-    public void placeStash(Player player, Block block) {
-        Cartel cartel = cartelManager.getCartelByPlayer(player.getUniqueId());
-        if (cartel == null) {
-            MessageUtils.sendMessage(player, "cartel.not-in-cartel");
-            return;
-        }
-        if (!cartel.getRank(player.getUniqueId()).equals("leader")) {
-            MessageUtils.sendMessage(player, "cartel.no-permission");
-            return;
-        }
-        if (block.getType() != Material.CHEST) {
-            MessageUtils.sendMessage(player, "cartel.invalid-block");
-            return;
-        }
+    public Location getLocation() {
+        return location;
+    }
 
-        cartelManager.setStashLocation(cartel.getName(), block.getLocation());
-        MessageUtils.sendMessage(player, "cartel.stash-placed");
+    public String getCartelId() {
+        return cartelId;
     }
 }

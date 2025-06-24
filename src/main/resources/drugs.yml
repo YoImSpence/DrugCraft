@@ -1,52 +1,672 @@
 drugs:
-  og_kush:
-    name: "OG Kush"
-    material: WHITE_DYE
-    lore:
-      - "<gradient:#00FF00:#FFFFFF>A potent cannabis strain.</gradient>"
-    customModelData: 1
-    baseBuyPrice: 50.0
-    level: 1
-    effect: SPEED
-    effectDuration: 600
-    effectAmplifier: 1
-    addiction:
-      rate: 0.1
-      withdrawalDelay: 600000
-      withdrawalEffect: SLOWNESS
-      withdrawalDuration: 600
-      withdrawalAmplifier: 1
   blue_dream:
-    name: "Blue Dream"
+    name: "<#55AAFF>Blue Dream"
+    material: GREEN_DYE
+    lore:
+      - "<#55AAFF>A balanced hybrid strain."
+      - "<#55AAFF>Promotes relaxation and euphoria."
+    customModelData: 1
+    baseBuyPrice: 80.0
+    price: 120.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  og_kush:
+    name: "<#33CC33>OG Kush"
+    material: GREEN_DYE
+    lore:
+      - "<#33CC33>A potent indica-dominant strain."
+      - "<#33CC33>Induces deep relaxation."
+    customModelData: 2
+    baseBuyPrice: 90.0
+    price: 130.0
+    growable: true
+    base_effects:
+      strength: 1.1
+      duration: 700
+  sour_diesel:
+    name: "<#FFCC00>Sour Diesel"
+    material: GREEN_DYE
+    lore:
+      - "<#FFCC00>An energizing sativa strain."
+      - "<#FFCC00>Boosts creativity and focus."
+    customModelData: 3
+    baseBuyPrice: 85.0
+    price: 125.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  granddaddy_purple:
+    name: "<#AA00AA>Granddaddy Purple"
+    material: PURPLE_DYE
+    lore:
+      - "<#AA00AA>A relaxing indica strain."
+      - "<#AA00AA>Eases pain and promotes sleep."
+    customModelData: 4
+    baseBuyPrice: 95.0
+    price: 140.0
+    growable: true
+    base_effects:
+      strength: 1.2
+      duration: 800
+  jack_herer:
+    name: "<#00FF99>Jack Herer"
+    material: GREEN_DYE
+    lore:
+      - "<#00FF99>An uplifting sativa strain."
+      - "<#00FF99>Enhances mood and energy."
+    customModelData: 5
+    baseBuyPrice: 80.0
+    price: 120.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  girl_scout_cookies:
+    name: "<#FF99CC>Girl Scout Cookies"
+    material: GREEN_DYE
+    lore:
+      - "<#FF99CC>A hybrid with sweet notes."
+      - "<#FF99CC>Balances euphoria and relaxation."
+    customModelData: 6
+    baseBuyPrice: 90.0
+    price: 130.0
+    growable: true
+    base_effects:
+      strength: 1.1
+      duration: 700
+  ak_47:
+    name: "<#CC3333>AK-47"
+    material: GREEN_DYE
+    lore:
+      - "<#CC3333>A potent hybrid strain."
+      - "<#CC3333>Delivers cerebral effects."
+    customModelData: 7
+    baseBuyPrice: 85.0
+    price: 125.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  white_widow:
+    name: "<#FFFFFF>White Widow"
     material: WHITE_DYE
     lore:
-      - "<gradient:#0000FF:#FFFFFF>A relaxing hybrid strain.</gradient>"
-    customModelData: 2
-    baseBuyPrice: 75.0
-    level: 2
-    effect: REGENERATION
-    effectDuration: 600
-    effectAmplifier: 1
-    addiction:
-      rate: 0.15
-      withdrawalDelay: 600000
-      withdrawalEffect: NAUSEA
-      withdrawalDuration: 600
-      withdrawalAmplifier: 1
-  cocaine:
-    name: "Cocaine"
-    material: SUGAR
+      - "<#FFFFFF>A classic hybrid strain."
+      - "<#FFFFFF>Uplifting and energetic effects."
+    customModelData: 8
+    baseBuyPrice: 90.0
+    price: 130.0
+    growable: true
+    base_effects:
+      strength: 1.1
+      duration: 700
+  northern_lights:
+    name: "<#0033CC>Northern Lights"
+    material: BLUE_DYE
     lore:
-      - "<gradient:#FFFFFF:#CCCCCC>A powerful stimulant.</gradient>"
+      - "<#0033CC>A soothing indica strain."
+      - "<#0033CC>Ideal for relaxation and sleep."
+    customModelData: 9
+    baseBuyPrice: 95.0
+    price: 140.0
+    growable: true
+    base_effects:
+      strength: 1.2
+      duration: 800
+  pineapple_express:
+    name: "<#FFCC33>Pineapple Express"
+    material: YELLOW_DYE
+    lore:
+      - "<#FFCC33>A fruity hybrid strain."
+      - "<#FFCC33>Boosts mood and creativity."
+    customModelData: 10
+    baseBuyPrice: 80.0
+    price: 120.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  amnesia_haze:
+    name: "<#99FF33>Amnesia Haze"
+    material: GREEN_DYE
+    lore:
+      - "<#99FF33>A cerebral sativa strain."
+      - "<#99FF33>Enhances focus and creativity."
+    customModelData: 11
+    baseBuyPrice: 85.0
+    price: 125.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  gorilla_glue:
+    name: "<#663300>Gorilla Glue"
+    material: BROWN_DYE
+    lore:
+      - "<#663300>A sticky hybrid strain."
+      - "<#663300>Delivers heavy relaxation."
+    customModelData: 12
+    baseBuyPrice: 90.0
+    price: 130.0
+    growable: true
+    base_effects:
+      strength: 1.1
+      duration: 700
+  bubble_gum:
+    name: "<#FF6699>Bubble Gum"
+    material: PINK_DYE
+    lore:
+      - "<#FF6699>A sweet hybrid strain."
+      - "<#FF6699>Promotes happiness and relaxation."
+    customModelData: 13
+    baseBuyPrice: 80.0
+    price: 120.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  lemon_haze:
+    name: "<#FFFF66>Lemon Haze"
+    material: YELLOW_DYE
+    lore:
+      - "<#FFFF66>A zesty sativa strain."
+      - "<#FFFF66>Uplifts mood and energy."
+    customModelData: 14
+    baseBuyPrice: 85.0
+    price: 125.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  chemdawg:
+    name: "<#339966>Chemdawg"
+    material: GREEN_DYE
+    lore:
+      - "<#339966>A pungent hybrid strain."
+      - "<#339966>Provides stress relief."
+    customModelData: 15
+    baseBuyPrice: 90.0
+    price: 130.0
+    growable: true
+    base_effects:
+      strength: 1.1
+      duration: 700
+  green_crack:
+    name: "<#00CC66>Green Crack"
+    material: GREEN_DYE
+    lore:
+      - "<#00CC66>An energizing sativa strain."
+      - "<#00CC66>Boosts focus and energy."
+    customModelData: 16
+    baseBuyPrice: 85.0
+    price: 125.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  purple_haze:
+    name: "<#CC00CC>Purple Haze"
+    material: PURPLE_DYE
+    lore:
+      - "<#CC00CC>A vibrant sativa strain."
+      - "<#CC00CC>Enhances creativity and mood."
+    customModelData: 17
+    baseBuyPrice: 90.0
+    price: 130.0
+    growable: true
+    base_effects:
+      strength: 1.1
+      duration: 700
+  bubba_kush:
+    name: "<#666633>Bubba Kush"
+    material: BROWN_DYE
+    lore:
+      - "<#666633>A relaxing indica strain."
+      - "<#666633>Eases stress and promotes sleep."
+    customModelData: 18
+    baseBuyPrice: 95.0
+    price: 140.0
+    growable: true
+    base_effects:
+      strength: 1.2
+      duration: 800
+  critical_mass:
+    name: "<#996633>Critical Mass"
+    material: BROWN_DYE
+    lore:
+      - "<#996633>A high-yield indica strain."
+      - "<#996633>Deeply relaxing effects."
+    customModelData: 19
+    baseBuyPrice: 90.0
+    price: 130.0
+    growable: true
+    base_effects:
+      strength: 1.1
+      duration: 700
+  super_silver_haze:
+    name: "<#CCCCCC>Super Silver Haze"
+    material: LIGHT_GRAY_DYE
+    lore:
+      - "<#CCCCCC>An uplifting sativa strain."
+      - "<#CCCCCC>Boosts energy and focus."
+    customModelData: 20
+    baseBuyPrice: 85.0
+    price: 125.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  durban_poison:
+    name: "<#FF9933>Durban Poison"
+    material: ORANGE_DYE
+    lore:
+      - "<#FF9933>A pure sativa strain."
+      - "<#FF9933>Enhances creativity and energy."
+    customModelData: 21
+    baseBuyPrice: 80.0
+    price: 120.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  skunk_1:
+    name: "<#66CC99>Skunk #1"
+    material: GREEN_DYE
+    lore:
+      - "<#66CC99>A classic hybrid strain."
+      - "<#66CC99>Balanced uplifting effects."
+    customModelData: 22
+    baseBuyPrice: 85.0
+    price: 125.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  afghan_kush:
+    name: "<#993333>Afghan Kush"
+    material: BROWN_DYE
+    lore:
+      - "<#993333>A pure indica strain."
+      - "<#993333>Deeply relaxing and sedative."
+    customModelData: 23
+    baseBuyPrice: 95.0
+    price: 140.0
+    growable: true
+    base_effects:
+      strength: 1.2
+      duration: 800
+  chocolope:
+    name: "<#663399>Chocolope"
+    material: BROWN_DYE
+    lore:
+      - "<#663399>A chocolatey sativa strain."
+      - "<#663399>Uplifts mood and energy."
+    customModelData: 24
+    baseBuyPrice: 80.0
+    price: 120.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  trainwreck:
+    name: "<#FF3366>Trainwreck"
+    material: RED_DYE
+    lore:
+      - "<#FF3366>A potent hybrid strain."
+      - "<#FF3366>Delivers euphoria and energy."
+    customModelData: 25
+    baseBuyPrice: 90.0
+    price: 130.0
+    growable: true
+    base_effects:
+      strength: 1.1
+      duration: 700
+  gsc_thin_mint:
+    name: "<#CC6699>GSC Thin Mint"
+    material: PINK_DYE
+    lore:
+      - "<#CC6699>A sweet hybrid strain."
+      - "<#CC6699>Balances relaxation and euphoria."
+    customModelData: 26
+    baseBuyPrice: 90.0
+    price: 130.0
+    growable: true
+    base_effects:
+      strength: 1.1
+      duration: 700
+  blue_cheese:
+    name: "<#3366CC>Blue Cheese"
+    material: BLUE_DYE
+    lore:
+      - "<#3366CC>A pungent indica strain."
+      - "<#3366CC>Promotes relaxation and sleep."
+    customModelData: 27
+    baseBuyPrice: 95.0
+    price: 140.0
+    growable: true
+    base_effects:
+      strength: 1.2
+      duration: 800
+  critical_kush:
+    name: "<#669933>Critical Kush"
+    material: GREEN_DYE
+    lore:
+      - "<#669933>A relaxing indica strain."
+      - "<#669933>Eases pain and stress."
+    customModelData: 28
+    baseBuyPrice: 90.0
+    price: 130.0
+    growable: true
+    base_effects:
+      strength: 1.1
+      duration: 700
+  maui_wowie:
+    name: "<#FFCC66>Maui Wowie"
+    material: YELLOW_DYE
+    lore:
+      - "<#FFCC66>A tropical sativa strain."
+      - "<#FFCC66>Uplifts mood and energy."
+    customModelData: 29
+    baseBuyPrice: 80.0
+    price: 120.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  super_lemon_haze:
+    name: "<#FFFF33>Super Lemon Haze"
+    material: YELLOW_DYE
+    lore:
+      - "<#FFFF33>A zesty sativa strain."
+      - "<#FFFF33>Boosts energy and creativity."
+    customModelData: 30
+    baseBuyPrice: 85.0
+    price: 125.0
+    growable: true
+    base_effects:
+      strength: 1.0
+      duration: 600
+  cocaine:
+    name: "<#FF5555>Cocaine"
+    material: WHITE_DYE
+    lore:
+      - "<#FF5555>A powerful stimulant."
+      - "<#FF5555>Increases speed and strength."
+    customModelData: 101
+    baseBuyPrice: 100.0
+    price: 150.0
+    growable: false
+    base_effects:
+      strength: 1.5
+      duration: 300
+  heroin:
+    name: "<#663333>Heroin"
+    material: BROWN_DYE
+    lore:
+      - "<#663333>A highly addictive opioid."
+      - "<#663333>Induces intense euphoria."
+    customModelData: 102
+    baseBuyPrice: 120.0
+    price: 180.0
+    growable: false
+    base_effects:
+      strength: 2.0
+      duration: 400
+  methamphetamine:
+    name: "<#00FFFF>Methamphetamine"
+    material: LIGHT_BLUE_DYE
+    lore:
+      - "<#00FFFF>A potent stimulant."
+      - "<#00FFFF>Heightens alertness and energy."
+    customModelData: 103
+    baseBuyPrice: 110.0
+    price: 160.0
+    growable: false
+    base_effects:
+      strength: 1.8
+      duration: 350
+  mdma:
+    name: "<#FF33FF>MDMA"
+    material: PINK_DYE
+    lore:
+      - "<#FF33FF>An empathogenic drug."
+      - "<#FF33FF>Enhances mood and sociability."
+    customModelData: 104
+    baseBuyPrice: 100.0
+    price: 150.0
+    growable: false
+    base_effects:
+      strength: 1.5
+      duration: 300
+  lsd:
+    name: "<#9933FF>LSD"
+    material: PURPLE_DYE
+    lore:
+      - "<#9933FF>A psychedelic drug."
+      - "<#9933FF>Induces vivid hallucinations."
+    customModelData: 105
+    baseBuyPrice: 90.0
+    price: 140.0
+    growable: false
+    base_effects:
+      strength: 1.7
+      duration: 400
+  ketamine:
+    name: "<#66CCFF>Ketamine"
+    material: LIGHT_BLUE_DYE
+    lore:
+      - "<#66CCFF>A dissociative anesthetic."
+      - "<#66CCFF>Provides pain relief and detachment."
+    customModelData: 106
+    baseBuyPrice: 95.0
+    price: 145.0
+    growable: false
+    base_effects:
+      strength: 1.6
+      duration: 350
+  psilocybin:
+    name: "<#CC9966>Psilocybin"
+    material: BROWN_DYE
+    lore:
+      - "<#CC9966>A psychedelic mushroom compound."
+      - "<#CC9966>Induces euphoria and visuals."
+    customModelData: 107
+    baseBuyPrice: 90.0
+    price: 140.0
+    growable: false
+    base_effects:
+      strength: 1.7
+      duration: 400
+  dmt:
+    name: "<#33CCFF>DMT"
+    material: LIGHT_BLUE_DYE
+    lore:
+      - "<#33CCFF>A powerful psychedelic."
+      - "<#33CCFF>Induces intense spiritual experiences."
+    customModelData: 108
+    baseBuyPrice: 100.0
+    price: 150.0
+    growable: false
+    base_effects:
+      strength: 2.0
+      duration: 200
+  fentanyl:
+    name: "<#666699>Fentanyl"
+    material: GRAY_DYE
+    lore:
+      - "<#666699>A synthetic opioid."
+      - "<#666699>Extremely potent pain relief."
+    customModelData: 109
+    baseBuyPrice: 130.0
+    price: 190.0
+    growable: false
+    base_effects:
+      strength: 2.5
+      duration: 300
+  oxycodone:
+    name: "<#9999CC>Oxycodone"
+    material: WHITE_DYE
+    lore:
+      - "<#9999CC>A prescription opioid."
+      - "<#9999CC>Relieves pain with euphoria."
+    customModelData: 110
+    baseBuyPrice: 110.0
+    price: 160.0
+    growable: false
+    base_effects:
+      strength: 1.8
+      duration: 350
+seeds:
+  blue_dream:
+    material: WHEAT_SEEDS
+    price: 100.0
     customModelData: 1
-    baseBuyPrice: 200.0
+  og_kush:
+    material: WHEAT_SEEDS
+    price: 110.0
+    customModelData: 2
+  sour_diesel:
+    material: WHEAT_SEEDS
+    price: 105.0
+    customModelData: 3
+  granddaddy_purple:
+    material: WHEAT_SEEDS
+    price: 115.0
+    customModelData: 4
+  jack_herer:
+    material: WHEAT_SEEDS
+    price: 100.0
+    customModelData: 5
+  girl_scout_cookies:
+    material: WHEAT_SEEDS
+    price: 110.0
+    customModelData: 6
+  ak_47:
+    material: WHEAT_SEEDS
+    price: 105.0
+    customModelData: 7
+  white_widow:
+    material: WHEAT_SEEDS
+    price: 110.0
+    customModelData: 8
+  northern_lights:
+    material: WHEAT_SEEDS
+    price: 115.0
+    customModelData: 9
+  pineapple_express:
+    material: WHEAT_SEEDS
+    price: 100.0
+    customModelData: 10
+  amnesia_haze:
+    material: WHEAT_SEEDS
+    price: 105.0
+    customModelData: 11
+  gorilla_glue:
+    material: WHEAT_SEEDS
+    price: 110.0
+    customModelData: 12
+  bubble_gum:
+    material: WHEAT_SEEDS
+    price: 100.0
+    customModelData: 13
+  lemon_haze:
+    material: WHEAT_SEEDS
+    price: 105.0
+    customModelData: 14
+  chemdawg:
+    material: WHEAT_SEEDS
+    price: 110.0
+    customModelData: 15
+  green_crack:
+    material: WHEAT_SEEDS
+    price: 105.0
+    customModelData: 16
+  purple_haze:
+    material: WHEAT_SEEDS
+    price: 110.0
+    customModelData: 17
+  bubba_kush:
+    material: WHEAT_SEEDS
+    price: 115.0
+    customModelData: 18
+  critical_mass:
+    material: WHEAT_SEEDS
+    price: 110.0
+    customModelData: 19
+  super_silver_haze:
+    material: WHEAT_SEEDS
+    price: 105.0
+    customModelData: 20
+  durban_poison:
+    material: WHEAT_SEEDS
+    price: 100.0
+    customModelData: 21
+  skunk_1:
+    material: WHEAT_SEEDS
+    price: 105.0
+    customModelData: 22
+  afghan_kush:
+    material: WHEAT_SEEDS
+    price: 115.0
+    customModelData: 23
+  chocolope:
+    material: WHEAT_SEEDS
+    price: 100.0
+    customModelData: 24
+  trainwreck:
+    material: WHEAT_SEEDS
+    price: 110.0
+    customModelData: 25
+  gsc_thin_mint:
+    material: WHEAT_SEEDS
+    price: 110.0
+    customModelData: 26
+  blue_cheese:
+    material: WHEAT_SEEDS
+    price: 115.0
+    customModelData: 27
+  critical_kush:
+    material: WHEAT_SEEDS
+    price: 110.0
+    customModelData: 28
+  maui_wowie:
+    material: WHEAT_SEEDS
+    price: 100.0
+    customModelData: 29
+  super_lemon_haze:
+    material: WHEAT_SEEDS
+    price: 105.0
+    customModelData: 30
+scent_blockers:
+  basic:
+    material: LEATHER_CHESTPLATE
+    level: 1
+    chance: 0.1
+  standard:
+    material: LEATHER_CHESTPLATE
+    level: 3
+    chance: 0.2
+    customModelData: 1
+  prime:
+    material: LEATHER_CHESTPLATE
+    level: 5
+    chance: 0.4
+    customModelData: 2
+  exotic:
+    material: LEATHER_CHESTPLATE
+    level: 7
+    chance: 0.6
+    customModelData: 3
+  legendary:
+    material: LEATHER_CHESTPLATE
     level: 10
-    effect: SPEED
-    effectDuration: 1200
-    effectAmplifier: 2
-    addiction:
-      rate: 0.3
-      withdrawalDelay: 300000
-      withdrawalEffect: POISON
-      withdrawalDuration: 600
-      withdrawalAmplifier: 1
+    chance: 0.8
+    customModelData: 4
+  cosmic:
+    material: LEATHER_CHESTPLATE
+    level: 15
+    chance: 1.0
+    customModelData: 5

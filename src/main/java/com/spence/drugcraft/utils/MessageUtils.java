@@ -3,38 +3,43 @@ package com.spence.drugcraft.utils;
 import com.spence.drugcraft.DrugCraft;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MessageUtils {
     private static DrugCraft plugin;
-    private static FileConfiguration messagesConfig;
-    private static final MiniMessage miniMessage = MiniMessage.miniMessage();
+    private static final Map<String, String> messages = new HashMap<>();
 
     public static void init(DrugCraft pluginInstance) {
         plugin = pluginInstance;
-        messagesConfig = plugin.getConfig("messages.yml");
+        loadMessages();
+    }
+
+    private static void loadMessages() {
+        FileConfiguration config = plugin.getConfigManager().getConfig("messages.yml");
+        for (String key : config.getKeys(true)) {
+            if (config.isString(key)) {
+                messages.put(key, config.getString(key));
+            }
+        }
     }
 
     public static String getMessage(String key, String... placeholders) {
-        String message = messagesConfig.getString(key, "<#FF5555>Message not found: " + key);
+        String message = messages.getOrDefault(key, key);
         for (int i = 0; i < placeholders.length; i += 2) {
-            message = message.replace("{" + placeholders[i] + "}", placeholders[i + 1]);
-        }
-
-        if (key.startsWith("gui.") || key.contains(".quality")) {
-            return "<bold>" + message + "</bold>";
+            if (i + 1 < placeholders.length) {
+                message = message.replace("{" + placeholders[i] + "}", placeholders[i + 1]);
+            }
         }
         return message;
     }
 
-    public static void sendMessage(Player player, String key, String... placeholders) {
+    public static void sendMessage(CommandSender sender, String key, String... placeholders) {
         String message = getMessage(key, placeholders);
-        Component component = miniMessage.deserialize(message);
-        player.sendMessage(component);
-    }
-
-    public static String stripColor(String input) {
-        return miniMessage.stripTags(input);
+        Component component = MiniMessage.miniMessage().deserialize(message);
+        sender.sendMessage(component);
     }
 }

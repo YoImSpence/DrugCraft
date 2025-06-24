@@ -4,7 +4,7 @@ import com.spence.drugcraft.DrugCraft;
 import com.spence.drugcraft.data.DataManager;
 import com.spence.drugcraft.drugs.DrugManager;
 import com.spence.drugcraft.utils.EconomyManager;
-import com.spence.drugcraft.utils.MessageUtils;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
@@ -16,7 +16,6 @@ public class BusinessManager {
     private final DataManager dataManager;
     private final EconomyManager economyManager;
     private final DrugManager drugManager;
-    private final List<Business> businesses = new ArrayList<>();
 
     public BusinessManager(DrugCraft plugin, DataManager dataManager, EconomyManager economyManager, DrugManager drugManager) {
         this.plugin = plugin;
@@ -25,57 +24,60 @@ public class BusinessManager {
         this.drugManager = drugManager;
     }
 
+    public void addBusiness(UUID playerUUID, String businessId, String businessType) {
+        FileConfiguration config = plugin.getConfigManager().getConfig("data.yml");
+        List<String> businesses = config.getStringList("players." + playerUUID + ".businesses");
+        businesses.add(businessId);
+        config.set("players." + playerUUID + ".businesses", businesses);
+        config.set("businesses." + businessId + ".type", businessType);
+        config.set("businesses." + businessId + ".production", 1.0);
+        config.set("businesses." + businessId + ".capacity", 100);
+        plugin.getConfigManager().saveConfig("data.yml");
+    }
+
+    public List<String> getPlayerBusinesses(UUID playerUUID) {
+        FileConfiguration config = plugin.getConfigManager().getConfig("data.yml");
+        List<String> businesses = config.getStringList("players." + playerUUID + ".businesses");
+        List<String> result = new ArrayList<>();
+        for (String businessId : businesses) {
+            String type = config.getString("businesses." + businessId + ".type");
+            if (type != null) {
+                result.add(type + " (" + businessId + ")");
+            }
+        }
+        return result;
+    }
+
+    public void upgradeBusiness(UUID playerUUID, String upgradeType) {
+        FileConfiguration config = plugin.getConfigManager().getConfig("data.yml");
+        List<String> businesses = config.getStringList("players." + playerUUID + ".businesses");
+        for (String businessId : businesses) {
+            if (upgradeType.equals("production")) {
+                double production = config.getDouble("businesses." + businessId + ".production", 1.0);
+                config.set("businesses." + businessId + ".production", production * 1.1);
+            } else if (upgradeType.equals("capacity")) {
+                int capacity = config.getInt("businesses." + businessId + ".capacity", 100);
+                config.set("businesses." + businessId + ".capacity", capacity + 100);
+            }
+        }
+        plugin.getConfigManager().saveConfig("data.yml");
+    }
+
+    public double getBusinessIncome(String businessId) {
+        FileConfiguration config = plugin.getConfigManager().getConfig("data.yml");
+        String type = config.getString("businesses." + businessId + ".type");
+        double production = config.getDouble("businesses." + businessId + ".production", 1.0);
+        return type.equals("Drug Store") ? 1000.0 * production : 1500.0 * production;
+    }
+
+    public int getBusinessDrugProduction(String businessId) {
+        FileConfiguration config = plugin.getConfigManager().getConfig("data.yml");
+        double production = config.getDouble("businesses." + businessId + ".production", 1.0);
+        return (int) (10 * production);
+    }
+
+    // Stub method to fix compilation errors
     public Business getBusinessByPlayer(Player player) {
-        return businesses.stream().filter(b -> b.getOwnerUUID() != null && b.getOwnerUUID().equals(player.getUniqueId())).findFirst().orElse(null);
-    }
-
-    public Business getBusinessForPlayer(UUID playerUUID) {
-        return businesses.stream().filter(b -> b.getOwnerUUID() != null && b.getOwnerUUID().equals(playerUUID)).findFirst().orElse(null);
-    }
-
-    public Business getBusiness(String businessId) {
-        return businesses.stream().filter(b -> b.getId().equalsIgnoreCase(businessId)).findFirst().orElse(null);
-    }
-
-    public List<Business> getBusinesses() {
-        return new ArrayList<>(businesses);
-    }
-
-    public void createBusiness(Player player, String name) {
-        String id = name.toLowerCase().replace(" ", "_");
-        Business business = new Business(player.getUniqueId(), id, name, "dispensary", "dispensary1", 1);
-        businesses.add(business);
-        MessageUtils.sendMessage(player, "business.purchased", "name", name);
-    }
-
-    public void manageBusiness(Player player, Business business) {
-        if (business.getOwnerUUID() != null && business.getOwnerUUID().equals(player.getUniqueId())) {
-            double revenue = business.getRevenue();
-            double price = business.getPrice();
-            List<String> allowedDrugs = business.getAllowedDrugs();
-            // Placeholder: Implement management logic
-        }
-    }
-
-    public void purchaseBusiness(Player player, String businessId) {
-        Business business = getBusiness(businessId);
-        if (business == null) {
-            MessageUtils.sendMessage(player, "business.not-found");
-            return;
-        }
-        if (business.getOwnerUUID() != null) {
-            MessageUtils.sendMessage(player, "business.already-owned");
-            return;
-        }
-        if (dataManager.getPlayerLevel(player.getUniqueId()) < business.getRequiredLevel()) {
-            MessageUtils.sendMessage(player, "business.level-required", "level", String.valueOf(business.getRequiredLevel()));
-            return;
-        }
-        if (economyManager.withdrawPlayer(player, business.getPrice())) {
-            business.setOwnerUUID(player.getUniqueId());
-            MessageUtils.sendMessage(player, "business.purchased", "name", business.getName());
-        } else {
-            MessageUtils.sendMessage(player, "business.insufficient-funds");
-        }
+        return null; // Placeholder
     }
 }

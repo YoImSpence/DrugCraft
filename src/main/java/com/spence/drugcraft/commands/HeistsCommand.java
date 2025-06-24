@@ -1,20 +1,24 @@
 package com.spence.drugcraft.commands;
 
 import com.spence.drugcraft.DrugCraft;
-import com.spence.drugcraft.handlers.HeistGUIHandler;
+import com.spence.drugcraft.gui.HeistGUI;
+import com.spence.drugcraft.utils.EconomyManager;
 import com.spence.drugcraft.utils.MessageUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class HeistsCommand implements CommandExecutor {
     private final DrugCraft plugin;
-    private final HeistGUIHandler heistGUIHandler;
+    private final HeistGUI heistGUI;
+    private final EconomyManager economyManager;
 
-    public HeistsCommand(DrugCraft plugin, HeistGUIHandler heistGUIHandler) {
-        this.plugin = plugin;
-        this.heistGUIHandler = heistGUIHandler;
+    public HeistsCommand() {
+        this.plugin = DrugCraft.getInstance();
+        this.heistGUI = new HeistGUI(plugin);
+        this.economyManager = new EconomyManager(null);
     }
 
     @Override
@@ -24,12 +28,23 @@ public class HeistsCommand implements CommandExecutor {
             return true;
         }
 
-        if (!player.hasPermission("drugcraft.heists")) {
-            MessageUtils.sendMessage(player, "general.no-permission");
-            return true;
-        }
-
-        heistGUIHandler.openMainMenu(player);
+        heistGUI.openMainMenu(player);
         return true;
+    }
+
+    public void startHeist(Player player, String heistType) {
+        double reward = heistType.equals("Bank Heist") ? 5000.0 : 10000.0;
+        double successChance = heistType.equals("Bank Heist") ? 0.7 : 0.5;
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (Math.random() < successChance) {
+                    economyManager.depositPlayer(player, reward);
+                    MessageUtils.sendMessage(player, "heist.started", "reward", String.valueOf(reward));
+                } else {
+                    MessageUtils.sendMessage(player, "heist.started", "result", "Failed");
+                }
+            }
+        }.runTaskLater(plugin, 60L);
     }
 }

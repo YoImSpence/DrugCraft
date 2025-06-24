@@ -1,30 +1,10 @@
 cartels:
-  default:
-    maxRegionSize: 100
-    ranks:
-      member:
-        permissions:
-          - break_blocks
-          - place_blocks
-      admin:
-        permissions:
-          - break_blocks
-          - place_blocks
-          - interact_blocks
-          - manage_ranks
-      leader:
-        permissions:
-          - all
-    upgrades:
-      crop_growth:
-        cost: 1000.0
-        multiplier: 1.5
-      harvest_yield:
-        cost: 1500.0
-        multiplier: 2.0
-      region_size:
-        cost: 2000.0
-        increase: 50
-      business_income:
-        cost: 1000.0
-        multiplier: 1.5
+  dads:
+    name: Dads
+    owner: 2aa39e92-7f5b-4e1b-ae6b-f8a9dd361e6b
+    level: 1
+    members: []
+    ranks: {}
+    stashes:
+      2120,69,720:
+        world: Greenfield

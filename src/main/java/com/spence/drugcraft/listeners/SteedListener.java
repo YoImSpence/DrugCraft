@@ -1,46 +1,35 @@
 package com.spence.drugcraft.listeners;
 
 import com.spence.drugcraft.DrugCraft;
-import com.spence.drugcraft.utils.MessageUtils;
-import com.spence.drugcraft.vehicles.Steed;
-import com.spence.drugcraft.vehicles.VehicleManager;
+import com.spence.drugcraft.*;
+import com.spence.drugcraft.steeds.SteedManager;
 import org.bukkit.entity.Horse;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 
 public class SteedListener implements Listener {
     private final DrugCraft plugin;
-    private final VehicleManager vehicleManager;
+    private final SteedManager vehicleManager;
 
-    public SteedListener(DrugCraft plugin, VehicleManager vehicleManager) {
+    public SteedListener(DrugCraft plugin, SteedManager vehicleManager) {
         this.plugin = plugin;
         this.vehicleManager = vehicleManager;
     }
 
     @EventHandler
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        ItemStack item = event.getItem();
-        if (item == null || !vehicleManager.isSteedItem(item)) return;
-
-        event.setCancelled(true);
-        if (!player.hasPermission("drugcraft.vehicle")) {
-            MessageUtils.sendMessage(player, "general.no-permission");
-            return;
+    public void onEntityDamage(EntityDamageByEntityEvent event) {
+        if (!(event.getEntity() instanceof Horse horse) || !(event.getDamager() instanceof Player attacker)) return;
+        if (vehicleManager.isFriendlyDamage(attacker, horse)) {
+            event.setCancelled(true);
         }
+    }
 
-        if (vehicleManager.canSummonSteed(player)) {
-            Horse horse = vehicleManager.summonSteed(player, item);
-            if (horse != null) {
-                MessageUtils.sendMessage(player, "vehicle.summoned", "steed_name", horse.getCustomName());
-            } else {
-                MessageUtils.sendMessage(player, "vehicle.summon-failed");
-            }
-        } else {
-            MessageUtils.sendMessage(player, "vehicle.already-summoned");
-        }
+    @EventHandler
+    public void onEntityDeath(EntityDeathEvent event) {
+        if (!(event.getEntity() instanceof Horse horse) || horse.getOwner() == null) return;
+        vehicleManager.onSteedDeath(horse, (Player) horse.getOwner());
     }
 }

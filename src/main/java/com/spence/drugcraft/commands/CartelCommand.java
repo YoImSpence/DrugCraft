@@ -1,7 +1,6 @@
 package com.spence.drugcraft.commands;
 
-import com.spence.drugcraft.DrugCraft;
-import com.spence.drugcraft.cartel.CartelManager;
+import com.spence.drugcraft.handlers.CartelGUIHandler;
 import com.spence.drugcraft.utils.MessageUtils;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -9,27 +8,20 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class CartelCommand implements CommandExecutor {
-    private final DrugCraft plugin;
-    private final CartelManager cartelManager;
+    private final CartelGUIHandler cartelGUIHandler;
 
-    public CartelCommand(DrugCraft plugin, CartelManager cartelManager) {
-        this.plugin = plugin;
-        this.cartelManager = cartelManager;
+    public CartelCommand(CartelGUIHandler cartelGUIHandler) {
+        this.cartelGUIHandler = cartelGUIHandler;
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             MessageUtils.sendMessage(sender, "general.player-only");
             return true;
         }
-
-        if (!player.hasPermission("drugcraft.cartel")) {
-            MessageUtils.sendMessage(player, "general.no-permission");
-            return true;
-        }
-
-        plugin.getCartelGUIHandler().openMainMenu(player);
+        Player player = (Player) sender;
+        cartelGUIHandler.openMainMenu(player);
         return true;
     }
 }

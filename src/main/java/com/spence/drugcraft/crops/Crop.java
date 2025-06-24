@@ -1,64 +1,45 @@
 package com.spence.drugcraft.crops;
 
-import com.spence.drugcraft.DrugCraft;
-import com.spence.drugcraft.utils.MessageUtils;
-import eu.decentsoftware.holograms.api.DHAPI;
-import eu.decentsoftware.holograms.api.holograms.Hologram;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-
-import java.util.Arrays;
 
 public class Crop {
-    private final DrugCraft plugin;
+    private final String drugId;
     private final Location location;
-    private final String strain;
-    private final String quality;
-    private Hologram hologram;
-    private boolean harvestable;
-    private long growthTime;
+    private long plantedTime;
+    private double growthProgress;
+    private Object hologram; // Placeholder for DecentHolograms integration
 
-    public Crop(DrugCraft plugin, Location location, String strain, String quality, long growthTime) {
-        this.plugin = plugin;
+    public Crop(String drugId, Location location) {
+        this.drugId = drugId;
         this.location = location;
-        this.strain = strain;
-        this.quality = quality;
-        this.growthTime = growthTime;
-        this.harvestable = false;
-        updateHologram();
+        this.plantedTime = System.currentTimeMillis();
+        this.growthProgress = 0.0;
     }
 
-    public void update() {
-        if (growthTime > 0) {
-            growthTime--;
-            updateHologram();
-            if (growthTime <= 0) {
-                harvestable = true;
-                updateHologram();
-            }
-        }
+    public String getDrugId() {
+        return drugId;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
+
+    public double getGrowthProgress() {
+        return growthProgress;
+    }
+
+    public void updateGrowth(double increment) {
+        this.growthProgress = Math.min(growthProgress + increment, 100.0);
+    }
+
+    public boolean isHarvestable() {
+        return growthProgress >= 100.0;
     }
 
     public void removeHologram() {
+        // Placeholder: Remove hologram using DecentHolograms API
         if (hologram != null) {
-            hologram.destroy();
             hologram = null;
         }
     }
-
-    private void updateHologram() {
-        removeHologram();
-        Block block = location.getBlock();
-        if (block.getType() == Material.WHEAT) {
-            String text = harvestable ? MessageUtils.getMessage("crops.harvestable", "strain", strain, "quality", quality) :
-                    MessageUtils.getMessage("crops.growing", "strain", strain, "quality", quality, "time", String.valueOf(growthTime / 20));
-            hologram = DHAPI.createHologram("crop_" + location.toString(), location.clone().add(0.5, 1.0, 0.5), Arrays.asList(text));
-        }
-    }
-
-    public Location getLocation() { return location; }
-    public String getStrain() { return strain; }
-    public String getQuality() { return quality; }
-    public boolean isHarvestable() { return harvestable; }
 }

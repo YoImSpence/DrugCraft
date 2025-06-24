@@ -16,16 +16,15 @@ public class AdminCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player player)) {
+        if (!(sender instanceof Player)) {
             MessageUtils.sendMessage(sender, "general.player-only");
             return true;
         }
-
+        Player player = (Player) sender;
         if (!player.hasPermission("drugcraft.admin")) {
             MessageUtils.sendMessage(player, "general.no-permission");
             return true;
         }
-
         adminGUIHandler.openMainMenu(player);
         return true;
     }

@@ -1,54 +1,38 @@
-package com.spence.drugcraft.crops;
+package com.spence.drugcraft.listeners;
 
 import com.spence.drugcraft.DrugCraft;
-import com.spence.drugcraft.crops.Crop;
-import com.spence.drugcraft.crops.CropManager;
-import com.spence.drugcraft.data.DataManager;
+import com.spence.drugcraft.drugs.Drug;
 import com.spence.drugcraft.drugs.DrugManager;
-import com.spence.drugcraft.police.PoliceManager;
 import com.spence.drugcraft.utils.MessageUtils;
-import org.bukkit.entity.Player;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class CropListener implements Listener {
     private final DrugCraft plugin;
     private final DrugManager drugManager;
-    private final DataManager dataManager;
-    private final PoliceManager policeManager;
 
-    public CropListener(DrugCraft plugin, DrugManager drugManager, DataManager dataManager, PoliceManager policeManager) {
+    public CropListener(DrugCraft plugin, DrugManager drugManager) {
         this.plugin = plugin;
         this.drugManager = drugManager;
-        this.dataManager = dataManager;
-        this.policeManager = policeManager;
     }
 
     @EventHandler
-    public void onBlockBreak(BlockBreakEvent event) {
-        Player player = event.getPlayer();
-        ItemStack item = player.getInventory().getItemInMainHand();
-        Crop crop = plugin.getCropManager().getCrop(event.getBlock().getLocation());
+    public void onBlockPlace(BlockPlaceEvent event) {
+        ItemStack item = event.getItemInHand();
+        String drugId = drugManager.getDrugIdFromItem(item);
+        if (drugId == null) return;
 
-        if (crop == null) return;
-        if (!drugManager.isTrimmer(item)) {
-            event.setCancelled(true);
-            return;
-        }
-
-        if (crop.isHarvestable()) {
-            String quality = drugManager.getQualityFromItem(item);
-            if (quality.compareTo(crop.getQuality()) >= 0) {
-                ItemStack drugItem = drugManager.getDrugItem(crop.getStrain(), crop.getQuality(), player);
-                player.getInventory().addItem(drugItem);
-                crop.removeHologram();
-                plugin.getCropManager().removeCrop(event.getBlock().getLocation());
-                MessageUtils.sendMessage(player, "crops.trimmed");
-                policeManager.notifyPolice(player, crop.getStrain());
-            }
+        Drug drug = drugManager.getDrug(drugId);
+        if (drug != null && drug.isGrowable()) {
+            Block block = event.getBlockPlaced();
+            block.setType(Material.WHEAT); // Placeholder crop
+            MessageUtils.sendMessage(event.getPlayer(), "crops.planted", "drug_id", drugId, "quality", "Standard");
         } else {
+            MessageUtils.sendMessage(event.getPlayer(), "crops.invalid-seed");
             event.setCancelled(true);
         }
     }

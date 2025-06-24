@@ -1,7 +1,6 @@
 package com.spence.drugcraft.listeners;
 
 import com.spence.drugcraft.DrugCraft;
-import com.spence.drugcraft.cartel.Cartel;
 import com.spence.drugcraft.cartel.CartelManager;
 import com.spence.drugcraft.utils.MessageUtils;
 import org.bukkit.event.EventHandler;
@@ -19,14 +18,26 @@ public class CartelStashBreakListener implements Listener {
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event) {
-        Cartel cartel = cartelManager.getCartelByStashLocation(event.getBlock().getLocation());
-        if (cartel == null) return;
+        if (event.getBlock().getType() != org.bukkit.Material.CHEST) return;
 
-        String cartelName = cartel.getName();
-        Cartel playerCartel = cartelManager.getCartel(cartelName);
-        if (playerCartel != null && !playerCartel.getRank(event.getPlayer().getUniqueId()).equals("leader")) {
-            MessageUtils.sendMessage(event.getPlayer(), "cartel.no-permission");
-            event.setCancelled(true);
+        org.bukkit.entity.Player player = event.getPlayer();
+        org.bukkit.Location location = event.getBlock().getLocation();
+        String cartelId = cartelManager.getCartelIdByStashLocation(location);
+
+        if (cartelId == null) return;
+
+        event.setCancelled(true);
+        if (!cartelManager.isPlayerInCartel(player.getUniqueId(), cartelId)) {
+            MessageUtils.sendMessage(player, "cartel.not-in-cartel");
+            return;
         }
+
+        if (!cartelManager.hasPermission(player.getUniqueId(), "build")) {
+            MessageUtils.sendMessage(player, "cartel.no-permission");
+            return;
+        }
+
+        // Placeholder: Remove stash from cartel
+        MessageUtils.sendMessage(player, "cartel.stash-removed");
     }
 }

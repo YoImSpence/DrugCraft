@@ -1,111 +1,162 @@
 package com.spence.drugcraft.games;
 
 import com.spence.drugcraft.DrugCraft;
-import org.bukkit.configuration.file.FileConfiguration;
+import com.spence.drugcraft.utils.EconomyManager;
+import com.spence.drugcraft.utils.MessageUtils;
+import org.bukkit.entity.Player;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 public class NonCasinoGameManager {
     private final DrugCraft plugin;
-    private final Map<UUID, ChessGame> chessGames = new HashMap<>();
-    private final Map<UUID, CheckersGame> checkersGames = new HashMap<>();
-    private final Map<UUID, Connect4Game> connect4Games = new HashMap<>();
+    private final EconomyManager economyManager;
+    private final Map<UUID, GameState> activeGames = new HashMap<>();
 
     public NonCasinoGameManager(DrugCraft plugin) {
         this.plugin = plugin;
+        this.economyManager = new EconomyManager(null);
     }
 
-    public void startChessGame(UUID playerUUID) {
-        chessGames.put(playerUUID, new ChessGame());
-        saveGameState(playerUUID, "chess");
+    public void startChess(UUID playerUUID, String difficulty) {
+        Player player = plugin.getServer().getPlayer(playerUUID);
+        if (player == null) return;
+        activeGames.put(playerUUID, new GameState("chess", difficulty));
+        MessageUtils.sendMessage(player, "games.chess-start");
     }
 
-    public void updateChessMove(UUID playerUUID, String move) {
-        ChessGame game = chessGames.get(playerUUID);
-        if (game != null) {
-            // Placeholder: Update board with move (e.g., "e2-e4")
-            saveGameState(playerUUID, "chess");
-        }
+    public void startChess(UUID playerUUID, UUID opponentUUID) {
+        Player player = plugin.getServer().getPlayer(playerUUID);
+        if (player == null) return;
+        activeGames.put(playerUUID, new GameState("chess", opponentUUID));
+        MessageUtils.sendMessage(player, "games.chess-start");
     }
 
-    public void startCheckersGame(UUID playerUUID) {
-        checkersGames.put(playerUUID, new CheckersGame());
-        saveGameState(playerUUID, "checkers");
+    public void startCheckers(UUID playerUUID, String difficulty) {
+        Player player = plugin.getServer().getPlayer(playerUUID);
+        if (player == null) return;
+        activeGames.put(playerUUID, new GameState("checkers", difficulty));
+        MessageUtils.sendMessage(player, "games.checkers-start");
     }
 
-    public void startConnect4Game(UUID playerUUID) {
-        connect4Games.put(playerUUID, new Connect4Game());
-        saveGameState(playerUUID, "connect4");
+    public void startCheckers(UUID playerUUID, UUID opponentUUID) {
+        Player player = plugin.getServer().getPlayer(playerUUID);
+        if (player == null) return;
+        activeGames.put(playerUUID, new GameState("checkers", opponentUUID));
+        MessageUtils.sendMessage(player, "games.checkers-start");
     }
 
-    public void dropConnect4Disc(UUID playerUUID, int column) {
-        Connect4Game game = connect4Games.get(playerUUID);
-        if (game != null) {
-            game.dropDisc(column);
-            if (game.checkWin()) {
-                connect4Games.remove(playerUUID);
-                // Notify win
-            } else {
-                game.aiMove();
-                saveGameState(playerUUID, "connect4");
+    public void dropDisc(UUID playerUUID, int column) {
+        Player player = plugin.getServer().getPlayer(playerUUID);
+        if (player == null || !activeGames.containsKey(playerUUID)) return;
+        GameState state = activeGames.get(playerUUID);
+        if (!state.gameType.equals("connect4")) return;
+
+        // Simplified Connect4 logic
+        if (state.board == null) state.board = new int[6][7];
+        for (int row = 5; row >= 0; row--) {
+            if (state.board[row][column] == 0) {
+                state.board[row][column] = 1; // Player disc
+                MessageUtils.sendMessage(player, "games.connect4-disc", "column", String.valueOf(column + 1));
+                if (checkConnect4Win(state.board, 1)) {
+                    economyManager.depositPlayer(player, 100.0);
+                    MessageUtils.sendMessage(player, "games.connect4-win", "reward", "100");
+                    activeGames.remove(playerUUID);
+                } else {
+                    // AI move (random column)
+                    Random random = new Random();
+                    int aiColumn;
+                    do {
+                        aiColumn = random.nextInt(7);
+                    } while (state.board[0][aiColumn] != 0);
+                    for (int r = 5; r >= 0; r--) {
+                        if (state.board[r][aiColumn] == 0) {
+                            state.board[r][aiColumn] = 2; // AI disc
+                            break;
+                        }
+                    }
+                    if (checkConnect4Win(state.board, 2)) {
+                        MessageUtils.sendMessage(player, "games.connect4-lose");
+                        activeGames.remove(playerUUID);
+                    }
+                }
+                break;
             }
         }
     }
 
-    private void saveGameState(UUID playerUUID, String gameType) {
-        FileConfiguration data = plugin.getConfig("data.yml");
-        // Placeholder: Save game state
-        plugin.saveConfig();
+    public void playRPS(UUID playerUUID, String choice) {
+        Player player = plugin.getServer().getPlayer(playerUUID);
+        if (player == null) return;
+        String[] choices = {"rock", "paper", "scissors"};
+        String aiChoice = choices[new Random().nextInt(3)];
+        String result;
+        if (choice.equals(aiChoice)) {
+            result = "Draw";
+            MessageUtils.sendMessage(player, "games.rps-result", "player_choice", choice, "ai_choice", aiChoice, "result", result);
+        } else if ((choice.equals("rock") && aiChoice.equals("scissors")) ||
+                (choice.equals("paper") && aiChoice.equals("rock")) ||
+                (choice.equals("scissors") && aiChoice.equals("paper"))) {
+            result = "Win";
+            economyManager.depositPlayer(player, 50.0);
+            MessageUtils.sendMessage(player, "games.rps-result", "player_choice", choice, "ai_choice", aiChoice, "result", result);
+        } else {
+            result = "Lose";
+            MessageUtils.sendMessage(player, "games.rps-result", "player_choice", choice, "ai_choice", aiChoice, "result", result);
+        }
+        activeGames.remove(playerUUID);
     }
 
-    private static class ChessGame {
-        // Placeholder: Chess board state
-        public ChessGame() {
-        }
-    }
-
-    private static class CheckersGame {
-        // Placeholder: Checkers board state
-        public CheckersGame() {
-        }
-    }
-
-    private static class Connect4Game {
-        private final int[][] board = new int[6][7]; // 6 rows, 7 columns
-        private int currentPlayer = 1; // 1: Player, 2: AI
-        private final Random random = new Random();
-
-        public Connect4Game() {
-        }
-
-        public void dropDisc(int column) {
-            for (int row = 5; row >= 0; row--) {
-                if (board[row][column] == 0) {
-                    board[row][column] = currentPlayer;
-                    currentPlayer = currentPlayer == 1 ? 2 : 1;
-                    break;
+    private boolean checkConnect4Win(int[][] board, int player) {
+        // Check horizontal
+        for (int r = 0; r < 6; r++) {
+            for (int c = 0; c < 4; c++) {
+                if (board[r][c] == player && board[r][c + 1] == player && board[r][c + 2] == player && board[r][c + 3] == player) {
+                    return true;
                 }
             }
         }
-
-        public void aiMove() {
-            int column = random.nextInt(7);
-            while (!isValidMove(column)) {
-                column = random.nextInt(7);
+        // Check vertical
+        for (int c = 0; c < 7; c++) {
+            for (int r = 0; r < 3; r++) {
+                if (board[r][c] == player && board[r + 1][c] == player && board[r + 2][c] == player && board[r + 3][c] == player) {
+                    return true;
+                }
             }
-            dropDisc(column);
+        }
+        // Check diagonals
+        for (int r = 0; r < 3; r++) {
+            for (int c = 0; c < 4; c++) {
+                if (board[r][c] == player && board[r + 1][c + 1] == player && board[r + 2][c + 2] == player && board[r + 3][c + 3] == player) {
+                    return true;
+                }
+            }
+        }
+        for (int r = 3; r < 6; r++) {
+            for (int c = 0; c < 4; c++) {
+                if (board[r][c] == player && board[r - 1][c + 1] == player && board[r - 2][c + 2] == player && board[r - 3][c + 3] == player) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static class GameState {
+        String gameType;
+        String difficulty;
+        UUID opponentUUID;
+        int[][] board; // For Connect4
+
+        GameState(String gameType, String difficulty) {
+            this.gameType = gameType;
+            this.difficulty = difficulty;
+            this.opponentUUID = null;
         }
 
-        private boolean isValidMove(int column) {
-            return board[0][column] == 0;
-        }
-
-        public boolean checkWin() {
-            // Placeholder: Check for 4 in a row (horizontal, vertical, diagonal)
-            return false;
+        GameState(String gameType, UUID opponentUUID) {
+            this.gameType = gameType;
+            this.opponentUUID = opponentUUID;
+            this.difficulty = null;
         }
     }
 }

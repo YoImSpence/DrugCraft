@@ -2,58 +2,26 @@ name: DrugCraft
 version: 1.0.0
 main: com.spence.drugcraft.DrugCraft
 api-version: 1.21
-depend: [Vault, Citizens, WorldGuard, NBTAPI, DecentHolograms, LuckPerms, WorldEdit, Essentials, EssentialsChat]
+depend: [Vault, Citizens, WorldGuard, WorldEdit, LuckPerms, Essentials, EssentialsChat, DecentHolograms, NBTAPI]
 commands:
-  admin:
-    description: Admin command for DrugCraft
-    usage: /<command>
-    permission: drugcraft.admin
-  cartel:
-    description: Opens the cartel menu
-    usage: /<command>
-    permission: drugcraft.cartel
   business:
-    description: Opens the business menu
+    description: Opens the business GUI
     usage: /<command>
-    permission: drugcraft.business
-  levels:
-    description: Opens the levels menu
+  cartel:
+    description: Opens the cartel GUI
     usage: /<command>
-    permission: drugcraft.levels
-  steed:
-    description: Opens the steed purchase menu
-    usage: /<command>
-    permission: drugcraft.vehicle
   casino:
-    description: Opens the casino menu
+    description: Opens the casino GUI
     usage: /<command>
-    permission: drugcraft.casino
   games:
-    description: Opens the games menu
+    description: Opens the games GUI
     usage: /<command>
-    permission: drugcraft.games
-permissions:
-  drugcraft.admin:
-    description: Allows access to admin commands
-    default: op
-  drugcraft.cartel:
-    description: Allows access to cartel menu
-    default: true
-  drugcraft.cartel.permissions:
-    description: Allows managing cartel permissions
-    default: op
-  drugcraft.business:
-    description: Allows access to business menu
-    default: true
-  drugcraft.levels:
-    description: Allows access to levels menu
-    default: true
-  drugcraft.vehicle:
-    description: Allows access to steed menu
-    default: true
-  drugcraft.casino:
-    description: Allows access to casino menu
-    default: true
-  drugcraft.games:
-    description: Allows access to games menu
-    default: true
+  heists:
+    description: Opens the heists GUI
+    usage: /<command>
+  player:
+    description: Opens the player GUI
+    usage: /<command>
+  admin:
+    description: Opens the admin GUI
+    usage: /<command>

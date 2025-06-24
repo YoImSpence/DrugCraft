@@ -7,9 +7,9 @@ import org.bukkit.command.TabCompleter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LevelsTabCompleter implements TabCompleter {
+public class PlayerTabCompleter implements TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-        return new ArrayList<>(); // Placeholder: Add subcommands
+        return new ArrayList<>();
     }
 }

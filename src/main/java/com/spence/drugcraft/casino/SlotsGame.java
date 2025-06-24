@@ -1,53 +1,74 @@
 package com.spence.drugcraft.casino;
 
-import org.bukkit.Material;
+import com.spence.drugcraft.DrugCraft;
+import com.spence.drugcraft.gui.CasinoGUI;
+import com.spence.drugcraft.utils.MessageUtils;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 
 public class SlotsGame extends CasinoGame {
-    private static final List<Material> SLOT_SYMBOLS = Arrays.asList(
-            Material.DIAMOND, Material.EMERALD, Material.GOLD_INGOT,
-            Material.IRON_INGOT, Material.COAL, Material.REDSTONE
-    );
-    private List<Material> results;
-    private double payout;
+    private final String[] symbols = {"Cherry", "Lemon", "Seven", "Bar", "Diamond"};
+    private String[] reels;
+    private final Random random;
+    private final DrugCraft plugin;
 
-    public SlotsGame(UUID playerUUID, double bet) {
+    public SlotsGame(DrugCraft plugin, UUID playerUUID, double bet) {
         super(playerUUID, bet);
-        this.results = new ArrayList<>();
-        this.payout = 0.0;
+        this.plugin = plugin;
+        this.random = new Random();
+        this.reels = new String[]{"?", "?", "?"};
     }
 
     @Override
     public void start(Player player) {
-        results.clear();
-        Random random = new Random();
-        for (int i = 0; i < 3; i++) {
-            results.add(SLOT_SYMBOLS.get(random.nextInt(SLOT_SYMBOLS.size())));
-        }
-        calculatePayout();
-        gameOver = true;
+        new CasinoGUI(plugin, new CasinoManager(plugin)).openGameMenu(player, "SLOTS", this);
     }
 
     @Override
     public void handleAction(Player player, String action) {
-        if (action.equalsIgnoreCase("spin")) {
-            start(player); // Restart the game for a new spin
-        }
+        if (gameOver || !action.equalsIgnoreCase("spin")) return;
+
+        new BukkitRunnable() {
+            int step = 0;
+            @Override
+            public void run() {
+                if (step < 3) {
+                    reels[step] = symbols[random.nextInt(symbols.length)];
+                    new CasinoGUI(plugin, new CasinoManager(plugin)).openGameMenu(player, "SLOTS", SlotsGame.this);
+                    step++;
+                } else {
+                    gameOver = true;
+                    new CasinoGUI(plugin, new CasinoManager(plugin)).openGameMenu(player, "SLOTS", SlotsGame.this);
+                    cancel();
+                }
+            }
+        }.runTaskTimer(plugin, 0L, 20L);
     }
 
     @Override
     public double getPayout() {
-        return payout;
+        if (!gameOver) return 0.0;
+
+        if (reels[0].equals(reels[1]) && reels[1].equals(reels[2])) {
+            return switch (reels[0]) {
+                case "Diamond" -> bet * 50;
+                case "Seven" -> bet * 20;
+                case "Bar" -> bet * 10;
+                case "Cherry" -> bet * 5;
+                case "Lemon" -> bet * 3;
+                default -> 0.0;
+            };
+        }
+        return 0.0;
     }
 
     @Override
     public String getResultMessage() {
-        if (payout > 0) {
-            return "You Win! Payout: $" + payout;
-        }
-        return "You Lose.";
+        if (!gameOver) return "Click Spin to play!";
+        String result = getPayout() > 0 ? "You Win!" : "You Lose!";
+        return "Result: " + reels[0] + " | " + reels[1] + " | " + reels[2] + " - " + result;
     }
 
     @Override
@@ -55,37 +76,10 @@ public class SlotsGame extends CasinoGame {
         return "SLOTS";
     }
 
-    public List<Material> getResults() {
-        return results;
-    }
-
-    private void calculatePayout() {
-        if (results.get(0) == results.get(1) && results.get(1) == results.get(2)) {
-            Material symbol = results.get(0);
-            switch (symbol) {
-                case DIAMOND:
-                    payout = bet * 10; // 10x bet
-                    break;
-                case EMERALD:
-                    payout = bet * 8;
-                    break;
-                case GOLD_INGOT:
-                    payout = bet * 6;
-                    break;
-                case IRON_INGOT:
-                    payout = bet * 4;
-                    break;
-                case COAL:
-                    payout = bet * 2;
-                    break;
-                case REDSTONE:
-                    payout = bet * 1.5;
-                    break;
-                default:
-                    payout = 0.0;
-            }
-        } else {
-            payout = 0.0;
-        }
+    @Override
+    public Map<String, Object> getState() {
+        Map<String, Object> state = new HashMap<>();
+        state.put("reels", reels.clone());
+        return state;
     }
 }

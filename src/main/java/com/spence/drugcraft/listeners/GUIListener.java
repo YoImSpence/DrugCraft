@@ -1,133 +1,119 @@
-package com.spence.drugcraft.gui;
+package com.spence.drugcraft.listeners;
 
 import com.spence.drugcraft.DrugCraft;
-import com.spence.drugcraft.handlers.ActiveGUI;
-import com.spence.drugcraft.handlers.GUIHandler;
-import com.spence.drugcraft.town.DealRequest;
-import com.spence.drugcraft.utils.MessageUtils;
+import com.spence.drugcraft.gui.ActiveGUI;
+import com.spence.drugcraft.handlers.*;
+import com.spence.drugcraft.steeds.SteedManager;
+import net.citizensnpcs.api.CitizensAPI;
+import net.citizensnpcs.api.npc.NPC;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import org.bukkit.event.inventory.InventoryDragEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 public class GUIListener implements Listener {
     private final DrugCraft plugin;
-    private final Map<UUID, String> awaitingChatInput = new HashMap<>();
+    private final AdminGUIHandler adminGUIHandler;
+    private final BusinessGUIHandler businessGUIHandler;
+    private final CartelGUIHandler cartelGUIHandler;
+    private final CasinoGUIHandler casinoGUIHandler;
+    private final GamesGUIHandler gamesGUIHandler;
+    private final PlayerGUIHandler playerGUIHandler;
+    private final SteedGUIHandler steedGUIHandler;
 
     public GUIListener(DrugCraft plugin) {
         this.plugin = plugin;
-    }
-
-    public DrugCraft getPlugin() {
-        return plugin;
-    }
-
-    public Map<UUID, ActiveGUI> getActiveMenus() {
-        return plugin.getActiveMenus();
+        this.adminGUIHandler = new AdminGUIHandler(plugin, plugin.getAdminGUI(), plugin.getDataManager(), plugin.getDrugManager(), plugin.getCartelManager(), plugin.getBusinessManager());
+        this.businessGUIHandler = new BusinessGUIHandler(plugin, plugin.getBusinessGUI(), plugin.getBusinessManager(), plugin.getEconomyManager());
+        this.cartelGUIHandler = new CartelGUIHandler(plugin, plugin.getCartelGUI(), plugin.getCartelManager(), plugin.getEconomyManager());
+        this.casinoGUIHandler = new CasinoGUIHandler(plugin, plugin.getCasinoGUI(), plugin.getCasinoManager());
+        this.gamesGUIHandler = new GamesGUIHandler(plugin, plugin.getGamesGUI(), plugin.getNonCasinoGameManager());
+        this.playerGUIHandler = new PlayerGUIHandler(plugin, plugin.getPlayerGUI());
+        this.steedGUIHandler = new SteedGUIHandler(plugin, plugin.getSteedGUI(), new SteedManager(plugin), plugin.getEconomyManager());
     }
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player)) return;
-        Player player = (Player) event.getWhoClicked();
+        if (!(event.getWhoClicked() instanceof Player player)) return;
         ActiveGUI activeGUI = plugin.getActiveMenus().get(player.getUniqueId());
         if (activeGUI == null) return;
 
-        event.setCancelled(true);
-        GUIHandler handler = getHandler(activeGUI.getGuiType());
-        if (handler != null) {
-            handler.onClick(player, event.getCurrentItem(), event.getSlot(), event.getInventory());
+        ItemStack item = event.getCurrentItem();
+        int slot = event.getSlot();
+        Inventory inventory = event.getInventory();
+
+        event.setCancelled(true); // Prevent item removal
+
+        switch (activeGUI.getType()) {
+            case "ADMIN":
+            case "PLAYER_MANAGE":
+            case "PLAYER_OPTIONS":
+            case "GIVE_ITEMS":
+            case "CARTEL_MANAGE":
+            case "CARTEL_DETAILS":
+            case "BUSINESS_MANAGE":
+            case "WORLD_TP":
+                adminGUIHandler.onClick(player, item, slot, inventory);
+                break;
+            case "BUSINESS":
+            case "BUSINESS_BUY":
+            case "BUSINESS_UPGRADE":
+            case "BUSINESS_STATS":
+                businessGUIHandler.onClick(player, item, slot, inventory);
+                break;
+            case "CARTEL":
+            case "CARTEL_CREATE":
+            case "CARTEL_INFO":
+            case "CARTEL_MEMBERS":
+            case "CARTEL_PERMISSIONS":
+            case "CARTEL_UPGRADES":
+                cartelGUIHandler.onClick(player, item, slot, inventory);
+                break;
+            case "CASINO":
+            case "BACCARAT":
+            case "BLACKJACK":
+            case "POKER":
+            case "ROULETTE":
+            case "SLOTS":
+                casinoGUIHandler.onClick(player, item, slot, inventory);
+                break;
+            case "GAMES":
+            case "CHESS":
+            case "CHECKERS":
+            case "CONNECT4":
+            case "RPS":
+                gamesGUIHandler.onClick(player, item, slot, inventory);
+                break;
+            case "PLAYER":
+            case "LEVELS":
+            case "SETTINGS":
+                playerGUIHandler.onClick(player, item, slot, inventory);
+                break;
+            case "VEHICLE":
+                NPC npc = CitizensAPI.getNPCRegistry().getNPC(player.getWorld().getNearbyEntities(player.getLocation(), 2, 2, 2)
+                        .stream()
+                        .filter(e -> e.getType() == EntityType.PLAYER && CitizensAPI.getNPCRegistry().isNPC(e))
+                        .findFirst()
+                        .orElse(null));
+                if (npc != null && npc.getName().startsWith("Steeds")) {
+                    steedGUIHandler.onClick(player, item, slot, inventory);
+                } else {
+                    player.closeInventory();
+                }
+                break;
         }
     }
 
     @EventHandler
-    public void onPlayerChat(AsyncPlayerChatEvent event) {
-        Player player = event.getPlayer();
-        UUID playerUUID = player.getUniqueId();
-        String inputType = awaitingChatInput.get(playerUUID);
-        if (inputType == null) return;
-
-        event.setCancelled(true);
-        String input = event.getMessage();
-
-        plugin.getServer().getScheduler().runTask(plugin, () -> {
-            ActiveGUI activeGUI = plugin.getActiveMenus().get(playerUUID);
-            if (activeGUI == null) {
-                clearAwaitingChatInput(playerUUID);
-                return;
-            }
-
-            String chatAction = activeGUI.getChatAction();
-            if (chatAction == null) {
-                clearAwaitingChatInput(playerUUID);
-                return;
-            }
-
-            switch (chatAction) {
-                case "cartel-create":
-                    plugin.getCartelGUIHandler().handlePermissionInput(player, input);
-                    break;
-                case "cartel-permission":
-                    plugin.getCartelGUIHandler().handlePermissionInput(player, input);
-                    break;
-                case "admin-quantity":
-                    plugin.getAdminGUIHandler().handleQuantityInput(player, input);
-                    break;
-                case "admin-xp":
-                    plugin.getAdminGUIHandler().handleXPInput(player, input);
-                    break;
-                case "deal-request":
-                    DealRequestGUI dealRequestGUI = plugin.getDealRequestGUI();
-                    DealRequest dealRequest = dealRequestGUI.getCurrentDeal(player);
-                    if (dealRequest != null) {
-                        MessageUtils.sendMessage(player, "deal.accepted", "npc_name", dealRequest.getNpcName());
-                    }
-                    break;
-                default:
-                    MessageUtils.sendMessage(player, "general.invalid-input");
-            }
-
-            clearAwaitingChatInput(playerUUID);
-            activeGUI.setAwaitingChatInput(false);
-            activeGUI.setChatAction(null);
-        });
-    }
-
-    private GUIHandler getHandler(String guiType) {
-        switch (guiType) {
-            case "ADMIN":
-                return plugin.getAdminGUIHandler();
-            case "CARTEL":
-                return plugin.getCartelGUIHandler();
-            case "CASINO":
-                return plugin.getCasinoGUIHandler();
-            case "DEALER":
-                return plugin.getDealerGUIHandler();
-            case "GAMES":
-                return plugin.getGamesGUIHandler();
-            case "LEVELS":
-                return plugin.getLevelsGUIHandler();
-            case "VEHICLE":
-                return plugin.getVehicleGUIHandler();
-            case "BUSINESS_MACHINE":
-                return plugin.getBusinessMachineGUIHandler();
-            case "HEIST":
-                return plugin.getHeistGUIHandler();
-            default:
-                return null;
+    public void onInventoryDrag(InventoryDragEvent event) {
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+        ActiveGUI activeGUI = plugin.getActiveMenus().get(player.getUniqueId());
+        if (activeGUI != null) {
+            event.setCancelled(true);
         }
-    }
-
-    public void setAwaitingChatInput(UUID playerUUID, String inputType) {
-        awaitingChatInput.put(playerUUID, inputType);
-    }
-
-    public void clearAwaitingChatInput(UUID playerUUID) {
-        awaitingChatInput.remove(playerUUID);
     }
 }

@@ -1,0 +1,19 @@
+levels:
+  1:
+    drugs:
+      - blue_dream
+      - jack_herer
+    features:
+      - cartel_creation
+  3:
+    drugs:
+      - og_kush
+      - girl_scout_cookies
+    features:
+      - business_purchase
+  5:
+    drugs:
+      - sour_diesel
+      - ak_47
+    features:
+      - casino_access

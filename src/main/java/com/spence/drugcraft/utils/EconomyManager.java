@@ -1,33 +1,31 @@
 package com.spence.drugcraft.utils;
 
-import com.spence.drugcraft.DrugCraft;
 import net.milkbowl.vault.economy.Economy;
-import org.bukkit.entity.Player;
+import org.bukkit.OfflinePlayer;
 
 public class EconomyManager {
-    private final DrugCraft plugin;
     private final Economy economy;
 
-    public EconomyManager(DrugCraft plugin) {
-        this.plugin = plugin;
-        this.economy = plugin.getEconomy();
+    public EconomyManager(Economy economy) {
+        this.economy = economy;
     }
 
     public boolean isEconomyAvailable() {
         return economy != null;
     }
 
-    public Economy getEconomy() {
-        return economy;
-    }
-
-    public boolean withdrawPlayer(Player player, double amount) {
-        if (!isEconomyAvailable()) return false;
+    public boolean withdrawPlayer(OfflinePlayer player, double amount) {
+        if (!isEconomyAvailable() || !economy.has(player, amount)) return false;
         return economy.withdrawPlayer(player, amount).transactionSuccess();
     }
 
-    public boolean depositPlayer(Player player, double amount) {
+    public boolean depositPlayer(OfflinePlayer player, double amount) {
         if (!isEconomyAvailable()) return false;
         return economy.depositPlayer(player, amount).transactionSuccess();
+    }
+
+    public double getBalance(OfflinePlayer player) {
+        if (!isEconomyAvailable()) return 0.0;
+        return economy.getBalance(player);
     }
 }

@@ -1,152 +1,132 @@
 package com.spence.drugcraft.handlers;
 
 import com.spence.drugcraft.DrugCraft;
+import com.spence.drugcraft.gui.ActiveGUI;
+import com.spence.drugcraft.gui.GamesGUI;
 import com.spence.drugcraft.games.NonCasinoGameManager;
 import com.spence.drugcraft.utils.MessageUtils;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.Material;
 
-import java.util.Random;
-
-public class GamesGUIHandler implements GUIHandler {
+public class GamesGUIHandler {
     private final DrugCraft plugin;
+    private final GamesGUI gamesGUI;
     private final NonCasinoGameManager gameManager;
-    private final Random random = new Random();
+    private final MiniMessage miniMessage = MiniMessage.miniMessage();
 
-    public GamesGUIHandler(DrugCraft plugin, NonCasinoGameManager gameManager) {
+    public GamesGUIHandler(DrugCraft plugin, GamesGUI gamesGUI, NonCasinoGameManager gameManager) {
         this.plugin = plugin;
+        this.gamesGUI = gamesGUI;
         this.gameManager = gameManager;
     }
 
-    @Override
-    public void onClick(Player player, ItemStack item, int slot, Inventory inventory) {
-        if (item == null) return;
-
-        ActiveGUI activeGUI = plugin.getActiveMenus().get(player.getUniqueId());
-        if (activeGUI == null || !activeGUI.getGuiType().equals("GAMES")) return;
-
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null || !meta.hasDisplayName()) return;
-        String displayName = MessageUtils.stripColor(MiniMessage.miniMessage().serialize(meta.displayName()));
-
-        String subType = activeGUI.getMenuSubType();
-        if (subType == null) {
-            if (displayName.equals(MessageUtils.getMessage("gui.games.item-chess"))) {
-                startChess(player);
-                activeGUI.setMenuSubType("chess");
-            } else if (displayName.equals(MessageUtils.getMessage("gui.games.item-checkers"))) {
-                startCheckers(player);
-                activeGUI.setMenuSubType("checkers");
-            } else if (displayName.equals(MessageUtils.getMessage("gui.games.item-connect4"))) {
-                startConnect4(player);
-                activeGUI.setMenuSubType("connect4");
-            } else if (displayName.equals(MessageUtils.getMessage("gui.games.item-rps"))) {
-                startRockPaperScissors(player);
-            }
-        } else if (subType.equals("chess")) {
-            if (displayName.startsWith("Move")) {
-                // Placeholder: Parse move (e.g., "e2-e4"), update board
-                gameManager.updateChessMove(player.getUniqueId(), displayName);
-                openChessMenu(player);
-            }
-        } else if (subType.equals("connect4")) {
-            if (displayName.startsWith("Column")) {
-                int column = Integer.parseInt(displayName.split(" ")[1]) - 1;
-                gameManager.dropConnect4Disc(player.getUniqueId(), column);
-                openConnect4Menu(player);
-            }
-        }
-    }
-
-    private void startChess(Player player) {
-        gameManager.startChessGame(player.getUniqueId());
-        openChessMenu(player);
-    }
-
-    private void openChessMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 54, MiniMessage.miniMessage().deserialize(MessageUtils.getMessage("<gradient:#FF5555:#5555FF><bold>Chess</bold></gradient>")));
-        ActiveGUI activeGUI = new ActiveGUI("GAMES", inv, "chess");
-        plugin.getActiveMenus().put(player.getUniqueId(), activeGUI);
-
-        // Placeholder: Render chess board with clickable moves
-        ItemStack move = createItem(Material.PAPER, "#FFFF55Move e2-e4"); // Example move
-        inv.setItem(13, move);
-
-        player.openInventory(inv);
-    }
-
-    private void startCheckers(Player player) {
-        gameManager.startCheckersGame(player.getUniqueId());
-        MessageUtils.sendMessage(player, "games.checkers-start");
-        // Placeholder: Open checkers GUI
-    }
-
-    private void startConnect4(Player player) {
-        gameManager.startConnect4Game(player.getUniqueId());
-        openConnect4Menu(player);
-    }
-
-    private void openConnect4Menu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 54, MiniMessage.miniMessage().deserialize(MessageUtils.getMessage("<gradient:#FF5555:#5555FF><bold>Connect 4</bold></gradient>")));
-        ActiveGUI activeGUI = new ActiveGUI("GAMES", inv, "connect4");
-        plugin.getActiveMenus().put(player.getUniqueId(), activeGUI);
-
-        for (int i = 1; i <= 7; i++) {
-            ItemStack column = createItem(Material.YELLOW_WOOL, "#FFFF55Column " + i);
-            inv.setItem(10 + i, column);
-        }
-
-        player.openInventory(inv);
-    }
-
-    private void startRockPaperScissors(Player player) {
-        String[] choices = {"Rock", "Paper", "Scissors"};
-        String playerChoice = choices[random.nextInt(3)];
-        String aiChoice = choices[random.nextInt(3)];
-        String result = determineRPSResult(playerChoice, aiChoice);
-        MessageUtils.sendMessage(player, "games.rps-result", "player_choice", playerChoice, "ai_choice", aiChoice, "result", result);
-    }
-
-    private String determineRPSResult(String playerChoice, String aiChoice) {
-        if (playerChoice.equals(aiChoice)) return "Tie";
-        if ((playerChoice.equals("Rock") && aiChoice.equals("Scissors")) ||
-                (playerChoice.equals("Paper") && aiChoice.equals("Rock")) ||
-                (playerChoice.equals("Scissors") && aiChoice.equals("Paper"))) {
-            return "Win";
-        }
-        return "Lose";
-    }
-
-    private ItemStack createItem(Material material, String displayName) {
-        ItemStack item = new ItemStack(material);
-        ItemMeta meta = item.getItemMeta();
-        if (meta != null) {
-            meta.setDisplayName(MessageUtils.getMessage(displayName));
-            item.setItemMeta(meta);
-        }
-        return item;
-    }
-
     public void openMainMenu(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 27, MiniMessage.miniMessage().deserialize(MessageUtils.getMessage("<gradient:#FF5555:#5555FF><bold>Games</bold></gradient>")));
-        ActiveGUI activeGUI = new ActiveGUI("GAMES", inv);
-        plugin.getActiveMenus().put(player.getUniqueId(), activeGUI);
+        gamesGUI.openMainMenu(player);
+    }
 
-        ItemStack chess = createItem(Material.BLACK_BANNER, "#FF5555gui.games.item-chess");
-        ItemStack checkers = createItem(Material.RED_BANNER, "#FF5555gui.games.item-checkers");
-        ItemStack connect4 = createItem(Material.YELLOW_BANNER, "#FFFF55gui.games.item-connect4");
-        ItemStack rps = createItem(Material.PAPER, "#55FF55gui.games.item-rps");
+    public void onClick(Player player, ItemStack item, int slot, Inventory inventory) {
+        if (item == null || item.getType() == Material.AIR) return;
 
-        inv.setItem(10, chess);
-        inv.setItem(12, checkers);
-        inv.setItem(14, connect4);
-        inv.setItem(16, rps);
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
 
-        player.openInventory(inv);
+        Component displayNameComp = meta.displayName();
+        if (displayNameComp == null) return;
+
+        String displayName = miniMessage.serialize(displayNameComp);
+        ActiveGUI activeGUI = plugin.getActiveMenus().get(player.getUniqueId());
+        if (activeGUI == null) return;
+
+        String guiType = activeGUI.getType();
+
+        switch (guiType) {
+            case "GAMES":
+                if (displayName.contains(MessageUtils.getMessage("gui.games.chess-title"))) {
+                    gamesGUI.openChessMenu(player);
+                } else if (displayName.contains(MessageUtils.getMessage("gui.games.checkers-title"))) {
+                    gamesGUI.openCheckersMenu(player);
+                } else if (displayName.contains(MessageUtils.getMessage("gui.games.connect4-title"))) {
+                    gamesGUI.openConnect4Menu(player);
+                } else if (displayName.contains(MessageUtils.getMessage("gui.games.rps-title"))) {
+                    gamesGUI.openRPSMenu(player);
+                }
+                break;
+            case "CHESS":
+                if (displayName.contains(MessageUtils.getMessage("gui.games.chess-ai-easy"))) {
+                    gameManager.startChess(player.getUniqueId(), "easy");
+                } else if (displayName.contains(MessageUtils.getMessage("gui.games.chess-ai-medium"))) {
+                    gameManager.startChess(player.getUniqueId(), "medium");
+                } else if (displayName.contains(MessageUtils.getMessage("gui.games.chess-ai-hard"))) {
+                    gameManager.startChess(player.getUniqueId(), "hard");
+                } else if (displayName.contains(MessageUtils.getMessage("gui.games.chess-invite"))) {
+                    activeGUI.setAwaitingChatInput(true);
+                    activeGUI.setChatAction("chess-invite");
+                    player.closeInventory();
+                    MessageUtils.sendMessage(player, "games.invite-sent", "target", "Enter player name");
+                } else if (displayName.contains(MessageUtils.getMessage("gui.back"))) {
+                    gamesGUI.openMainMenu(player);
+                }
+                break;
+            case "CHECKERS":
+                if (displayName.contains(MessageUtils.getMessage("gui.games.checkers-ai-easy"))) {
+                    gameManager.startCheckers(player.getUniqueId(), "easy");
+                } else if (displayName.contains(MessageUtils.getMessage("gui.games.checkers-ai-medium"))) {
+                    gameManager.startCheckers(player.getUniqueId(), "medium");
+                } else if (displayName.contains(MessageUtils.getMessage("gui.games.checkers-ai-hard"))) {
+                    gameManager.startCheckers(player.getUniqueId(), "hard");
+                } else if (displayName.contains(MessageUtils.getMessage("gui.games.checkers-invite"))) {
+                    activeGUI.setAwaitingChatInput(true);
+                    activeGUI.setChatAction("checkers-invite");
+                    player.closeInventory();
+                    MessageUtils.sendMessage(player, "games.invite-sent", "target", "Enter player name");
+                } else if (displayName.contains(MessageUtils.getMessage("gui.back"))) {
+                    gamesGUI.openMainMenu(player);
+                }
+                break;
+            case "CONNECT4":
+                if (displayName.contains(MessageUtils.getMessage("gui.games.connect4-drop"))) {
+                    int column = slot - 19; // Slots 19-25 map to columns 0-6
+                    gameManager.dropDisc(player.getUniqueId(), column);
+                    gamesGUI.openConnect4Menu(player);
+                } else if (displayName.contains(MessageUtils.getMessage("gui.back"))) {
+                    gamesGUI.openMainMenu(player);
+                }
+                break;
+            case "RPS":
+                if (displayName.contains(MessageUtils.getMessage("gui.games.rps-rock"))) {
+                    gameManager.playRPS(player.getUniqueId(), "rock");
+                } else if (displayName.contains(MessageUtils.getMessage("gui.games.rps-paper"))) {
+                    gameManager.playRPS(player.getUniqueId(), "paper");
+                } else if (displayName.contains(MessageUtils.getMessage("gui.games.rps-scissors"))) {
+                    gameManager.playRPS(player.getUniqueId(), "scissors");
+                } else if (displayName.contains(MessageUtils.getMessage("gui.back"))) {
+                    gamesGUI.openMainMenu(player);
+                }
+                break;
+        }
+    }
+
+    public void handleInviteInput(Player player, String gameType, String targetName) {
+        Player target = Bukkit.getPlayer(targetName);
+        if (target == null) {
+            MessageUtils.sendMessage(player, "general.invalid-input");
+            gamesGUI.openMainMenu(player);
+            return;
+        }
+        if (gameType.equals("chess")) {
+            gameManager.startChess(player.getUniqueId(), target.getUniqueId());
+            MessageUtils.sendMessage(target, "games.invite-received", "sender", player.getName(), "game", "Chess");
+        } else if (gameType.equals("checkers")) {
+            gameManager.startCheckers(player.getUniqueId(), target.getUniqueId());
+            MessageUtils.sendMessage(target, "games.invite-received", "sender", player.getName(), "game", "Checkers");
+        }
+        MessageUtils.sendMessage(player, "games.invite-sent", "target", targetName);
+        gamesGUI.openMainMenu(player);
     }
 }

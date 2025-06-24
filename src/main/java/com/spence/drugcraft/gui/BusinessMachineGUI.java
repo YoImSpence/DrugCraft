@@ -3,17 +3,14 @@ package com.spence.drugcraft.gui;
 import com.spence.drugcraft.DrugCraft;
 import com.spence.drugcraft.businesses.Business;
 import com.spence.drugcraft.businesses.BusinessManager;
-import com.spence.drugcraft.handlers.ActiveGUI;
 import com.spence.drugcraft.utils.MessageUtils;
-import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-
-import java.util.List;
 
 public class BusinessMachineGUI {
     private final DrugCraft plugin;
@@ -31,52 +28,55 @@ public class BusinessMachineGUI {
             return;
         }
 
-        Inventory inv = Bukkit.createInventory(null, 27, Component.text(MessageUtils.getMessage("<gradient:#00FF00:#FFFFFF>Business Machine</gradient>")));
-        ActiveGUI activeGUI = new ActiveGUI("BUSINESS_MACHINE", inv);
+        Inventory inv = Bukkit.createInventory(null, 54, MiniMessage.miniMessage().deserialize(MessageUtils.getMessage("gui.business-machine.main-title")));
+        ActiveGUI activeGUI = new ActiveGUI("BUSINESS_MACHINE", inv, "MAIN");
         plugin.getActiveMenus().put(player.getUniqueId(), activeGUI);
 
-        ItemStack income = new ItemStack(Material.GOLD_INGOT);
-        ItemMeta incomeMeta = income.getItemMeta();
-        incomeMeta.setDisplayName(MessageUtils.getMessage("business.income"));
-        incomeMeta.setLore(List.of("Revenue: $" + business.getRevenue()));
-        income.setItemMeta(incomeMeta);
-
-        ItemStack upgrades = new ItemStack(Material.DIAMOND);
-        ItemMeta upgradesMeta = upgrades.getItemMeta();
-        upgradesMeta.setDisplayName(MessageUtils.getMessage("business.upgrades"));
-        upgrades.setItemMeta(upgradesMeta);
-
-        inv.setItem(11, income);
-        inv.setItem(15, upgrades);
-
-        if (player.hasPermission("drugcraft.admin")) {
-            ItemStack adminMode = new ItemStack(Material.COMMAND_BLOCK);
-            ItemMeta adminMeta = adminMode.getItemMeta();
-            adminMeta.setDisplayName(MessageUtils.getMessage("business.admin-mode"));
-            adminMode.setItemMeta(adminMeta);
-            inv.setItem(22, adminMode);
+        ItemStack border = createItem(Material.BLUE_STAINED_GLASS_PANE, MessageUtils.getMessage("gui.business-machine.border"));
+        for (int i = 0; i < 54; i++) {
+            if (i < 9 || i >= 45 || i % 9 == 0 || (i + 1) % 9 == 0) {
+                inv.setItem(i, border);
+            }
         }
+
+        inv.setItem(20, createItem(Material.CRAFTING_TABLE, MessageUtils.getMessage("gui.business-machine.craft")));
+        inv.setItem(22, createItem(Material.FURNACE, MessageUtils.getMessage("gui.business-machine.process")));
+        inv.setItem(24, createItem(Material.CHEST, MessageUtils.getMessage("gui.business-machine.storage")));
 
         player.openInventory(inv);
     }
 
-    public void openUpgradesMenu(Player player) {
+    public void openCraftMenu(Player player) {
         Business business = businessManager.getBusinessByPlayer(player);
         if (business == null) {
             MessageUtils.sendMessage(player, "business.not-owned");
             return;
         }
 
-        Inventory inv = Bukkit.createInventory(null, 27, Component.text(MessageUtils.getMessage("<gradient:#00FF00:#FFFFFF>Business Upgrades</gradient>")));
-        ActiveGUI activeGUI = new ActiveGUI("BUSINESS_MACHINE", inv, "upgrades");
+        Inventory inv = Bukkit.createInventory(null, 54, MiniMessage.miniMessage().deserialize(MessageUtils.getMessage("gui.business-machine.craft-title")));
+        ActiveGUI activeGUI = new ActiveGUI("BUSINESS_MACHINE", inv, "CRAFT");
         plugin.getActiveMenus().put(player.getUniqueId(), activeGUI);
 
-        ItemStack incomeUpgrade = new ItemStack(Material.GOLD_BLOCK);
-        ItemMeta incomeMeta = incomeUpgrade.getItemMeta();
-        incomeMeta.setDisplayName(MessageUtils.getMessage("business.upgrade-income"));
-        incomeUpgrade.setItemMeta(incomeMeta);
+        ItemStack border = createItem(Material.BLUE_STAINED_GLASS_PANE, MessageUtils.getMessage("gui.business-machine.border"));
+        for (int i = 0; i < 54; i++) {
+            if (i < 9 || i >= 45 || i % 9 == 0 || (i + 1) % 9 == 0) {
+                inv.setItem(i, border);
+            }
+        }
 
-        inv.setItem(13, incomeUpgrade);
+        // Placeholder: Add craftable items
+        inv.setItem(49, createItem(Material.RED_WOOL, MessageUtils.getMessage("gui.business-machine.back")));
+
         player.openInventory(inv);
+    }
+
+    private ItemStack createItem(Material material, String displayName) {
+        ItemStack item = new ItemStack(material);
+        ItemMeta meta = item.getItemMeta();
+        if (meta != null) {
+            meta.setDisplayName(displayName);
+            item.setItemMeta(meta);
+        }
+        return item;
     }
 }

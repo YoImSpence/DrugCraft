@@ -2,37 +2,32 @@ package com.spence.drugcraft.crops;
 
 import com.spence.drugcraft.DrugCraft;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class CropManager {
     private final DrugCraft plugin;
-    private final List<Crop> crops = new ArrayList<>();
+    private final Map<Location, Crop> crops = new HashMap<>();
 
     public CropManager(DrugCraft plugin) {
         this.plugin = plugin;
     }
 
-    public void addCrop(Crop crop) {
-        crops.add(crop);
-    }
-
-    public void removeCrop(Location location) {
-        crops.removeIf(crop -> crop.getLocation().equals(location));
+    public void plantCrop(String drugId, Location location, String quality) {
+        Crop crop = new Crop(drugId, location);
+        crops.put(location, crop);
+        // Placeholder: Create hologram using DecentHolograms
     }
 
     public Crop getCrop(Location location) {
-        return crops.stream().filter(crop -> crop.getLocation().equals(location)).findFirst().orElse(null);
+        return crops.get(location);
     }
 
-    public void updateCrops() {
-        for (Crop crop : new ArrayList<>(crops)) {
-            Block block = crop.getLocation().getBlock();
-            if (plugin.getGrowLight().isGrowLightBlock(block)) {
-                crop.updateGrowth(0.1);
-            }
+    public void removeCrop(Location location) {
+        Crop crop = crops.remove(location);
+        if (crop != null) {
+            crop.removeHologram();
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.spence.drugcraft.vehicles;
+package com.spence.drugcraft.steeds;
 
 public class Steed {
     private final String id;

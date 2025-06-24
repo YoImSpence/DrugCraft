@@ -1,38 +1,35 @@
-police:
+regions:
+  - postation1
+  - postation2
+jail:
   regions:
-    - police1
-    - police2
-  checks:
-    drugUse:
-      frequency: 0.05 # Chance per minute
-      fineBase: 500.0
-      jailTimeBase: 300 # Seconds
-    npcAttack:
-      fine: 1000.0
-      jailTime: 600
-    curfew:
-      startHour: 22
-      endHour: 6
-      fine: 200.0
-      jailTime: 120
-  k9:
-    detectionChance: 0.1
-    detectionRange: 10
-    npcs:
-      - id: police_k9_1
-        location:
-          world: world
-          x: 20
-          y: 64
-          z: 20
-        hasK9: true
-      - id: police_2
-        location:
-          world: world
-          x: 30
-          y: 64
-          z: 30
-        hasK9: false
-  wanted:
-    decayTime: 1800 # Seconds
-    maxLevel: 5
+    - jail1
+    - jail2
+checks:
+  drugUse:
+    frequency: 0.05
+    fine: 500.0
+    jailTime: 300
+  curfew:
+    startHour: 22
+    endHour: 6
+    frequency: 0.1
+    fine: 200.0
+    jailTime: 120
+  npcAttack:
+    fine: 1000.0
+    jailTime: 600
+k9:
+  detectionChance: 0.1
+  detectionRange: 10.0
+  npcs:
+    officer_1:
+      location:
+        world: Greenfield
+        x: 100
+        y: 64
+        z: 100
+      hasK9: true
+wanted:
+  decayTime: 1800
+  maxLevel: 5

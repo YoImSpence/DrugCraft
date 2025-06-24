@@ -1,0 +1,18 @@
+dealers:
+  dealer_1:
+    region: Town
+    world: Greenfield
+town_citizens:
+  citizen_1:
+    region: Town
+    world: Greenfield
+  citizen_2:
+    region: Town
+    world: Greenfield
+police:
+  police_1:
+    region: police1
+    world: Greenfield
+  police_2:
+    region: police2
+    world: Greenfield

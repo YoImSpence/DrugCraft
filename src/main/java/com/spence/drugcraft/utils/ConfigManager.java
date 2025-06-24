@@ -5,49 +5,57 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class ConfigManager {
     private final DrugCraft plugin;
     private final Map<String, FileConfiguration> configs = new HashMap<>();
-    private final String[] configFiles = {
-            "businesses.yml", "cartels.yml", "casino.yml", "citizens.yml", "config.yml",
-            "crops.yml", "data.yml", "drugs.yml", "games.yml", "messages.yml",
-            "player.yml", "police.yml", "server.yml", "steeds.yml", "town.yml",
-            "vehicles.yml", "heists.yml"
-    };
+    private final Map<String, File> configFiles = new HashMap<>();
+    private final Logger logger = Logger.getLogger(ConfigManager.class.getName());
 
     public ConfigManager(DrugCraft plugin) {
         this.plugin = plugin;
-        loadConfigs();
+        initializeConfigs();
     }
 
-    private void loadConfigs() {
-        for (String fileName : configFiles) {
-            File file = new File(plugin.getDataFolder(), fileName);
+    private void initializeConfigs() {
+        String[] configNames = {"data.yml", "cartels.yml", "drugs.yml", "unlocks.yml", "police.yml", "npcs.yml", "messages.yml"};
+        for (String configName : configNames) {
+            File file = new File(plugin.getDataFolder(), configName);
             if (!file.exists()) {
-                plugin.saveResource(fileName, false);
+                plugin.saveResource(configName, false);
             }
-            configs.put(fileName, YamlConfiguration.loadConfiguration(file));
+            configFiles.put(configName, file);
+            configs.put(configName, YamlConfiguration.loadConfiguration(file));
         }
     }
 
-    public FileConfiguration getConfig(String fileName) {
-        return configs.getOrDefault(fileName, new YamlConfiguration());
+    public FileConfiguration getConfig(String configName) {
+        FileConfiguration config = configs.get(configName);
+        if (config == null) {
+            logger.warning("Configuration file not found: " + configName);
+            File file = new File(plugin.getDataFolder(), configName);
+            config = YamlConfiguration.loadConfiguration(file);
+            configs.put(configName, config);
+            configFiles.put(configName, file);
+        }
+        return config;
     }
 
-    public void reloadConfigs() {
-        configs.clear();
-        loadConfigs();
-    }
-
-    public void saveConfig(String fileName) {
-        try {
-            File file = new File(plugin.getDataFolder(), fileName);
-            configs.get(fileName).save(file);
-        } catch (Exception e) {
-            plugin.getLogger().warning("Failed to save " + fileName + ": " + e.getMessage());
+    public void saveConfig(String configName) {
+        FileConfiguration config = configs.get(configName);
+        File file = configFiles.get(configName);
+        if (config != null && file != null) {
+            try {
+                config.save(file);
+            } catch (IOException e) {
+                logger.warning("Failed to save configuration file: " + configName + ": " + e.getMessage());
+            }
+        } else {
+            logger.warning("Cannot save configuration file: " + configName + " - not loaded.");
         }
     }
 }
